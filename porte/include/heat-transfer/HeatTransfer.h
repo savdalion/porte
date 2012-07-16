@@ -3,6 +3,9 @@
 #include "../porte/Engine.h"
 #include <numeric>
 #include <boost/assign.hpp>
+//#include <boost/date_time/local_time/local_time.hpp>
+#include <ctime>
+
 
 /* - Используем C-подход от NVIDIA.
      См. http://nvidia.com/content/cuda/cuda-downloads.html
@@ -13,6 +16,7 @@
 
 // (i) Для Apple: "cl_APPLE_gl_sharing"
 #define GL_SHARING_EXTENSION "cl_khr_gl_sharing"
+
 
 
 
@@ -59,7 +63,7 @@ protected:
     /**
     * @virtual Engine
     */
-    virtual void operator()();
+    virtual void pulse( int n );
 
 
 
@@ -106,11 +110,11 @@ private:
 
     /**
     * Структуры для OpenCL-вычислений.
-    * Префикс "work" добавляется к структурам, которые используются ядрами для
+    * Префикс "work" добавляется к структуре, которая используются ядрами для
     * промежуточных вычислений.
     */
-    cl_mem temperatureCL;
-    cl_mem workTemperatureCL;
+    cl_mem boosterCL;
+    cl_mem workBoosterCL;
 
 };
 

@@ -74,20 +74,27 @@ int main( int argc, char** argv ) {
     o[ "show-corner" ] = false;
     o[ "show-axes" ] = false;
     o[ "only" ] = ".temperature";
+#if 0
+    // включаем, если хотим видеть температуры в фиксированном диапазоне цветов
+    o[ "color-range" ] = typelib::json::Variant( "[ 0, 4800 ]" );
+#endif
 
     portulan::io::VolumeVTKVisual visual( o );
 
-
+    
     std::cout << std::endl << "Нажимаем 'q' для изменения температуры в объёме..." << std::endl << std::endl;
 
+    const size_t PULSE = 1000;
     size_t age = 0;
     while ( true ) {
-        std::cout << "Пульс " << age << std::endl;
+        std::cout << "Возраст " << age << std::endl;
+        std::cout << "Общая температура: " << city.topology().temperature.sum() << std::endl;
+        std::cout << std::endl;
 
         visual << city;
         visual.wait();
 
-        /* - Заменено на pulse(). См. ниже.
+        /* - Заменено. См. ниже.
         // одинаково работают оба варианта: первый - проще, второй - гибче
 #if 1
         heatTransfer >> cityBooster;
@@ -98,12 +105,12 @@ int main( int argc, char** argv ) {
 
         // одинаково работают оба варианта
 #if 1
-        heatTransfer << 1;
+        heatTransfer << PULSE;
 #else
-        heatTransfer( 1 );
+        heatTransfer( PULSE );
 #endif
 
-        ++age;
+        age += PULSE;
 
     } // while
 

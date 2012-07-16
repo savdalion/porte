@@ -66,17 +66,14 @@ public:
     *
     * @see operator>>()
     */
-    inline void operator()( int pulse ) {
-        assert( (pulse != 0) && "Вызов с pulse == 0 не имеет смысла." );
-        assert( (pulse > 0) && "Движок умеет работать только с положительным пульсом. @todo ..." );
+    inline void operator()( int n ) {
+        assert( (n != 0) && "Вызов с n == 0 не имеет смысла." );
+        assert( (n > 0) && "Движок умеет работать только с положительным пульсом. @todo ..." );
 
         // синхронизируем текущее состояние карты (портулана) с бустер-структурой
         mPortulanBooster.toBooster();
 
-        // реализуем требуемое кол-во пульсов
-        for (int q = 0; q < pulse; ++q) {
-            ( *this )();
-        }
+        pulse( n );
 
         // синхронизируем бустер-структуру с текущим состоянием карты (портулана)
         mPortulanBooster.fromBooster();
@@ -91,8 +88,8 @@ public:
     * Кому-то может больше нравится синтаксис вида. Есть такие?
     *   engine << 1;
     */
-    inline Engine& operator<<( int pulse ) {
-        ( *this )( 1 );
+    inline Engine& operator<<( int n ) {
+        ( *this )( n );
         return *this;
     }
 
@@ -105,7 +102,7 @@ protected:
     *
     * (!) Карта уже должна быть синхронизирована с бустер-структурой.
     */
-    virtual void operator()() = 0;
+    virtual void pulse( int n ) = 0;
 
 
 

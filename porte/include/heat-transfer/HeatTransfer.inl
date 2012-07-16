@@ -8,7 +8,8 @@ inline HeatTransfer< SX, SY, SZ >::HeatTransfer(
     Engine( p ),
     gpuContextCL( nullptr ),
     commandQueueCL( nullptr ),
-    temperatureCL( nullptr )
+    boosterCL( nullptr ),
+    workBoosterCL( nullptr )
 {
     // подготавливаем ядра OpenCL (ядра требуют компиляции)
     prepareCLKernel();
@@ -23,10 +24,10 @@ inline HeatTransfer< SX, SY, SZ >::~HeatTransfer() {
 
     /* - Нет: отдаём для OpenCL ссылки на созданные извне структуры...
     // освобождаем структуры для обмена данными с OpenCL
-    clReleaseMemObject( temperatureCL );
+    clReleaseMemObject( boosterCL );
     */
     // ...но временные структуры - исключение
-    clReleaseMemObject( workTemperatureCL );
+    clReleaseMemObject( workBoosterCL );
 
     // удаляем собранные ядра
     cl_int errorCL = CL_SUCCESS;
@@ -50,79 +51,109 @@ inline HeatTransfer< SX, SY, SZ >::~HeatTransfer() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline void HeatTransfer< SX, SY, SZ >::operator()() {
+inline void HeatTransfer< SX, SY, SZ >::pulse( int n ) {
     // (!) Карта уже должна быть синхронизирована с бустер-структурой.
     // (!) Структуры для передачи OpenCL должны быть подготовлены в prepareCLKernel().
 
     cl_int errorCL = CL_SUCCESS;
 
-    // Размерность сетки
+    // размерность сетки
     const size_t GRID_WORK_DIM = 3;
-    // Количество Work Item
+    // количество Work Item
     const size_t GRID_GLOBAL_WORK_SIZE[] = { SX, SY, SZ };
-    // Размер Work Item
-    /* - пусть OpenCL выберет лучшую сам
-    const cl::NDRange GRID_LOCAL_WORK_COUNT(
-        mSizeWorld.get<0>() / mSizeArea.get<0>(),  // = 3
-        mSizeWorld.get<1>() / mSizeArea.get<1>(),  // = 3
-        mSizeWorld.get<2>() / mSizeArea.get<2>()   // = 3
-    );
+    // размер Work Item
+    /* - Пусть OpenCL выберет лучший размер сам.
+    const cl::NDRange GRID_LOCAL_WORK_COUNT( 3, 3, 3 );
     */
     // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
 
-    const cl_kernel kernel = kernelCL[ "calcHeatTransfer" ];
-
+#ifdef _DEBUG
     // @test
     const size_t sizeT = sizeof( cl_mem );
     const size_t sizeW = sizeof( cl_mem );
+#endif
 
     // подготавливаем...
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &temperatureCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &workTemperatureCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
 
 #ifdef _DEBUG
-    // @test
-    const size_t nt = std::end( mPortulanBooster.booster().temperature ) -
+    /* @test
+    const size_t nb = std::end( mPortulanBooster.booster().temperature ) -
                       std::begin( mPortulanBooster.booster().temperature );
-    const size_t nte = sizeof( mPortulanBooster.booster().temperature );
+    const size_t sbe = sizeof( mPortulanBooster.booster() );
     std::cout << "Общая температура \"до\": "
         << std::accumulate(
             std::begin( mPortulanBooster.booster().temperature ),
             std::end( mPortulanBooster.booster().temperature ),
             0.0f
         ) << std::endl;
+    */
 #endif
 
-    // отправляем...
-    errorCL = clEnqueueNDRangeKernel(
-        commandQueueCL,
-        kernel,
-        // dim
-        GRID_WORK_DIM,
-        nullptr,
-        GRID_GLOBAL_WORK_SIZE,
-        nullptr,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // реализуем требуемое кол-во пульсов
+    for (int q = 0; q < n; ++q) {
+
+        // отправляем...
+
+        // 1. Посчитаем среднюю температуру, запишем во временный объём.
+        const cl_kernel kernelCalcHeatTransfer = kernelCL[ "calcHeatTransfer" ];
+
+        errorCL = clSetKernelArg( kernelCalcHeatTransfer, 0, sizeof( cl_mem ), &boosterCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernelCalcHeatTransfer, 1, sizeof( cl_mem ), &workBoosterCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clEnqueueNDRangeKernel(
+            commandQueueCL,
+            kernelCalcHeatTransfer,
+            GRID_WORK_DIM,
+            nullptr,
+            GRID_GLOBAL_WORK_SIZE,
+            nullptr,
+            0, nullptr, nullptr
+        );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        // синхронизация
+        errorCL = clFinish( commandQueueCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    // дожидаемся...
-    errorCL = clFinish( commandQueueCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        // 2. Перенесём результат из временной таблицы в таблицу температур.
+        const cl_kernel kernelFixResult = kernelCL[ "fixResult" ];
+
+        errorCL = clSetKernelArg( kernelFixResult, 0, sizeof( cl_mem ), &boosterCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernelFixResult, 1, sizeof( cl_mem ), &workBoosterCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clEnqueueNDRangeKernel(
+            commandQueueCL,
+            kernelFixResult,
+            GRID_WORK_DIM,
+            nullptr,
+            GRID_GLOBAL_WORK_SIZE,
+            nullptr,
+            0, nullptr, nullptr
+        );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        // синхронизация
+        errorCL = clFinish( commandQueueCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     
+    } // for (int q = 0; q < n; ++q)
 
-    // получаем...
+
+    // получаем результат после "n" пульсов...
     errorCL = clEnqueueReadBuffer(
         commandQueueCL,
-        temperatureCL,
+        boosterCL,
         CL_TRUE,
         0,
-        sizeof( cl_float ) * pb_t::TEMPERATURE_SIZE,
+        sizeof( mPortulanBooster.booster() ),
         mPortulanBooster.booster().temperature,
         0, nullptr, nullptr
     );
@@ -130,13 +161,14 @@ inline void HeatTransfer< SX, SY, SZ >::operator()() {
 
 
 #ifdef _DEBUG
-    // @test
+    /* @test
     std::cout << "Общая температура \"после\": "
         << std::accumulate(
             std::begin( mPortulanBooster.booster().temperature ),
             std::end( mPortulanBooster.booster().temperature ),
             0.0f
         ) << std::endl;
+    */
 #endif
 
 }
@@ -375,6 +407,7 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
     const std::vector< std::string > kernelNames = boost::assign::list_of
         ( "calcHeatTransfer" )
+        ( "fixResult" )
     ;
     const std::string searchPath = PATH_CL + "/heat-transfer";
     for (auto itr = std::begin( kernelNames ); itr != std::end( kernelNames ); ++itr) {
@@ -387,8 +420,23 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
         oclCheckErrorEX( (pathAndNameCL != nullptr), true, &fnErrorCL );
         */
         const std::string pathAndName = searchPath + "/" + fileKernel;
-        char* sourceCL = oclLoadProgSource( pathAndName.c_str(), "", &programLength );
-        oclCheckErrorEX( (sourceCL != nullptr), true, &fnErrorCL );
+        const char* pureSourceCode = oclLoadProgSource( pathAndName.c_str(), "", &programLength );
+        oclCheckErrorEX( (pureSourceCode != nullptr), true, &fnErrorCL );
+
+        // добавляем к файлу уникальный хвост, чтобы OpenCL не думал
+        // брать построенную ранее программу из кеша устройства: иначе
+        // рискуем получать феноменальные ошибки, когда изменения во
+        // *включаемых файлах* учитываются "через раз"
+#if 0
+        // - Иначе. См. ниже.
+        const std::string sourceCode = static_cast< std::string >( pureSourceCode ) +
+            "\n/*" + boost::lexical_cast< std::string >( boost::posix_time::second_clock::local_time() ) + "*/";
+#endif
+        //const std::string randstamp = boost::lexical_cast< std::string >( std::rand() % 100000 );
+        const std::string randstamp = boost::lexical_cast< std::string >( static_cast< unsigned int >( time( nullptr ) ) );
+        const std::string sourceCode = static_cast< std::string >( pureSourceCode ) + "\n/*" + randstamp + "*/";
+
+        const char* sourceCL = sourceCode.c_str();
 
         // create the program
         cl_program programCL = clCreateProgramWithSource(
@@ -432,17 +480,35 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
             // перфекционизм: предупреждения в ядрах считаем ошибками
             << " -Werror"
 
-            // @todo optimize Включить оптимизацию OpenCL.
-            //       "-cl-fast-relaxed-math", "-cl-mad-enable"
-            //       и др.. - см. http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clBuildProgram.html
+#if 0
+            // серьёзная оптимизация
+            // (i) ~10% прирост только с включением опций ниже.
+            // @todo optimize Тонкая оптимизация OpenCL.
+            //       http://khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clBuildProgram.html
+            << " -cl-fast-relaxed-math"
+            << " -cl-mad-enable"
+#endif
+#if 0
+            // внимательная отладка
+            // (i) Включать следует только при вылавливании блох: более чем
+            //     20-кратное замедление 
             << " -cl-opt-disable"
+#endif
+
+            // добавляем к настройкам (в 2012 г. драйвер OpenCL от NVIDIA
+            // научился хешировать файл без учёта комментариев) уникальный
+            // хвост, чтобы OpenCL не думал брать построенную ранее программу
+            // из кеша устройства: иначе рискуем получать феноменальные ошибки,
+            // когда изменения во *включаемых файлах* учитываются "через раз"
+            << " -D BUILD_RANDSTAMP=" << randstamp
 
             << "";
     
-    #ifdef _DEBUG
+#ifdef _DEBUG
         // @test
-        std::cout << "OpenCL compile options:" << std::endl << options.str() << std::endl;
-    #endif
+        std::cout << "Опции OpenCL для ядра \"" << kernelName << "\":" << std::endl << options.str() << std::endl;
+#endif
+
 
         // build the program
         errorCL = clBuildProgram( programCL, 0, nullptr, options.str().c_str(), nullptr, nullptr );
@@ -467,21 +533,28 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
 
     // Подготавливаем структуры для обмена с OpenCL
-    temperatureCL = clCreateBuffer(
+
+#ifdef _DEBUG
+    // @test
+    const size_t sb = sizeof( mPortulanBooster.booster() );
+#endif
+
+    boosterCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        sizeof( cl_float ) * pb_t::TEMPERATURE_SIZE,
-        mPortulanBooster.booster().temperature,
+        sizeof( mPortulanBooster.booster() ),
+        &mPortulanBooster.booster(),
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    workTemperatureCL = clCreateBuffer(
+    workBoosterCL = clCreateBuffer(
         gpuContextCL,
         // выделяем память под временную структуру
+        // (используется ядрами OpenCL)
         CL_MEM_READ_WRITE,
-        sizeof( cl_float ) * pb_t::TEMPERATURE_SIZE,
+        sizeof( mPortulanBooster.booster() ),
         nullptr,
         &errorCL
     );
@@ -495,7 +568,7 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
 template< size_t SX, size_t SY, size_t SZ >
 inline void HeatTransfer< SX, SY, SZ >::fnErrorCL( int exitCode ) {
-    std::cerr << "Инициализация OpenCL не завершена. Код ошибки: " << exitCode << std::endl;
+    std::cerr << "OpenCL не инициализирован. Код ошибки: " << exitCode << std::endl;
 
     // @todo fine Выбрасывать исключение.
     std::cin.ignore();
