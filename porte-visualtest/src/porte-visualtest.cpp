@@ -58,11 +58,16 @@ int main( int argc, char** argv ) {
 
 
     // II. Инициируем движок теплообмена.
+    /* - Нет. Отдаём портулан движку при инициализации. См. ниже.
+    // Для быстрой обработки портулана, обернём его в спец. класс Booster
+    Portulan3DBooster< GRID, GRID, GRID >  cityBooster( &city );
+    */
+
     typedef HeatTransfer< GRID, GRID, GRID >  heatTransfer_t;
-    heatTransfer_t heatTransfer;
+    heatTransfer_t heatTransfer( &city );
 
     
-    // II. Покажем результат.
+    // III. Покажем результат.
     portulan::io::VolumeVTKVisual::option_t o;
     o[ "size-window" ] = 700;
     o[ "size-point" ] = 1;
@@ -72,16 +77,33 @@ int main( int argc, char** argv ) {
 
     portulan::io::VolumeVTKVisual visual( o );
 
+
+    std::cout << std::endl << "Нажимаем 'q' для изменения температуры в объёме..." << std::endl << std::endl;
+
+    size_t age = 0;
     while ( true ) {
+        std::cout << "Пульс " << age << std::endl;
+
         visual << city;
         visual.wait();
 
-        // подходят оба варианта: первый - проще, второй - гибче
+        /* - Заменено на pulse(). См. ниже.
+        // одинаково работают оба варианта: первый - проще, второй - гибче
 #if 1
-        heatTransfer >> city;
+        heatTransfer >> cityBooster;
 #else
-        heatTransfer( city, 1 );
+        heatTransfer( cityBooster, 1 );
 #endif
+        */
+
+        // одинаково работают оба варианта
+#if 1
+        heatTransfer << 1;
+#else
+        heatTransfer( 1 );
+#endif
+
+        ++age;
 
     } // while
 

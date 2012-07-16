@@ -1,8 +1,12 @@
 #pragma once
 
+#include "../../configure.h"
+#include "Portulan3DBooster.h"
 #include <typelib/typelib.h>
 #include <portulan/portulan.h>
 #include <memory>
+#include <boost/filesystem.hpp>
+#include <boost/date_time/local_time/local_time.hpp>
 
 
 
@@ -36,7 +40,24 @@ public:
     typedef std::unique_ptr< Engine >  UPtr;
 
 
+    /**
+    * Тип объекта, с которым работает движок.
+    */
+    typedef typename Portulan3DBooster< SX, SY, SZ >::portulan_t  portulan_t;
+    typedef typename porte::Portulan3DBooster< SX, SY, SZ >  pb_t;
+
+
+
+
 public:
+    inline Engine( portulan_t* p ) :
+        mPortulanBooster( p )
+    {
+        assert( p && "Карта не указана (портулан не указан)." );
+    }
+
+
+
     /**
     * Метод реализует процесс изменения портулана (карты) движком.
     *
@@ -45,19 +66,54 @@ public:
     *
     * @see operator>>()
     */
-    virtual void operator()( portulan::Portulan3D< SX, SY, SZ >&,  int pulse ) = 0;
+    inline void operator()( int pulse ) {
+        assert( (pulse != 0) && "Вызов с pulse == 0 не имеет смысла." );
+        assert( (pulse > 0) && "Движок умеет работать только с положительным пульсом. @todo ..." );
+
+        // синхронизируем текущее состояние карты (портулана) с бустер-структурой
+        mPortulanBooster.toBooster();
+
+        // реализуем требуемое кол-во пульсов
+        for (int q = 0; q < pulse; ++q) {
+            ( *this )();
+        }
+
+        // синхронизируем бустер-структуру с текущим состоянием карты (портулана)
+        mPortulanBooster.fromBooster();
+    }
+
+
 
 
     /**
     * @alias operator()( portulan, 1 )
     *
-    * Кому-то может больше нравится синтаксис вида
-    *   engine >> portulan;
+    * Кому-то может больше нравится синтаксис вида. Есть такие?
+    *   engine << 1;
     */
-    inline Engine& operator>>( portulan::Portulan3D< SX, SY, SZ >& portulan ) {
-        ( *this )( portulan, 1 );
+    inline Engine& operator<<( int pulse ) {
+        ( *this )( 1 );
         return *this;
     }
+
+
+
+
+protected:
+    /**
+    * Изменение карты движком.
+    *
+    * (!) Карта уже должна быть синхронизирована с бустер-структурой.
+    */
+    virtual void operator()() = 0;
+
+
+
+protected:
+    /**
+    * Портулан, с которым работает движок.
+    */
+    pb_t mPortulanBooster;
 
 };
 

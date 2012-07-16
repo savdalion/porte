@@ -33,6 +33,15 @@
     <ClInclude Include="include\heat-transfer\HeatTransfer.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="include\porte\Portulan3DBooster.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\porte\Booster.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="external\-opencl\cl.hpp">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="porte\include\Engine.inl">
@@ -42,6 +51,9 @@
       <Filter>Заголовочные файлы</Filter>
     </None>
     <None Include="include\heat-transfer\HeatTransfer.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\porte\Portulan3DBooster.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
   </ItemGroup>

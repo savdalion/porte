@@ -12,6 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="configure.h" />
+    <ClInclude Include="external\-opencl\cl.hpp" />
+    <ClInclude Include="include\porte\Booster.h" />
+    <ClInclude Include="include\porte\Portulan3DBooster.h" />
     <ClInclude Include="porte.h" />
     <ClInclude Include="porte\include\Engine.h" />
     <ClInclude Include="heat-transfer\include\HeatTransfer.h" />
@@ -19,6 +22,7 @@
     <ClInclude Include="include\heat-transfer\HeatTransfer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="include\porte\Portulan3DBooster.inl" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\heat-transfer\HeatTransfer.inl" />
@@ -51,9 +55,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(BOOST_ROOT);D:\Projects\workspace\portulan;D:\Projects\workspace\silhouette;D:\Projects\workspace\typelib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source\Magick++\lib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source;$(IncludePath)</IncludePath>
+    <IncludePath>$(BOOST_ROOT);D:\Projects\workspace\portulan;D:\Projects\workspace\silhouette;D:\Projects\workspace\typelib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source\Magick++\lib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.2\OpenCL\common\inc;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.2\shared\inc;$(IncludePath)</IncludePath>
     <IntDir>V:\temp\debug-porte\$(MSBuildProjectName)\</IntDir>
-    <LibraryPath>$(BOOST_ROOT)\stage\lib;$(LibraryPath)</LibraryPath>
     <OutDir>V:\bin\debug-porte\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
