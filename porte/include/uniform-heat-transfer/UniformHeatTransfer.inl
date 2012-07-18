@@ -2,7 +2,7 @@ namespace porte {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline HeatTransfer< SX, SY, SZ >::HeatTransfer(
+inline UniformHeatTransfer< SX, SY, SZ >::UniformHeatTransfer(
     portulan_t* p
 ) :
     Engine( p ),
@@ -20,7 +20,7 @@ inline HeatTransfer< SX, SY, SZ >::HeatTransfer(
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline HeatTransfer< SX, SY, SZ >::~HeatTransfer() {
+inline UniformHeatTransfer< SX, SY, SZ >::~UniformHeatTransfer() {
 
     /* - Нет: отдаём для OpenCL ссылки на созданные извне структуры...
     // освобождаем структуры для обмена данными с OpenCL
@@ -51,7 +51,7 @@ inline HeatTransfer< SX, SY, SZ >::~HeatTransfer() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline void HeatTransfer< SX, SY, SZ >::pulse( int n ) {
+inline void UniformHeatTransfer< SX, SY, SZ >::pulse( int n ) {
     // (!) Карта уже должна быть синхронизирована с бустер-структурой.
     // (!) Структуры для передачи OpenCL должны быть подготовлены в prepareCLKernel().
 
@@ -96,17 +96,17 @@ inline void HeatTransfer< SX, SY, SZ >::pulse( int n ) {
         // отправляем...
 
         // 1. Посчитаем среднюю температуру, запишем во временный объём.
-        const cl_kernel kernelCalcHeatTransfer = kernelCL[ "calcHeatTransfer" ];
+        const cl_kernel kernelCalcUniformHeatTransfer = kernelCL[ "calcUniformHeatTransfer" ];
 
-        errorCL = clSetKernelArg( kernelCalcHeatTransfer, 0, sizeof( cl_mem ), &boosterCL );
+        errorCL = clSetKernelArg( kernelCalcUniformHeatTransfer, 0, sizeof( cl_mem ), &boosterCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-        errorCL = clSetKernelArg( kernelCalcHeatTransfer, 1, sizeof( cl_mem ), &workBoosterCL );
+        errorCL = clSetKernelArg( kernelCalcUniformHeatTransfer, 1, sizeof( cl_mem ), &workBoosterCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
         errorCL = clEnqueueNDRangeKernel(
             commandQueueCL,
-            kernelCalcHeatTransfer,
+            kernelCalcUniformHeatTransfer,
             GRID_WORK_DIM,
             nullptr,
             GRID_GLOBAL_WORK_SIZE,
@@ -185,7 +185,7 @@ inline void HeatTransfer< SX, SY, SZ >::pulse( int n ) {
 
 // @source Проект "v3d".
 template< size_t SX, size_t SY, size_t SZ >
-inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
+inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
     // @source http://www10.informatik.uni-erlangen.de/Teaching/Courses/SS2010/SiWiR2/teaching/siwir2-lecture07-4on1.pdf
     // @source http://developer.amd.com/gpu_assets/OpenCL_Parallel_Computing_for_CPUs_and_GPUs_201003.pdf
@@ -355,7 +355,7 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
+inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
     // Подготавливаем ядра OpenCL
     // @source http://nvidia.com/content/cuda/cuda-downloads.html / oclMarchingCubes.cpp
@@ -406,10 +406,10 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
     // Компилируем вычислительные ядра
 
     const std::vector< std::string > kernelNames = boost::assign::list_of
-        ( "calcHeatTransfer" )
+        ( "calcUniformHeatTransfer" )
         ( "fixResult" )
     ;
-    const std::string searchPath = PATH_CL + "/heat-transfer";
+    const std::string searchPath = PATH_CL + "/uniform-heat-transfer";
     for (auto itr = std::begin( kernelNames ); itr != std::end( kernelNames ); ++itr) {
         const std::string kernelName = *itr;
         // Program Setup
@@ -446,7 +446,7 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
     
 
         // Подготавливаем параметры для ядер
-        typedef portulan::Portulan3D< SX, SY, SZ >::numberLayer_t  nl_t;
+        typedef portulan::Portulan3D< SX, SY, SZ >::topology_t::numberLayer_t  nl_t;
         std::ostringstream options;
         options
             // размер мира
@@ -567,7 +567,7 @@ inline void HeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline void HeatTransfer< SX, SY, SZ >::fnErrorCL( int exitCode ) {
+inline void UniformHeatTransfer< SX, SY, SZ >::fnErrorCL( int exitCode ) {
     std::cerr << "OpenCL не инициализирован. Код ошибки: " << exitCode << std::endl;
 
     // @todo fine Выбрасывать исключение.

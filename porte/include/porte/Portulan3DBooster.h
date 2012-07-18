@@ -56,8 +56,12 @@ public:
     struct booster_t {
         /**
         * Данные для передачи параллельным алгоритмам.
+        *
+        * @see Portulan3D::topology_t
         */
         cl_float temperature[ TEMPERATURE_SIZE ];
+
+
 
         /**
         * Признаки, что данные структуры синхронизированы с портуланом.

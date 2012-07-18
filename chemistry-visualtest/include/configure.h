@@ -10,7 +10,7 @@ namespace porte {
 /**
 * ѕуть к данным.
 */
-const std::string PATH_MEDIA = "D:/Projects/workspace/porte/engine-visualtest/data/";
+const std::string PATH_MEDIA = "D:/Projects/workspace/porte/chemistry-visualtest/data/";
 
 
     } // visualtest

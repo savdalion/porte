@@ -3,11 +3,10 @@
 #include "../porte/Engine.h"
 #include <numeric>
 #include <boost/assign.hpp>
-//#include <boost/date_time/local_time/local_time.hpp>
 #include <ctime>
 
 
-/* - Используем C-подход от NVIDIA.
+/* - Нет. Используем C-подход от NVIDIA.
      См. http://nvidia.com/content/cuda/cuda-downloads.html
 #include "../../external/opencl/cl.hpp"
 */
@@ -23,7 +22,7 @@
 namespace porte {
 
 template< size_t SX, size_t SY, size_t SZ >
-class HeatTransfer;
+class Chemistry;
 
 }
 
@@ -34,27 +33,26 @@ namespace porte {
 
 
 /**
-* Движок теплообмена.
-* Карта температур меняется каждый пульс в зависимости от температур и веществ
-* в соседних ячейках.
+* Движок химических превращений.
+* Превращения совершаются каждый пульс.
 *
 * @template См. Engine.
 */
 template< size_t SX, size_t SY, size_t SZ >
-class HeatTransfer : public Engine< SX, SY, SZ > {
+class Chemistry : public Engine< SX, SY, SZ > {
 public:
     /**
     * Ссылки.
     */
-    typedef std::shared_ptr< HeatTransfer >  Ptr;
-    typedef std::unique_ptr< HeatTransfer >  UPtr;
+    typedef std::shared_ptr< Chemistry >  Ptr;
+    typedef std::unique_ptr< Chemistry >  UPtr;
 
 
 
 public:
-    HeatTransfer( portulan_t* );
+    Chemistry( portulan_t* );
 
-    virtual ~HeatTransfer();
+    virtual ~Chemistry();
 
 
 
@@ -80,19 +78,6 @@ private:
     * Устройства, контекст и ядра OpenCL для работы с элементами мира.
     */
     std::map< std::string, cl_kernel >  kernelCL;
-
-    /* - Вынесено внутрь prepareCLKernel().
-    cl_int errorCL;
-    cl_uint numDevicesCL;
-    cl_device_id* devicesCL;
-    cl_device_id deviceCL;
-    cl_uint deviceUsedCL;
-    cl_uint devCountCL;
-    cl_platform_id platformCL;
-    cl_program programCL;
-    char* pathAndNameCL;
-    char* sourceCL;
-    */
 
     cl_context gpuContextCL;
 
@@ -130,4 +115,4 @@ private:
 
 
 
-#include "HeatTransfer.inl"
+#include "Chemistry.inl"

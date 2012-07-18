@@ -4,9 +4,10 @@
 
 
 /**
-* Считает распространение температуры в заданном объёме.
+* Считает распространение тепла (температуры) в заданном объёме
+* для однородной среды.
 */
-__kernel void calcHeatTransfer(
+__kernel void calcUniformHeatTransfer(
     __global booster_t* b,    // 0
     __global booster_t* wb    // 1
 ) {

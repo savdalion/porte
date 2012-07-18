@@ -60,8 +60,8 @@ void Portulan3DBooster< SX, SY, SZ >::toBooster() {
 
     // температура
     std::copy(
-        mPortulan->topology().temperature.raw().cbegin(),
-        mPortulan->topology().temperature.raw().cend(),
+        mPortulan->topology().temperature().raw().cbegin(),
+        mPortulan->topology().temperature().raw().cend(),
         std::begin( mBooster.temperature )
     );
 
@@ -78,7 +78,7 @@ void Portulan3DBooster< SX, SY, SZ >::fromBooster() {
     std::copy(
         std::begin( mBooster.temperature ),
         std::end( mBooster.temperature ),
-        mPortulan->topology().temperature.raw().begin()
+        mPortulan->topology().temperature().raw().begin()
     );
 
 }

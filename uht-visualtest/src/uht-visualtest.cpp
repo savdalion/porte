@@ -7,6 +7,7 @@
 
 /**
 * Визуальное тестирование для проекта 'Porte'.
+* Распространение тепла (температуры) в заданном объёме для *однородной* среды.
 */
 int main( int argc, char** argv ) {
 
@@ -20,7 +21,7 @@ int main( int argc, char** argv ) {
     axter::ezlogger<>::set_verbosity_level_tolerance( axter::log_rarely );
     //axter::ezlogger<>::set_verbosity_level_tolerance( axter::log_often );
 
-    EZLOGGERVLSTREAM( axter::log_always ) << "Porte -> BEGIN" << std::endl;
+    EZLOGGERVLSTREAM( axter::log_always ) << "Porte / uht-visualtest -> BEGIN" << std::endl;
     #ifdef _MSC_VER
         #ifdef _DEBUG
             EZLOGGERVLSTREAM( axter::log_always ) << "Debug." << std::endl;
@@ -57,14 +58,14 @@ int main( int argc, char** argv ) {
     co::temperature( city, fnt );
 
 
-    // II. Инициируем движок теплообмена.
-    /* - Нет. Отдаём портулан движку при инициализации. См. ниже.
+    // II. Инициируем движок теплообмена для однородной среды.
+    /* - Не так. Отдаём портулан движку при инициализации. См. ниже.
     // Для быстрой обработки портулана, обернём его в спец. класс Booster
     Portulan3DBooster< GRID, GRID, GRID >  cityBooster( &city );
     */
 
-    typedef HeatTransfer< GRID, GRID, GRID >  heatTransfer_t;
-    heatTransfer_t heatTransfer( &city );
+    typedef UniformHeatTransfer< GRID, GRID, GRID >  uniformHeatTransfer_t;
+    uniformHeatTransfer_t uniformHeatTransfer( &city );
 
     
     // III. Покажем результат.
@@ -88,26 +89,28 @@ int main( int argc, char** argv ) {
     size_t age = 0;
     while ( true ) {
         std::cout << "Возраст " << age << std::endl;
-        std::cout << "Общая температура: " << city.topology().temperature.sum() << std::endl;
-        std::cout << std::endl;
+        std::cout << "Общая температура: " << city.topology().temperature().sum() << std::endl;
 
         visual << city;
+
+        std::cout << std::endl;
+
         visual.wait();
 
         /* - Заменено. См. ниже.
         // одинаково работают оба варианта: первый - проще, второй - гибче
 #if 1
-        heatTransfer >> cityBooster;
+        uniformHeatTransfer >> cityBooster;
 #else
-        heatTransfer( cityBooster, 1 );
+        uniformHeatTransfer( cityBooster, 1 );
 #endif
         */
 
         // одинаково работают оба варианта
 #if 1
-        heatTransfer << PULSE;
+        uniformHeatTransfer << PULSE;
 #else
-        heatTransfer( PULSE );
+        uniformHeatTransfer( PULSE );
 #endif
 
         age += PULSE;
@@ -117,7 +120,7 @@ int main( int argc, char** argv ) {
 
 
 
-    EZLOGGERVLSTREAM( axter::log_always ) << "Porte -> END" << std::endl;
+    EZLOGGERVLSTREAM( axter::log_always ) << "Porte / uht-visualtest -> END" << std::endl;
 
     std::cout << std::endl << "^" << std::endl;
     //std::cin.ignore();

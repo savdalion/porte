@@ -4,6 +4,7 @@
 #include "Portulan3DBooster.h"
 #include <typelib/typelib.h>
 #include <portulan/portulan.h>
+#include <limits>
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
