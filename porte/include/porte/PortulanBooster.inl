@@ -2,7 +2,7 @@ namespace porte {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline Portulan3DBooster< SX, SY, SZ >::Portulan3DBooster(
+inline PortulanBooster< SX, SY, SZ >::PortulanBooster(
     portulan_t* portulan
 ) :
     mPortulan( portulan ) 
@@ -15,7 +15,7 @@ inline Portulan3DBooster< SX, SY, SZ >::Portulan3DBooster(
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline Portulan3DBooster< SX, SY, SZ >::~Portulan3DBooster() {
+inline PortulanBooster< SX, SY, SZ >::~PortulanBooster() {
 }
 
 
@@ -23,7 +23,7 @@ inline Portulan3DBooster< SX, SY, SZ >::~Portulan3DBooster() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline typename Portulan3DBooster< SX, SY, SZ >::portulan_t&  Portulan3DBooster< SX, SY, SZ >::portulan() {
+inline typename PortulanBooster< SX, SY, SZ >::portulan_t&  PortulanBooster< SX, SY, SZ >::portulan() {
     return *mPortulan.get();
 }
 
@@ -31,7 +31,7 @@ inline typename Portulan3DBooster< SX, SY, SZ >::portulan_t&  Portulan3DBooster<
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline typename Portulan3DBooster< SX, SY, SZ >::portulan_t const&  Portulan3DBooster< SX, SY, SZ >::portulan() const {
+inline typename PortulanBooster< SX, SY, SZ >::portulan_t const&  PortulanBooster< SX, SY, SZ >::portulan() const {
     return *mPortulan.get();
 }
 
@@ -39,7 +39,7 @@ inline typename Portulan3DBooster< SX, SY, SZ >::portulan_t const&  Portulan3DBo
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline typename Portulan3DBooster< SX, SY, SZ >::booster_t&  Portulan3DBooster< SX, SY, SZ >::booster() {
+inline typename PortulanBooster< SX, SY, SZ >::booster_t&  PortulanBooster< SX, SY, SZ >::booster() {
     return mBooster;
 }
 
@@ -47,7 +47,7 @@ inline typename Portulan3DBooster< SX, SY, SZ >::booster_t&  Portulan3DBooster< 
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline typename Portulan3DBooster< SX, SY, SZ >::booster_t const&  Portulan3DBooster< SX, SY, SZ >::booster() const {
+inline typename PortulanBooster< SX, SY, SZ >::booster_t const&  PortulanBooster< SX, SY, SZ >::booster() const {
     return mBbooster;
 }
 
@@ -56,7 +56,7 @@ inline typename Portulan3DBooster< SX, SY, SZ >::booster_t const&  Portulan3DBoo
 
 
 template< size_t SX, size_t SY, size_t SZ >
-void Portulan3DBooster< SX, SY, SZ >::toBooster() {
+void PortulanBooster< SX, SY, SZ >::toBooster() {
 
     // температура
     std::copy(
@@ -72,7 +72,7 @@ void Portulan3DBooster< SX, SY, SZ >::toBooster() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-void Portulan3DBooster< SX, SY, SZ >::fromBooster() {
+void PortulanBooster< SX, SY, SZ >::fromBooster() {
 
     // температура
     std::copy(

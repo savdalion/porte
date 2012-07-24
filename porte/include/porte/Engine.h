@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../configure.h"
-#include "Portulan3DBooster.h"
+#include "PortulanBooster.h"
 #include <typelib/typelib.h>
 #include <portulan/portulan.h>
 #include <limits>
@@ -44,8 +44,8 @@ public:
     /**
     * Тип объекта, с которым работает движок.
     */
-    typedef typename Portulan3DBooster< SX, SY, SZ >::portulan_t  portulan_t;
-    typedef typename porte::Portulan3DBooster< SX, SY, SZ >  pb_t;
+    typedef typename PortulanBooster< SX, SY, SZ >::portulan_t  portulan_t;
+    typedef typename porte::PortulanBooster< SX, SY, SZ >  pb_t;
 
 
 

@@ -30,9 +30,6 @@
     <ClInclude Include="include\porte\Engine.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\porte\Portulan3DBooster.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="include\porte\Booster.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
@@ -40,6 +37,9 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="include\chemistry\Chemistry.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\porte\PortulanBooster.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,13 +50,13 @@
     <None Include="heat-transfer\include\HeatTransfer.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
-    <None Include="include\porte\Portulan3DBooster.inl">
-      <Filter>Заголовочные файлы</Filter>
-    </None>
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
     <None Include="include\chemistry\Chemistry.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\porte\PortulanBooster.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
   </ItemGroup>

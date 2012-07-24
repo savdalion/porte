@@ -38,7 +38,7 @@ int main( int argc, char** argv ) {
 
 
     const size_t GRID = 81;
-    typedef portulan::Portulan3D< GRID, GRID, GRID >  plato_t;
+    typedef portulan::Portulan< GRID, GRID, GRID >  plato_t;
     plato_t plato;
 
 
@@ -66,7 +66,8 @@ int main( int argc, char** argv ) {
     // заливаем водой места, которые задаЄт маска
     const std::string waterFile = PATH_MEDIA + "a/water1-mask-map.png";
     // указываем глубину в €чейках
-    const int gridHMin = plato_t::topology_t::signBitLayer_t::minCoord().z;
+    //const int gridHMin = plato_t::topology_t::signBitLayer_t::minCoord().z;
+    const int gridHMin = -15;
     const int gridHMax = 0;
     co::flood( plato, "H2O", waterFile, gridHMin, gridHMax );
 

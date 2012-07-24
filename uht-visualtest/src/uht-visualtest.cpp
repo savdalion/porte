@@ -38,7 +38,7 @@ int main( int argc, char** argv ) {
 
 
     const size_t GRID = 81;
-    typedef portulan::Portulan3D< GRID, GRID, GRID >  city_t;
+    typedef portulan::Portulan< GRID, GRID, GRID >  city_t;
     city_t city;
 
 
@@ -61,7 +61,7 @@ int main( int argc, char** argv ) {
     // II. Инициируем движок теплообмена для однородной среды.
     /* - Не так. Отдаём портулан движку при инициализации. См. ниже.
     // Для быстрой обработки портулана, обернём его в спец. класс Booster
-    Portulan3DBooster< GRID, GRID, GRID >  cityBooster( &city );
+    PortulanBooster< GRID, GRID, GRID >  cityBooster( &city );
     */
 
     typedef UniformHeatTransfer< GRID, GRID, GRID >  uniformHeatTransfer_t;

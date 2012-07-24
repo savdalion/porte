@@ -14,7 +14,7 @@
     <ClInclude Include="configure.h" />
     <ClInclude Include="include\chemistry\Chemistry.h" />
     <ClInclude Include="include\porte\Booster.h" />
-    <ClInclude Include="include\porte\Portulan3DBooster.h" />
+    <ClInclude Include="include\porte\PortulanBooster.h" />
     <ClInclude Include="porte.h" />
     <ClInclude Include="porte\include\Engine.h" />
     <ClInclude Include="heat-transfer\include\HeatTransfer.h" />
@@ -23,7 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="include\chemistry\Chemistry.inl" />
-    <None Include="include\porte\Portulan3DBooster.inl" />
+    <None Include="include\porte\PortulanBooster.inl" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl" />

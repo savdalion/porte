@@ -11,7 +11,7 @@
 namespace porte {
 
 template< size_t SX, size_t SY, size_t SZ >
-class Portulan3DBooster;
+class PortulanBooster;
 
 }
 
@@ -21,23 +21,23 @@ namespace porte {
 
 
 /**
-* Обёртка класса Portulan3D для эффективного хранения и обработки 3D-карт
+* Обёртка класса Portulan для эффективного хранения и обработки 3D-карт
 * на графических процессорах (OpenCL, Cuda).
 */
 template< size_t SX, size_t SY, size_t SZ >
-class Portulan3DBooster : public Booster {
+class PortulanBooster : public Booster {
 public:
     /**
     * Ссылки.
     */
-    typedef std::shared_ptr< Portulan3DBooster >  Ptr;
-    typedef std::unique_ptr< Portulan3DBooster >  UPtr;
+    typedef std::shared_ptr< PortulanBooster >  Ptr;
+    typedef std::unique_ptr< PortulanBooster >  UPtr;
 
     
     /**
     * Тип ускоряемого объекта.
     */
-    typedef portulan::Portulan3D< SX, SY, SZ >  portulan_t;
+    typedef portulan::Portulan< SX, SY, SZ >  portulan_t;
 
 
 
@@ -57,7 +57,7 @@ public:
         /**
         * Данные для передачи параллельным алгоритмам.
         *
-        * @see Portulan3D::topology_t
+        * @see Portulan::topology_t
         */
         cl_float temperature[ TEMPERATURE_SIZE ];
 
@@ -73,10 +73,10 @@ public:
 
 
 
-    Portulan3DBooster( portulan_t* );
+    PortulanBooster( portulan_t* );
 
 
-    virtual ~Portulan3DBooster();
+    virtual ~PortulanBooster();
 
 
 
@@ -134,4 +134,4 @@ private:
 
 
 
-#include "Portulan3DBooster.inl"
+#include "PortulanBooster.inl"

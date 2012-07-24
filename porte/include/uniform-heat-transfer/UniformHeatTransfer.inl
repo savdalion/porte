@@ -192,7 +192,7 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
     namespace fs = boost::filesystem;
 
-    typedef portulan::Portulan3D< SX, SY, SZ >::numberLayer_t  nl_t;
+    typedef portulan::Portulan< SX, SY, SZ >::numberLayer_t  nl_t;
 
     // Размерность сетки
     const size_t GRID_WORK_DIM = 3;
@@ -446,7 +446,7 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
     
 
         // Подготавливаем параметры для ядер
-        typedef portulan::Portulan3D< SX, SY, SZ >::topology_t::numberLayer_t  nl_t;
+        typedef portulan::Portulan< SX, SY, SZ >::topology_t::numberLayer_t  nl_t;
         std::ostringstream options;
         options
             // размер мира
