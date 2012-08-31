@@ -14,7 +14,7 @@ int main( int argc, char** argv ) {
     using namespace porte;
     using namespace porte::visualtest;
 
-    namespace co = portulan::command;
+    namespace co = portulan::command::common;
 
 
     // Приоритет определяет размер лог-файла

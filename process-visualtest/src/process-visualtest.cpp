@@ -7,14 +7,15 @@
 
 /**
 * Визуальное тестирование для проекта 'Porte'.
-* Процессы на карте.
+* Пример процесса изменения планеты.
 */
 int main( int argc, char** argv ) {
 
     using namespace porte;
     using namespace porte::visualtest;
 
-    namespace co = portulan::command;
+    namespace co = portulan::command::planet;
+    namespace ba = boost::assign;
 
 
     // Приоритет определяет размер лог-файла
@@ -38,69 +39,407 @@ int main( int argc, char** argv ) {
 
 
     const size_t GRID = 81;
-    typedef portulan::Portulan< GRID, GRID, GRID >  plato_t;
-    plato_t plato;
+    typedef portulan::planet::Portulan< GRID, GRID, GRID >  planet_t;
+    planet_t planet;
 
 
-    // I. Соберём карту из карты высот.
+    // I. Иницализируем область планеты (атмосфера, кора, мантия, ядро)
+    //    # 1 пульс = 1 год = 400 дней
+    //    # 1 день = 25 часов
+    const double DAY_IN_YEAR = 400;
+    const double HOUR_IN_YEAR = DAY_IN_YEAR * 25;
+    const double MINUTE_IN_YEAR = HOUR_IN_YEAR * 60;
+    const double SECOND_IN_YEAR = MINUTE_IN_YEAR * 60;
 
-    // поверхность из земли
-    //const std::string elevationFile = PATH_MEDIA + "a/center-plato-elevation-map.png";
-    const std::string elevationFile = PATH_MEDIA + "a/minimax-elevation-map.png";
-    // размеры задаются в км
-    // картинка "a/center-hill-elevation-map.png" протяжённостью
-    // = 500 м (размер изображения = 400 пкс)
-    // квадратная картинка
-    const size_t sizeImage = 400;
-    const double scaleXY = 0.500 / static_cast< double>( sizeImage );
-    // высота = 50 м
-    const double hMin = -0.010;
-    const double hMax =  0.040;
-    const double h = hMax - hMin;
-    co::elevationMap( plato, "E", elevationFile, scaleXY, hMin, hMax );
+    // размер планеты (он же - размер коры планеты), км
+    const double radiusPlanet = 7000;
 
+    typedef portulan::planet::Topology< GRID, GRID, GRID >  topology_t;
 
-    /* - @todo заливаем водой места, которые задаёт маска
-    const std::string waterFile = PATH_MEDIA + "a/water1-mask-map.png";
-    // указываем глубину в ячейках
-    //const int gridHMin = plato_t::topology_t::signBitLayer_t::minCoord().z;
-    const int gridHMin = -15;
-    const int gridHMax = 0;
-    co::flood( plato, "W", waterFile, gridHMin, gridHMax );
-    */
-
-
-#if 0
-// - @todo ...
-    // II. Инициируем движок процессов.
-    // Здесь - рост деревьев.
-    typedef Process< GRID, GRID, GRID >  process_t;
-    process_t process( &plato );
-
-
-    // описываем процессы
-    // # Декларация процессов делается т.о., чтобы они могли быть обработаны
-    //   с помощью OpenCL.
-
-    // В мир помещается семя (метка "Seed").
-    // Семя перемещается в поле сил (сила тяжести, ветер).
-    // Попав на землю (метка "Earth"), семя закрепляется в ней.
-    // По прошествию времени, оно прорастает (образуется росток "Sapling").
-    // Росток растёт, пока не становится деревом (метка "Tree").
-    // Дерево разбрасывает новые семена.
-    // По прошествии времени, дерево умирает (мёртвое дерево, метка "DeadTree").
-
-    // Семя перемещается в поле сил (сила тяжести, ветер).
+    // атмосфера
+    // внешний радиус атмосферы (он же - размер области планеты), км
+    const double radiusAtmosphere = radiusPlanet + 200;
+    topology_t::atmosphere_t atmosphere;
     {
-        // задаём процедуру с алгоритмом процесса
-        SingleProcess sp( "moveSaplingByForceField" );
-
-        // обучаем движок
-        process << sp;
+        const double mass = 7e18;
+        // толщина слоёв области планеты задаётся в км
+        const double innerRadius = radiusPlanet;
+        const double depth = radiusAtmosphere - innerRadius;
+        const std::vector< double >  chemicalSubstance = ba::list_of
+            // N2
+            ( 77.0 / 100.0 )
+            // O2
+            ( 20.0 / 100.0 )
+            // Ar
+            ( 1.5 / 100.0 )
+            // CO2
+            ( 0.03 / 100.0 )
+            // редкие (sparse)
+            ( 0.97 / 100.0 )
+            // H2O (водяной пар в виде аэрозоли)
+            ( 0.5 / 100.0 )
+        ;
+        co::atmosphere< GRID, GRID, GRID >(
+            atmosphere,
+            mass, innerRadius, depth,
+            chemicalSubstance
+        );
     }
 
-#endif
 
+    // кора планеты
+    topology_t::crust_t crust;
+    {
+        // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BD%D0%B0%D1%8F_%D0%BA%D0%BE%D1%80%D0%B0
+        const double mass = 3e22;
+        // толщина слоёв планетарной коры задаётся в км
+        const double depth = 250;
+        const double innerRadius = radiusPlanet - depth;
+        const std::vector< double >  chemicalSubstance = ba::list_of
+            // O
+            ( 50.0 / 100.0 )
+            // Si
+            ( 25.0 / 100.0 )
+            // Al
+            ( 7.0 / 100.0 )
+            // Fe
+            ( 5.0 / 100.0 )
+            // Ca
+            ( 4.0 / 100.0 )
+            // Na
+            ( 3.0 / 100.0 )
+            // K
+            ( 2.0 / 100.0 )
+            // Mg
+            ( 2.0 / 100.0 )
+            // H
+            ( 1.0 / 100.0 )
+            // Ti
+            ( 0.5 / 100.0 )
+            // C
+            ( 0.2 / 100.0 )
+            // редкие (sparse)
+            ( 0.3 / 100.0 )
+        ;
+        co::crust< GRID, GRID, GRID >(
+            crust,
+            mass, innerRadius, depth,
+            chemicalSubstance
+        );
+    }
+
+
+    // живой мир
+    topology_t::living_t living;
+    {
+        // муравей
+        // # Не делим на матку, фуражиров, воинов и т.п. - при моделировании
+        //   на уровне планеты при тек. мощностях подобное деление - роскошь.
+        {
+            // номер особи в списке особей
+            const size_t uid = 0;
+            topology_t::living_t::specimen_t  specimen;
+
+            // время жизни муравья, пульсов (1 пульс = 1 год)
+            const size_t lifetime = 2.0;
+
+            // масса муравья по жизненным циклам, кг
+            // @source http://bolshoyvopros.ru/questions/53986-skolko-vesit-muravej.html
+            // функция ниже равномерно распределит массу по LIFE_CYCLE между
+            // заданными значениями
+            const double massBurn = 0.001 / 1000.0;
+            const double massDie = 0.008 / 1000.0;
+            const std::vector< double >  mass = ba::list_of
+                ( massBurn )
+                ( massDie )
+            ;
+
+            // какие вещества содержит муравей
+            //   - из каких хим. веществ состоит особь
+            //   - с какой скоростью сжигаются выводятся хим. вещества для
+            //     поддержания жизни особи
+            // @see topology_t::chemicalComposition_t
+            // @source http://antclub.org/morphology/anatomy
+            // @source http://antclub.ru/muravi/stroenie-muravya
+            // @source http://entomolog.su/kutikula-i-ee-chimicheskiy-sostav
+            // @source http://medbiol.ru/medbiol/botanica/0015e3fc.htm
+            // @source http://ru.wikipedia.org/wiki/%D0%A5%D0%B8%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D1%81%D1%82%D0%B0%D0%B2_%D0%BA%D0%BB%D0%B5%D1%82%D0%BA%D0%B8
+            /* - Заменено. См. ниже.
+            typedef std::tuple< double, double >  cs_t;
+            const std::vector< cs_t >  chemicalSubstance = ba::tuple_list_of
+                // кислород
+                ( 60.0,  1.0 )
+                // углерод (хитин содержит молекулы углерода)
+                ( 20.0, ? )
+                // водород
+                ( 10.0 )
+                // азот
+                ( 3.0 )
+                // калий
+                ( 0.2 )
+                // сера
+                ( 0.2 )
+                // фосфор
+                ( 0.2 )
+                // хлор
+                ( 0.1 )
+                // магний
+                ( 0.03 )
+                // натрий
+                ( 0.03 )
+                // кальций
+                ( 1.0 )
+                // железо
+                ( 0.01 )
+            ;
+            */
+            const std::vector< double >  chemicalComposition = ba::list_of
+                // белки
+                ( 0.3 )
+                // жиры
+                ( 0.05 )
+                // углеводы
+                ( 1.0 - 0.3 - 0.05 )
+            ;
+
+
+            // метаболизм муравья
+            topology_t::living_t::specimen_t::metabolism_t  metabolism[ topology_t::LIFE_CYCLE ];
+
+            // нормы для человека (100 кг):
+            //   - кислород: 10 л / мин = 10 * 1.43 г ~ 14.3 г / мин
+            //   - белки: 1.5 г / кг веса / сутки
+            //   - жиры: 120 г / сутки
+            //   - углеводы: 500 г / сутки
+            //   + углекислый газ: 5 л / мин = 5 * 1.966 г ~ 9.83 г / мин
+            //   + испражнения: ~200 г / день
+            // указываем значение на 1 кг и передаём функции-заполнителю
+            // массы от рождения до смерти особи
+            const double oxygenNeed = 14.3 / 1000.0 * MINUTE_IN_YEAR / 100.0;
+            const double proteinNeed = 1.5 / 1000.0 * DAY_IN_YEAR;
+            const double fatNeed = 120.0 / 1000.0 * DAY_IN_YEAR;
+            const double carbohydrateNeed = 500.0 / 1000.0 * DAY_IN_YEAR;
+            const std::vector< double > chemicalNeed = ba::list_of
+                // кислород
+                ( oxygenNeed )
+                // белки
+                ( proteinNeed )
+                // жиры
+                ( fatNeed )
+                // углеводы
+                ( carbohydrateNeed )
+            ;
+
+            const double carbonAcidWaste = 9.83 / 1000.0 * MINUTE_IN_YEAR / 100.0;
+            const double excrementWaste = 200.0 / 1000.0 * DAY_IN_YEAR / 100.0;
+            const std::vector< double > chemicalWaste = ba::list_of
+                // углекислый газ
+                ( carbonAcidWaste )
+                // испражнения
+                ( excrementWaste )
+            ;
+
+            // нормы для человека (100 кг):
+            //   - требуемая энергия: не требуется (всё может быть получено из пищи)
+            //   - излучаемая энергия: нет (полагаем, что вся полученная
+            //     энергия расходуется на поддержание жизни)
+            const std::vector< double > energyNeed = ba::list_of
+                // тепло
+                ( 0 )
+                // свет
+                ( 0 )
+            ;
+            const std::vector< double > energyWaste = ba::list_of
+                // тепло
+                ( 0 )
+                // свет
+                ( 0 )
+            ;
+
+            co::metabolism< GRID, GRID, GRID >(
+                metabolism,
+                chemicalNeed, chemicalWaste,
+                energyNeed, energyWaste,
+                lifetime,
+                massBurn, massDie
+            );
+
+
+            // условия выживания
+            topology_t::living_t::specimen_t::survivor_t  survivor;
+
+            // среды, в которых может обитать особь
+            const std::vector< size_t > environment = ba::list_of
+                // муравьи могут жить на границе твёрдого тела и газа (на поверхности почвы)
+                ( topology_t::Environment::GAS | topology_t::Environment::SOLID )
+                // муравь могут жить в самой почве (муравейники, норы)
+                ( topology_t::Environment::SOLID )
+            ;
+            // температуры комфорта / выживания делаем едиными для всех возрастов
+            const std::pair< double, double >  comfortTemperature( 15, 30 );
+            const std::pair< double, double >  limitTemperature( 0, 50 );
+            co::survivor< GRID, GRID, GRID >(
+                survivor,
+                environment,
+                comfortTemperature, limitTemperature
+            );
+
+
+            co::specimen< GRID, GRID, GRID >(
+                specimen,
+                lifetime,
+                massBurn, massDie,
+                chemicalComposition, metabolism, survivor
+            );
+
+            
+            // определяем, в каких ячейках области планеты будут жить муравьи
+            const auto fnLiving = [] (
+                size_t pulse,
+                const typelib::coord_t& c,
+                const topology_t::living_t::specimen_t& sp
+            ) -> std::tuple< double, double > {
+                // @todo Инициализировать в зависимости от среды обитания 'sp'.
+                std::tuple< double, double >  count;
+                // добавляем только взрослых особей
+                // (для муравьёв это 1-й пульс)
+                std::get< 0 >( count ) = (pulse == 1) ? 1000 : 0;
+                std::get< 1 >( count ) = 0;
+                return count;
+            };
+
+            co::living< GRID, GRID, GRID >(
+                living,
+                uid,
+                // кол-во здоровых и больных муравьёв в ячейке области планеты
+                fnLiving,
+                // информация об особи
+                specimen
+            );
+
+        } // муравей
+
+    }
+
+
+
+
+
+    // @todo компоненты
+    topology_t::component_t component;
+    {
+        component.content[0][0] = 0.0f;
+    }
+
+
+
+
+
+    // температура
+    topology_t::temperature_t temperature;
+    {
+        // температура к центру планеты - растёт, отдаляясь от поверхности -
+        // уменьшается, на поверхности планеты - достигает ~20 C
+        //const size_t TG = topology_t::TEMPERATURE_GRID;
+        const auto fnTemperature = [] (
+            const typelib::coord_t& c,
+            double radiusPlanet,
+            double radiusAtmosphere
+        ) -> double {
+            /* - Работаем только с сеткой ячеек. См. ниже.
+            const double dist = (c * scale * 1.25).distance< double >();
+            const double d = dist - radiusPlanet;
+            const int sign = boost::math::sign( d );
+            double t = ( std::pow( ((sign < 0) ? -d : d),  1.0 / 2.0 ) + 1.0) * 20.0
+                + typelib::constant::physics::CK * 0;
+            if (sign >= 0) {
+                t = -t;
+            }
+            */
+            const size_t dist = static_cast< size_t >( c.distance< float >() + 0.5f );
+            // табличная функция температуры в зависимости от расстояния до центра планеты,
+            // градусы Цельсия
+            static const size_t NC = 23;
+            assert( (dist <= static_cast< double >( NC )) &&
+                "Табличная функция содержит меньше ожидаемого кол-ва значений температур." );
+            const double tc[ NC ] = {
+                // 22, самая дальняя от центра планеты точка
+                -100, -90, -80, -70, -60, -50, -40, -30, -20, -10,
+                // 12, поверхность планеты
+                20,
+                // 2, кора планеты
+                100,  180,  324,  583, 1049, 1888, 3398, 6116, 6300, 6500,
+                // 1
+                6700,
+                // 0, центр планеты
+                7000
+            };
+            const size_t index = NC - dist;
+            // возвращаем температуру в Кельвинах
+            double t = tc[ index ] - typelib::constant::physics::CK;
+            const bool clamped =
+                typelib::clampr( t, typelib::constant::physics::CK, typelib::constant::physics::Tp );
+            assert( !clamped &&
+                "Температура превышает возможные физические значения." );
+            return t;
+        };
+
+        co::temperature< GRID, GRID, GRID >(
+            temperature,
+            fnTemperature,
+            radiusPlanet,
+            radiusAtmosphere
+        );
+
+    }
+
+
+
+
+    // @todo осадки
+    topology_t::precipitations_t precipitations;
+    {
+        precipitations.content[0] = 0.0f;
+    }
+
+
+
+
+
+    co::planet(
+        planet.topology(),
+        atmosphere, crust,
+        living
+        // @todo mantle, core, precipitations, ...
+    );
+
+
+
+    // Информация о структурах
+    static const size_t TG =
+        portulan::planet::Topology< GRID, GRID, GRID >::TEMPERATURE_GRID;
+    const std::pair< float*, float* > tminmax = std::minmax_element(
+        temperature.content,
+        temperature.content + TG * TG * TG
+    );
+    std::cout <<
+        "\nРазмеры структур \"planet\"\n" <<
+            "\ttopology " << sizeof( planet.topology() ) / 1024 / 1024 << " Мб\n" <<
+                "\t\tatmosphere " << sizeof( atmosphere ) / 1024 / 1024 << " Мб\n" <<
+                    "\t\t\tcontent " << sizeof( atmosphere.content ) / 1024 / 1024 << " Мб\n" <<
+                    "\t\t\tpressure " << sizeof( atmosphere.pressure ) / 1024 << " Кб\n" <<
+                    "\t\t\twind " << sizeof( atmosphere.wind ) / 1024 << " Кб\n" <<
+                "\t\tcrust " << sizeof( crust ) / 1024 / 1024 << " Мб\n" <<
+                "\t\tliving " << sizeof( living ) / 1024 / 1024 << " Мб\n" <<
+                    "\t\t\tcontent " << sizeof( living.content ) / 1024 / 1024 << " Мб\n" <<
+                    "\t\t\tspecimen " << sizeof( living.specimen ) / 1024 << " Кб\n" <<
+                "\t\tcomponent " << sizeof( component ) / 1024 / 1024 << " Мб\n" <<
+                    "\t\t\tcontent " << sizeof( component.content ) / 1024 / 1024 << " Мб\n" <<
+                    "\t\t\ttype " << sizeof( component.type ) / 1024 << " Кб\n" <<
+                "\t\ttemperature " << sizeof( temperature ) / 1024 << " Кб\n" <<
+                "\t\tprecipitations " << sizeof( precipitations ) / 1024 << " Кб\n" <<
+                "\t\t\t[ " << *tminmax.first << "; " << *tminmax.second << " ]" <<
+    std::endl;
 
 
 
@@ -120,14 +459,14 @@ int main( int argc, char** argv ) {
     portulan::io::VolumeVTKVisual visual( o );
 
     
-    std::cout << std::endl << "Нажимаем 'q' для просмотра растворения в объёме..." << std::endl << std::endl;
+    std::cout << std::endl << "Нажимаем 'q' для изменений планеты..." << std::endl << std::endl;
 
     const size_t PULSE = 1;
     size_t age = 0;
     while ( true ) {
         std::cout << "Возраст " << age << std::endl;
 
-        visual << plato;
+        //visual << planet;
 
         std::cout << std::endl;
 
