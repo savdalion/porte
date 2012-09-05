@@ -55,6 +55,7 @@
 #include <windows.h>
 
 
+#include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 
 

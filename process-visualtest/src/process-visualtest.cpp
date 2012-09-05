@@ -56,6 +56,56 @@ int main( int argc, char** argv ) {
 
     typedef portulan::planet::Topology< GRID, GRID, GRID >  topology_t;
 
+
+    // Перечисление кодов в группе живого мира
+    enum CODE_LIVING {
+        CL_UNDEFINED = 0,
+        CL_ANT,
+        CL_FLOWER,
+        // количество кодов живого мира
+        CL_count
+    };
+
+
+
+    // Перечисление кодов в группе компонентов
+    enum CODE_COMPONENT {
+        CC_UNDEFINED = 0,
+        CC_Al,
+        CC_Ar,
+        CC_C,
+        // углеводы
+        CC_CARBOHYDRATE,
+        // углекислый газ
+        CC_CO2,
+        // экскременты
+        CC_EXCREMENT,
+        // жиры
+        CC_FAT,
+        CC_Fe,
+        CC_H,
+        // вода
+        CC_H2O,
+        CC_Ca,
+        CC_K,
+        CC_Mg,
+        CC_Na,
+        CC_N2,
+        // кислород
+        CC_O2,
+        // белки
+        CC_PROTEIN,
+        CC_Si,
+        // редкие элементы
+        CC_SPARSE,
+        CC_Ti,
+        // количество кодов компонентов
+        CC_count
+    };
+
+
+
+
     // атмосфера
     // внешний радиус атмосферы (он же - размер области планеты), км
     const double radiusAtmosphere = radiusPlanet + 200;
@@ -65,19 +115,15 @@ int main( int argc, char** argv ) {
         // толщина слоёв области планеты задаётся в км
         const double innerRadius = radiusPlanet;
         const double depth = radiusAtmosphere - innerRadius;
-        const std::vector< double >  chemicalSubstance = ba::list_of
-            // N2
-            ( 77.0 / 100.0 )
-            // O2
-            ( 20.0 / 100.0 )
-            // Ar
-            ( 1.5 / 100.0 )
-            // CO2
-            ( 0.03 / 100.0 )
-            // редкие (sparse)
-            ( 0.97 / 100.0 )
-            // H2O (водяной пар в виде аэрозоли)
-            ( 0.5 / 100.0 )
+        const std::map< int, double >  chemicalSubstance = ba::map_list_of
+            ( CC_N2,   77.0 / 100.0 )
+            ( CC_O2,   20.0 / 100.0 )
+            ( CC_Ar,   1.5 / 100.0 )
+            ( CC_CO2,  0.03 / 100.0 )
+            // редкие соединения (компоненты)
+            ( CC_SPARSE,  0.97 / 100.0 )
+            // водяной пар (в виде аэрозоли)
+            ( CC_H2O,  0.5 / 100.0 )
         ;
         co::atmosphere< GRID, GRID, GRID >(
             atmosphere,
@@ -85,6 +131,8 @@ int main( int argc, char** argv ) {
             chemicalSubstance
         );
     }
+
+
 
 
     // кора планеты
@@ -95,31 +143,26 @@ int main( int argc, char** argv ) {
         // толщина слоёв планетарной коры задаётся в км
         const double depth = 250;
         const double innerRadius = radiusPlanet - depth;
-        const std::vector< double >  chemicalSubstance = ba::list_of
-            // O
-            ( 50.0 / 100.0 )
+        const std::map< int, double >  chemicalSubstance = ba::map_list_of
+            ( CC_O2,  50.0 / 100.0 )
             // Si
-            ( 25.0 / 100.0 )
+            ( CC_Si,  25.0 / 100.0 )
             // Al
-            ( 7.0 / 100.0 )
+            ( CC_Al,  7.0 / 100.0 )
             // Fe
-            ( 5.0 / 100.0 )
+            ( CC_Fe,  5.0 / 100.0 )
             // Ca
-            ( 4.0 / 100.0 )
+            ( CC_Ca,  4.0 / 100.0 )
             // Na
-            ( 3.0 / 100.0 )
+            ( CC_Na,  3.0 / 100.0 )
             // K
-            ( 2.0 / 100.0 )
+            ( CC_K,   2.0 / 100.0 )
             // Mg
-            ( 2.0 / 100.0 )
+            ( CC_Mg,  2.0 / 100.0 )
             // H
-            ( 1.0 / 100.0 )
-            // Ti
-            ( 0.5 / 100.0 )
-            // C
-            ( 0.2 / 100.0 )
+            ( CC_H,   1.0 / 100.0 )
             // редкие (sparse)
-            ( 0.3 / 100.0 )
+            ( CC_SPARSE,  1.0 / 100.0 )
         ;
         co::crust< GRID, GRID, GRID >(
             crust,
@@ -129,6 +172,8 @@ int main( int argc, char** argv ) {
     }
 
 
+
+
     // живой мир
     topology_t::living_t living;
     {
@@ -136,8 +181,6 @@ int main( int argc, char** argv ) {
         // # Не делим на матку, фуражиров, воинов и т.п. - при моделировании
         //   на уровне планеты при тек. мощностях подобное деление - роскошь.
         {
-            // номер особи в списке особей
-            const size_t uid = 0;
             topology_t::living_t::specimen_t  specimen;
 
             // время жизни муравья, пульсов (1 пульс = 1 год)
@@ -154,6 +197,17 @@ int main( int argc, char** argv ) {
                 ( massDie )
             ;
 
+            /* ?
+               В человеке, весящем 70 килограммов, содержится:
+                 - 45 литров воды
+                 - достаточно извести, чтобы побелить курятник
+                 - фосфора, которого хватит на 2200 спичек
+                 - жира примерно на 70 кусков мыла
+                 - железа на двухдюймовый гвоздь
+                 - углерода на 2000 карандашей
+                 - одна ложка магния
+               (c) Эрленд Лу "Наивно. Супер."
+            */
             // какие вещества содержит муравей
             //   - из каких хим. веществ состоит особь
             //   - с какой скоростью сжигаются выводятся хим. вещества для
@@ -164,44 +218,16 @@ int main( int argc, char** argv ) {
             // @source http://entomolog.su/kutikula-i-ee-chimicheskiy-sostav
             // @source http://medbiol.ru/medbiol/botanica/0015e3fc.htm
             // @source http://ru.wikipedia.org/wiki/%D0%A5%D0%B8%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D1%81%D1%82%D0%B0%D0%B2_%D0%BA%D0%BB%D0%B5%D1%82%D0%BA%D0%B8
-            /* - Заменено. См. ниже.
-            typedef std::tuple< double, double >  cs_t;
-            const std::vector< cs_t >  chemicalSubstance = ba::tuple_list_of
-                // кислород
-                ( 60.0,  1.0 )
-                // углерод (хитин содержит молекулы углерода)
-                ( 20.0, ? )
-                // водород
-                ( 10.0 )
-                // азот
-                ( 3.0 )
-                // калий
-                ( 0.2 )
-                // сера
-                ( 0.2 )
-                // фосфор
-                ( 0.2 )
-                // хлор
-                ( 0.1 )
-                // магний
-                ( 0.03 )
-                // натрий
-                ( 0.03 )
-                // кальций
-                ( 1.0 )
-                // железо
-                ( 0.01 )
-            ;
-            */
-            const std::vector< double >  chemicalComposition = ba::list_of
+            const std::map< int, double >  chemicalComposition = ba::map_list_of
+                // вода
+                ( CC_H2O,  0.2 )
                 // белки
-                ( 0.3 )
+                ( CC_PROTEIN,  0.3 )
                 // жиры
-                ( 0.05 )
+                ( CC_FAT,  0.05 )
                 // углеводы
-                ( 1.0 - 0.3 - 0.05 )
+                ( CC_CARBOHYDRATE,  1.0 - 0.2 - 0.3 - 0.05 )
             ;
-
 
             // метаболизм муравья
             topology_t::living_t::specimen_t::metabolism_t  metabolism[ topology_t::LIFE_CYCLE ];
@@ -219,24 +245,152 @@ int main( int argc, char** argv ) {
             const double proteinNeed = 1.5 / 1000.0 * DAY_IN_YEAR;
             const double fatNeed = 120.0 / 1000.0 * DAY_IN_YEAR;
             const double carbohydrateNeed = 500.0 / 1000.0 * DAY_IN_YEAR;
-            const std::vector< double > chemicalNeed = ba::list_of
+            const std::map< int, double > chemicalNeed = ba::map_list_of
                 // кислород
-                ( oxygenNeed )
+                ( CC_O2,  oxygenNeed )
                 // белки
-                ( proteinNeed )
+                ( CC_PROTEIN,  proteinNeed )
                 // жиры
-                ( fatNeed )
+                ( CC_FAT,  fatNeed )
                 // углеводы
-                ( carbohydrateNeed )
+                ( CC_CARBOHYDRATE,  carbohydrateNeed )
             ;
 
             const double carbonAcidWaste = 9.83 / 1000.0 * MINUTE_IN_YEAR / 100.0;
             const double excrementWaste = 200.0 / 1000.0 * DAY_IN_YEAR / 100.0;
+            const std::map< int, double > chemicalWaste = ba::map_list_of
+                // углекислый газ
+                ( CC_CO2,  carbonAcidWaste )
+                // испражнения
+                ( CC_EXCREMENT,  excrementWaste )
+            ;
+
+            // нормы для человека (100 кг):
+            //   - требуемая энергия: не требуется (всё может быть получено из пищи)
+            //   - излучаемая энергия: нет (полагаем, что вся полученная
+            //     энергия расходуется на поддержание жизни)
+            const std::vector< double > energyNeed;
+            const std::vector< double > energyWaste;
+
+            co::metabolism< GRID, GRID, GRID >(
+                metabolism,
+                chemicalNeed, chemicalWaste,
+                energyNeed, energyWaste,
+                lifetime,
+                massBurn, massDie
+            );
+
+
+            // условия выживания
+            topology_t::living_t::specimen_t::survivor_t  survivor;
+
+            // среды, в которых может обитать особь
+            const std::vector< size_t > environment = ba::list_of
+                // муравьи могут жить на границе твёрдого тела и газа (на поверхности почвы)
+                ( topology_t::Environment::GAS | topology_t::Environment::SOLID )
+                // муравь могут жить в самой почве (муравейники, норы)
+                ( topology_t::Environment::SOLID )
+            ;
+            // температуры комфорта / выживания делаем едиными для всех возрастов
+            const std::pair< double, double >  comfortTemperature( 15, 30 );
+            const std::pair< double, double >  limitTemperature( 0, 50 );
+            co::survivor< GRID, GRID, GRID >(
+                survivor,
+                environment,
+                comfortTemperature, limitTemperature
+            );
+
+
+            const double immunity = 0.9;
+            co::specimen< GRID, GRID, GRID >(
+                specimen,
+                lifetime,
+                massBurn, massDie,
+                immunity,
+                chemicalComposition, metabolism, survivor
+            );
+
+            std::cout << std::endl << "*Муравей*" << std::endl << specimen << std::endl;
+
+            
+            // определяем, в каких ячейках области планеты будут жить муравьи
+            const auto fnLiving = [] (
+                size_t pulse,
+                const typelib::coord_t& c,
+                const topology_t::living_t::specimen_t& sp
+            ) -> double {
+                // @todo Инициализировать в зависимости от среды обитания 'sp'.
+                // добавляем только взрослых особей
+                // (для муравьёв это 1-й пульс)
+                const double count = (pulse == 1) ? 1000 : 0;
+                return count;
+            };
+
+            co::living< GRID, GRID, GRID >(
+                living,
+                CL_ANT,
+                // кол-во муравьёв в ячейке области планеты
+                fnLiving,
+                // информация об особи
+                specimen
+            );
+
+        } // муравей
+
+
+#if 0
+// - @todo ...
+        // цветок
+        // @see Прим. выше к декларации муравья.
+        {
+            topology_t::living_t::specimen_t  specimen;
+
+            const size_t lifetime = 5.0;
+
+            const double massBurn = 0.1 / 1000.0;
+            const double massDie = 500.0 / 1000.0;
+            const std::vector< double >  mass = ba::list_of
+                ( massBurn )
+                ( massDie )
+            ;
+
+            const std::vector< double >  chemicalComposition = ba::list_of
+                // вода
+                ( 0.1 )
+                // белки
+                ( 0.2 )
+                // жиры
+                ( 0.5 )
+                // углеводы
+                ( 1.0 - 0.1 - 0.2 - 0.5 )
+            ;
+
+
+            topology_t::living_t::specimen_t::metabolism_t  metabolism[ topology_t::LIFE_CYCLE ];
+
+            const double oxygenNeed = 1.0 / 1000.0 * DAY_IN_YEAR;
+            const double waterNeed = 5.0 / 1000.0 * DAY_IN_YEAR;
+            const double carbonAcidNeed = oxygenNeed * 2.0;
+            const std::vector< double > chemicalNeed = ba::list_of
+                // кислород
+                ( oxygenNeed )
+                // вода
+                ( waterNeed )
+                // углекислый газ
+                ( carbonAcidNeed )
+            ;
+
+            const double oxygenWaste = oxygenNeed * 2.0;
+            const double carbonAcidWaste = carbonAcidNeed / 2.0;
+            const double honeydewWaste = 10.0 / 1000.0 * DAY_IN_YEAR;
             const std::vector< double > chemicalWaste = ba::list_of
+                // кислород
+                ( oxygenWaste )
                 // углекислый газ
                 ( carbonAcidWaste )
-                // испражнения
-                ( excrementWaste )
+                // падь (для питания насекомых)
+                @todo UID + скорость?
+                ( honeydewWaste )
             ;
 
             // нормы для человека (100 кг):
@@ -284,11 +438,12 @@ int main( int argc, char** argv ) {
                 comfortTemperature, limitTemperature
             );
 
-
+            const double immunity = 0.9;
             co::specimen< GRID, GRID, GRID >(
                 specimen,
                 lifetime,
                 massBurn, massDie,
+                immunity,
                 chemicalComposition, metabolism, survivor
             );
 
@@ -298,34 +453,44 @@ int main( int argc, char** argv ) {
                 size_t pulse,
                 const typelib::coord_t& c,
                 const topology_t::living_t::specimen_t& sp
-            ) -> std::tuple< double, double > {
+            ) -> double {
                 // @todo Инициализировать в зависимости от среды обитания 'sp'.
-                std::tuple< double, double >  count;
                 // добавляем только взрослых особей
                 // (для муравьёв это 1-й пульс)
-                std::get< 0 >( count ) = (pulse == 1) ? 1000 : 0;
-                std::get< 1 >( count ) = 0;
+                const double count = (pulse == 1) ? 1000 : 0;
                 return count;
             };
 
             co::living< GRID, GRID, GRID >(
                 living,
-                uid,
+                static_cast< size_t >( UID_LIVING::UIDL_ANT ),
                 // кол-во здоровых и больных муравьёв в ячейке области планеты
                 fnLiving,
                 // информация об особи
                 specimen
             );
 
-        } // муравей
+        } // цветок
+#endif
 
-    }
-
+    } // topology_t::living_t
 
 
 
 
     // @todo компоненты
+
+    // Перечисление UID компонентов мира
+    enum UID_COMPONENT {
+        // первый UID компонента идёт после всех живых особей: т.о. мы
+        // сможем отделить живых особей от компонентов без необходимости
+        // вводить доп. структуры
+        UIDC_UNDEFINED = topology_t::SPECIMEN_COUNT,
+        // падь (пища насекомых)
+        UIDC_HONEYDEW,
+        UIDC_count
+    };
+
     topology_t::component_t component;
     {
         component.content[0][0] = 0.0f;
@@ -399,7 +564,8 @@ int main( int argc, char** argv ) {
     // @todo осадки
     topology_t::precipitations_t precipitations;
     {
-        precipitations.content[0] = 0.0f;
+        static const size_t PG = topology_t::PRECIPITATIONS_GRID;
+        std::fill_n( precipitations.content,  PG * PG * PG,  0.0f );
     }
 
 
@@ -409,38 +575,17 @@ int main( int argc, char** argv ) {
     co::planet(
         planet.topology(),
         atmosphere, crust,
-        living
-        // @todo mantle, core, precipitations, ...
+        living,
+        // @todo mantle, core,  ...
+        temperature,
+        precipitations
     );
+
 
 
 
     // Информация о структурах
-    static const size_t TG =
-        portulan::planet::Topology< GRID, GRID, GRID >::TEMPERATURE_GRID;
-    const std::pair< float*, float* > tminmax = std::minmax_element(
-        temperature.content,
-        temperature.content + TG * TG * TG
-    );
-    std::cout <<
-        "\nРазмеры структур \"planet\"\n" <<
-            "\ttopology " << sizeof( planet.topology() ) / 1024 / 1024 << " Мб\n" <<
-                "\t\tatmosphere " << sizeof( atmosphere ) / 1024 / 1024 << " Мб\n" <<
-                    "\t\t\tcontent " << sizeof( atmosphere.content ) / 1024 / 1024 << " Мб\n" <<
-                    "\t\t\tpressure " << sizeof( atmosphere.pressure ) / 1024 << " Кб\n" <<
-                    "\t\t\twind " << sizeof( atmosphere.wind ) / 1024 << " Кб\n" <<
-                "\t\tcrust " << sizeof( crust ) / 1024 / 1024 << " Мб\n" <<
-                "\t\tliving " << sizeof( living ) / 1024 / 1024 << " Мб\n" <<
-                    "\t\t\tcontent " << sizeof( living.content ) / 1024 / 1024 << " Мб\n" <<
-                    "\t\t\tspecimen " << sizeof( living.specimen ) / 1024 << " Кб\n" <<
-                "\t\tcomponent " << sizeof( component ) / 1024 / 1024 << " Мб\n" <<
-                    "\t\t\tcontent " << sizeof( component.content ) / 1024 / 1024 << " Мб\n" <<
-                    "\t\t\ttype " << sizeof( component.type ) / 1024 << " Кб\n" <<
-                "\t\ttemperature " << sizeof( temperature ) / 1024 << " Кб\n" <<
-                "\t\tprecipitations " << sizeof( precipitations ) / 1024 << " Кб\n" <<
-                "\t\t\t[ " << *tminmax.first << "; " << *tminmax.second << " ]" <<
-    std::endl;
-
+    std::cout << std::endl << planet.topology();
 
 
 
