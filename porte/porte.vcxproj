@@ -13,8 +13,10 @@
   <ItemGroup>
     <ClInclude Include="configure.h" />
     <ClInclude Include="include\chemistry\Chemistry.h" />
+    <ClInclude Include="include\porte\EngineWithoutBooster.h" />
     <ClInclude Include="include\porte\Booster.h" />
     <ClInclude Include="include\porte\PortulanBooster.h" />
+    <ClInclude Include="include\set\dungeon-crawl\DungeonCrawl.h" />
     <ClInclude Include="porte.h" />
     <ClInclude Include="porte\include\Engine.h" />
     <ClInclude Include="heat-transfer\include\HeatTransfer.h" />
@@ -24,6 +26,7 @@
   <ItemGroup>
     <None Include="include\chemistry\Chemistry.inl" />
     <None Include="include\porte\PortulanBooster.inl" />
+    <None Include="include\set\dungeon-crawl\DungeonCrawl.inl" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl" />

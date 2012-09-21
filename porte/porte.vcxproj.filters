@@ -42,6 +42,12 @@
     <ClInclude Include="include\porte\PortulanBooster.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="include\set\dungeon-crawl\DungeonCrawl.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\porte\EngineWithoutBooster.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="porte\include\Engine.inl">
@@ -57,6 +63,9 @@
       <Filter>Заголовочные файлы</Filter>
     </None>
     <None Include="include\porte\PortulanBooster.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\set\dungeon-crawl\DungeonCrawl.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
   </ItemGroup>

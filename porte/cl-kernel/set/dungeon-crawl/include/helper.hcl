@@ -2,11 +2,14 @@
 * Вспомогательные методы.
 *
 * Соглашения
-*
-*   # Координатами обмениваемся через Type4. Не Type3, т.к. OpenCL 1.0
+*   # Координатами обмениваемся через Type4. Type3 OpenCL 1.0
 *     не поддерживает.
+*   #! Все константы, получаемые извне путём "define" следует приводить
+*      к желаемому типу явно. Крайне важно для float-констант, которые вдруг
+*      оказались равны целому числу. В противном случае, вычисления с их
+*      участием могут восприняться компилятором как целочисленные. Словить -
+*      трудно.
 */
-
 
 
 /**
@@ -58,9 +61,10 @@ inline bool one( const float a) {
 
 /**
 * Константы для (де)нормализации координат.
+*   # Должны быть переданы ядру с параметром "-D".
 */
-__constant const int4 MIN = (int4)( MINX, MINY, MINZ, 0 );
-__constant const int4 MAX = (int4)( MAXX, MAXY, MAXZ, 0 );
+__constant const int4 MIN = (int4)( MIN_COORD_GRID, MIN_COORD_GRID, MIN_COORD_GRID, 0 );
+__constant const int4 MAX = (int4)( MAX_COORD_GRID, MAX_COORD_GRID, MAX_COORD_GRID, 0 );
 
 
 
@@ -98,27 +102,27 @@ inline uint4 denormalizeCoord( const int4 nc ) {
 *         Граничные координаты передаются ядру.
 */
 inline bool borderRight( const int4 nc ) {
-    return (nc.x = MAXX);
+    return (nc.x = MAX.x);
 }
 
 inline bool borderLeft( const int4 nc ) {
-    return (nc.x == MINX);
+    return (nc.x == MIN.x);
 }
 
 inline bool borderTop( const int4 nc ) {
-    return (nc.z == MAXZ);
+    return (nc.z == MAX.z);
 }
 
 inline bool borderBottom( const int4 nc ) {
-    return (nc.z == MINZ);
+    return (nc.z == MIN.z);
 }
 
 inline bool borderFar( const int4 nc ) {
-    return (nc.y == MAXY);
+    return (nc.y == MAX.y);
 }
 
 inline bool borderNear( const int4 nc ) {
-    return (nc.y == MINY);
+    return (nc.y == MIN.y);
 }
 
 inline bool border( const int4 nc ) {
@@ -140,9 +144,9 @@ inline bool border( const int4 nc ) {
 */
 inline bool inside( const int4 nc ) {
     return (
-        (nc.x >= MINX) && (nc.x <= MAXX)
-     && (nc.y >= MINY) && (nc.y <= MAXY)
-     && (nc.z >= MINZ) && (nc.z <= MAXZ)
+        (nc.x >= MIN.x) && (nc.x <= MAX.x)
+     && (nc.y >= MIN.y) && (nc.y <= MAX.y)
+     && (nc.z >= MIN.z) && (nc.z <= MAX.z)
     );
 }
 
@@ -154,9 +158,9 @@ inline bool inside( const int4 nc ) {
 */
 inline bool outside( const int4 nc ) {
     return (
-        (nc.x < MINX) || (nc.x > MAXX)
-     || (nc.y < MINY) || (nc.y > MAXY)
-     || (nc.z < MINZ) || (nc.z > MAXZ)
+        (nc.x < MIN.x) || (nc.x > MAX.x)
+     || (nc.y < MIN.y) || (nc.y > MAX.y)
+     || (nc.z < MIN.z) || (nc.z > MAX.z)
     );
 }
 
@@ -168,7 +172,7 @@ inline bool outside( const int4 nc ) {
 * @return 1D-индекс по не нормализованной (+; +) 3D-координате.
 */
 inline uint icDenorm( const uint4 dnc ) {
-    return dnc.x + dnc.y * N + dnc.z * NM;
+    return dnc.x + dnc.y * GRID + dnc.z * GRID * GRID;
 }
 
 
@@ -225,4 +229,19 @@ inline int4 isc( const uint cell ) {
     };
 
     return a[ cell ];
+}
+
+
+
+
+
+
+
+
+/**
+* @return Расстояние от центра до нормализованной (-; +) 3D-координаты.
+*/
+inline float distanceNC( const int4 nc ) {
+    return sqrt( (float)(nc.x * nc.x + nc.y * nc.y + nc.z * nc.z) );
+    // @todo optimize Заменить на length( convert_float4( nc ) ).
 }

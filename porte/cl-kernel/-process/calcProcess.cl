@@ -58,7 +58,7 @@ __kernel void calcProcess(
         at += b->temperature[ (iu < NML) ? iu : i ];
 #endif
         
-    } // for (uint k
+    } // for (uint j
 
     const float averageT = at / (float)( Q + 1 );
 

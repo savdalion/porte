@@ -388,6 +388,8 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
     // No GL interop
     const cl_context_properties props[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformCL, 0 };
+    // (!) ≈сли установлен слишком большой размер стека, OpenCL не будет инициализирован.
+    //     ¬ключение LARGEADDRESSAWARE не решает проблему.
     gpuContextCL = clCreateContext( props, 1, &devicesCL[ deviceUsedCL ], nullptr, nullptr, &errorCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
@@ -449,6 +451,9 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
         typedef portulan::Portulan< SX, SY, SZ >::topology_t::numberLayer_t  nl_t;
         std::ostringstream options;
         options
+            // лечим точность дл€ float
+            << std::fixed
+
             // размер мира
             << " -D N=" << SX
             << " -D M=" << SY

@@ -3,6 +3,9 @@
 #include <porte/porte.h>
 #include <portulan/portulan.h>
 
+// Включается в "porte" для интерпретации структур C++ как OpenCL
+#undef PORTULAN_AS_OPEN_CL_STRUCT
+
 
 /**
 * Визуальное тестирование для проекта 'Porte'.
@@ -12,10 +15,14 @@ int main( int argc, char** argv ) {
 
     using namespace porte;
     using namespace porte::visualtest;
+    using namespace portulan::planet;
 
     //namespace co = portulan::command::planet;
-    namespace pl = portulan::planet::set::dungeoncrawl::living;
-    namespace ba = boost::assign;
+    namespace ps  = portulan::planet::set;
+    namespace pdc = portulan::planet::set::dungeoncrawl;
+    namespace pc  = portulan::planet::set::dungeoncrawl::component;
+    namespace pl  = portulan::planet::set::dungeoncrawl::living;
+    namespace tc  = typelib::constant::physics;
 
 
     // Приоритет определяет размер лог-файла
@@ -37,10 +44,10 @@ int main( int argc, char** argv ) {
     setlocale( LC_NUMERIC, "C" );
 
 
-    using namespace portulan::planet;
-
     typedef Portulan  planet_t;
     planet_t planet;
+    ps::topology_t& topology = planet.topology().topology();
+
 
     /**
     * Величина пульса в обласи планеты.
@@ -53,51 +60,135 @@ int main( int argc, char** argv ) {
     const double SECOND_IN_YEAR = MINUTE_IN_YEAR * 60;
 
 
-    const auto t = pl::aboutLiving;
+    // общая информация об области планеты
+    // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BD%D0%B0%D1%8F_%D0%BA%D0%BE%D1%80%D0%B0
+    const float radiusCrust = 7000.0f * 1000.0f;
+    const float radiusAtmosphere = radiusCrust + 200.0f * 1000.0f;
+    const float halfSize = radiusAtmosphere;
+    const float radiusMantle = radiusCrust - 200.0f * 1000.0f;
+    const float radiusCore = 3000.0f * 1000.0f;
+
+    const float massAtmosphere = static_cast< cl_float >( 5e18 );
+    const float massCrust = static_cast< cl_float >( 4e22 );
+    const float massMantle = static_cast< cl_float >( 4e24 );
+    const float massCore = static_cast< cl_float >( 3e24 );
+
+    static const pdc::aboutPlanet_t aboutPlanet = {
+        // size
+        halfSize * 2.0f,
+
+        // radius
+        { radiusAtmosphere / halfSize,  radiusCrust / halfSize,  radiusMantle / halfSize,  radiusCore / halfSize },
+
+        // mass
+        { massAtmosphere, massCrust, massMantle, massCore },
+
+        // component
+        {
+            // space
+            {
+                { }
+            },
+            // atmosphere
+            {
+                { pc::CC_AIR,        100.0f / 100.0f },
+            },
+            // crust
+            {
+                { pc::CC_AIR,          3.0f / 100.0f },
+                { pc::CC_BARREN_SOIL, 14.0f / 100.0f },
+                { pc::CC_RICH_SOIL,    1.0f / 100.0f },
+                { pc::CC_SAND,        10.0f / 100.0f },
+                { pc::CC_ROCK,        20.0f / 100.0f },
+                { pc::CC_BOULDER,      5.0f / 100.0f },
+                { pc::CC_WATER,       47.0f / 100.0f },
+            },
+            // mantle
+            {
+                { pc::CC_AIR,          1.0f / 100.0f },
+                { pc::CC_BARREN_SOIL, 17.0f / 100.0f },
+                { pc::CC_SAND,        20.0f / 100.0f },
+                { pc::CC_ROCK,        60.0f / 100.0f },
+                { pc::CC_WATER,        2.0f / 100.0f },
+            },
+            // core
+            {
+                { pc::CC_AIR,          0.1f / 100.0f },
+                { pc::CC_ROCK,        99.0f / 100.0f },
+                { pc::CC_WATER,        0.9f / 100.0f },
+            }
+        },
+
+        // livingPlanet
+        {
+            // space
+            {
+                { }
+            },
+            // atmosphere
+            {
+                { },
+            },
+            // crust
+            {
+                // #i На 1 кв. км саванны в Кот-д’Ивуаре (Африка) обитает почти
+                //     2 млрд муравьёв, образующих примерно 740 тыс колоний.
+                // #i Общая площадь суши планеты Земля 149 млн кв. км.
+                { pl::CL_WORKER_ANT,  static_cast< float >(2e9 * 150e6 / 2.0),  2000.0f, 5000.0f },
+            },
+            // mantle
+            {
+                { },
+            },
+            // core
+            {
+                { },
+            },
+        },
+
+        {
+            // space
+            {
+                { 1.0f,  1.0f }
+            },
+            // atmosphere
+            {
+                // map
+                {   20.0f - tc::CK,     2.0f }
+            },
+            // crust
+            {
+                { 1000.0f - tc::CK,    20.0f - tc::CK }
+            },
+            // mantle
+            {
+                { 4000.0f - tc::CK,  1000.0f - tc::CK }
+            },
+            // core
+            {
+                { 6000.0f - tc::CK,  4000.0f - tc::CK }
+            }
+        }
+    };
+
+
+
+    topology.aboutPlanet = aboutPlanet;
+
+    /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
+    //topology.aboutComponent = aboutComponent;
+    std::memcpy( topology.aboutComponent,  pc::aboutComponent,  sizeof( pc::aboutComponent ) );
+    topology.component = component;    
+    //topology.aboutLiving = aboutLiving;
+    std::memcpy( topology.aboutLiving,  pl::aboutLiving,  sizeof( pl::aboutLiving ) );
+    topology.living = living;
+    */
+
+    typedef DungeonCrawl  dungeonCrawl_t;
+    dungeonCrawl_t  dungeonCrawl( &planet );
 
 
 #if 0
-    // общая информация об области планеты
-    aboutPlanet_t aboutPlanet;
-    {
-        // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BD%D0%B0%D1%8F_%D0%BA%D0%BE%D1%80%D0%B0
-        const double radiusPlanet = 7000;
-        const double massPlanet = 3e22;
-        const std::map< CODE_COMPONENT, double >  componentPlanet = ba::map_list_of
-            ( CC_Air,         3.0 / 100.0 )
-            ( CC_RICH_SOIL,  15.0 / 100.0 )
-            ( CC_ROCK,       20.0 / 100.0 )
-            ( CC_PEBBLE,      5.0 / 100.0 )
-            ( CC_SAND,       10.0 / 100.0 )
-            ( CC_WATER,      47.0 / 100.0 )
-        ;
-
-        const double radiusAtmosphere = radiusPlanet + 200;
-        const double massAtmosphere = 3e22;
-        const std::map< CODE_COMPONENT, double >  componentAtmosphere = ba::map_list_of
-            ( CC_Air,  100.0 / 100.0 )
-        ;
-
-        co::aboutPlanet(
-            aboutPlanet,
-            radiusPlanet,     massPlanet,     componentPlanet,
-            radiusAtmosphere, massAtmosphere, componentAtmosphere
-        );
-    }
-
-
-
-
-    // информация о компонентах, встречающихся в области планеты
-    aboutComponent_t aboutComponent;
-    {
-        // Подключаем набор компонентов
-        co::aboutComponent( aboutComponent );
-        ? Декларировать информацию здесь? Или в отдельном наборе аля "set"?
-    }
-
-
-
     // состав планеты (компоненты)
     component_t component;
     {
@@ -409,7 +500,7 @@ int main( int argc, char** argv ) {
             const bool clamped =
                 typelib::clampr( t, typelib::constant::physics::CK, typelib::constant::physics::Tp );
             assert( !clamped &&
-                "Температура превышает возможные физические значения." );
+                "Температура превышает возможные физические границы." );
             return t;
         };
 
@@ -451,33 +542,32 @@ int main( int argc, char** argv ) {
 
 
 
-    // Информация о структурах
-    //std::cout << std::endl << planet.topology();
+    // Инициализируем область планеты
+    dungeonCrawl.init();
 
 
-    // III. Покажем результат.
-    portulan::io::VolumeVTKVisual::option_t o;
-    o[ "size-window" ] = 700;
-    o[ "size-point" ] = 1;
-    o[ "show-corner" ] = false;
-    o[ "show-axes" ] = false;
-    const auto color = typelib::json::Variant( "{ 'E': 'FFFFFFFF',  'C': '0000FFFF' }" );
-    o[ "rgba" ] = color;
+    // Покажем результат
+    namespace pio = portulan::io::planet::set::dungeoncrawl;
+    pio::TextVisual::option_t  o;
 #if 0
-    o[ "only" ] = ".temperature";
+    o[ "only" ] = ".aboutPlanet";
 #endif
 
-    portulan::io::VolumeVTKVisual visual( o );
-
+    pio::TextVisual  visual( std::cout, o );
+    visual << planet;
     
-    std::cout << std::endl << "Нажимаем 'q' для изменений планеты..." << std::endl << std::endl;
 
-    const size_t PULSE = 1;
-    size_t age = 0;
+    // Сделаем снимок результата
+    pio::SnapshotVTK  snapshot( &planet );
+    snapshot.averageTemperature();
+
+
+    std::cout << std::endl << "Нажимаем 'Enter' для изменения планеты..." << std::endl << std::endl;
+
+    const int PULSE = 1;
+    int age = 0;
     while ( true ) {
         std::cout << "Возраст " << age << std::endl;
-
-        //visual << planet;
 
         std::cout << std::endl;
 
@@ -485,12 +575,14 @@ int main( int argc, char** argv ) {
 
         // одинаково работают оба варианта
 #if 1
-        //chemistry << PULSE;
+        dungeonCrawl << PULSE;
 #else
-        //chemistry( PULSE );
+        dungeonCrawl( PULSE );
 #endif
 
         age += PULSE;
+
+        visual << planet;
 
     } // while
 

@@ -451,6 +451,9 @@ inline void Chemistry< SX, SY, SZ >::prepareCLKernel() {
         typedef portulan::Portulan< SX, SY, SZ >::topology_t::numberLayer_t  nl_t;
         std::ostringstream options;
         options
+            // лечим точность для float
+            << std::fixed
+
             // размер мира
             << " -D N=" << SX
             << " -D M=" << SY
