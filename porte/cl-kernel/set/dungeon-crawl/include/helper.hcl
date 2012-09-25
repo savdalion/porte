@@ -191,7 +191,7 @@ inline uint ic( const int4 nc ) {
 /**
 * @return Вектор смещения в сторону указанной ячейки.
 *
-* @see Нумерацию в прим. к классу typelib::MapContent3D
+* @see Нумерацию в прим. к классу typelib::StaticMapContent3D
 *      https://github.com/savdalion/typelib
 */
 inline int4 isc( const uint cell ) {

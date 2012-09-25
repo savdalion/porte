@@ -1,9 +1,12 @@
 #pragma once
 
+#include "..\..\..\configure.h"
 #include "../../porte/EngineWithoutBooster.h"
 #include <numeric>
 #include <boost/assign.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/random.hpp>
+ #include <boost/math/special_functions/pow.hpp> 
 #include <ctime>
 
 
@@ -17,6 +20,9 @@
 // (i) Для Apple: "cl_APPLE_gl_sharing"
 #define GL_SHARING_EXTENSION "cl_khr_gl_sharing"
 
+
+// существует неудобный define
+#undef CL_NONE
 
 
 
@@ -98,6 +104,12 @@ private:
     void prepareLivingCLKernel();
     void prepareTemperatureCLKernel();
 
+    template< size_t G >
+    void compileCLKernel(
+        const std::vector< std::string >&  kernelKeys,
+        const std::string& options = ""
+    );
+
 
     /**
     * Общие константы и опции для передачи ядру OpenCL.
@@ -141,6 +153,16 @@ private:
     cl_mem temperatureCL;
     cl_mem workTemperatureCL;
     const size_t memsizeTemperature;
+
+    /**
+    * Генератор случ. чисел.
+    */
+    boost::mt19937 randomCore;
+    boost::uniform_int< cl_uint >  randomDistribution;
+    boost::variate_generator<
+        boost::mt19937&, boost::uniform_int< unsigned int >
+    > randomGenerator;
+    cl_uint randomSeed;
 
 
     /**

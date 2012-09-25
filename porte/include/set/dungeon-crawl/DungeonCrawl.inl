@@ -34,6 +34,12 @@ inline DungeonCrawl::DungeonCrawl(
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID
     ),
 
+    // проинициализируем генератор случ. чисел
+    randomCore(),
+    randomDistribution( 0, 0xFFFFFFFF ),
+    randomGenerator( randomCore, randomDistribution ),
+    randomSeed( 131071u ),
+
     errorCL( CL_SUCCESS ),
     devicesCL( nullptr ),
     deviceUsedCL( 0 ),
@@ -60,7 +66,7 @@ inline DungeonCrawl::DungeonCrawl(
     aboutPlanetCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeAboutPlanet,
         &mPortulan->topology().topology().aboutPlanet,
         &errorCL
@@ -83,6 +89,27 @@ inline DungeonCrawl::DungeonCrawl(
         gpuContextCL,
         CL_MEM_READ_WRITE,
         memsizeComponent,
+        nullptr,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // living
+    livingCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeLiving,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().living.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    workLivingCL = clCreateBuffer(
+        gpuContextCL,
+        CL_MEM_READ_WRITE,
+        memsizeLiving,
         nullptr,
         &errorCL
     );
@@ -112,6 +139,10 @@ inline DungeonCrawl::DungeonCrawl(
 
     // Подготавливаем ядра OpenCL (ядра требуют компиляции)
     prepareCLKernel();
+
+
+    // Установим зерно для генератора случ. чисел
+    randomCore.seed( randomSeed );
 }
 
 
@@ -147,9 +178,9 @@ inline DungeonCrawl::~DungeonCrawl() {
 
 
 inline void DungeonCrawl::init() {
-    initComponent();
+    //initComponent();
     initLiving();
-    initTemperature();
+    //initTemperature();
 }
 
 
@@ -211,14 +242,318 @@ inline void DungeonCrawl::initComponent() {
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
 }
 
 
 
 
 inline void DungeonCrawl::initLiving() {
-    // @todo ...
+    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponentCLKernel().
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pl = portulan::planet::set::dungeoncrawl::living;
+
+#ifdef _DEBUG
+    std::cout << "Населяем планету особями .";
+#endif
+
+    static const size_t grid = pd::LIVING_GRID;
+
+    // размерность сетки
+    static const size_t GRID_WORK_DIM = 3;
+    // количество Work Item
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+    // размер Work Item
+    /* - Пусть OpenCL выберет лучший размер сам.
+    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
+    */
+    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
+
+
+    auto& tp = mPortulan->topology().topology();
+
+    // Инициализируем сетку
+
+    // очищаем матрицу количеств
+    cl_kernel kernel = kernelCL[ "scale/living/top/clear" ];
+
+    // 0
+    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &livingCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernel,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    /** - Синхронизируем поток в начале цикла (см. ниже).
+          Благодаря параллельной работе CPU и GPU это позволит
+          сократить время на выполнение кода.
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    */
+
+#ifdef _DEBUG
+    std::cout << ".";
+#endif
+
+
+    // вызываем init() до тех пор, пока кол-во особей на планете
+    // не будет близко к желаемому
+    kernel = kernelCL[ "scale/living/top/init" ];
+
+    // 0
+    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 1
+    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &livingCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 2
+    // На сколько мы приблизились к расселению заданного кол-ва особей.
+    // подготавливаем проверочный аргумент
+    pd::zoneLivingCountComplete_t zoneCountComplete;
+    static const size_t memsizeZoneCountComplete =
+        sizeof( pd::zoneOneLivingCountComplete_t ) *
+        pd::LIVING_COUNT * pd::LIFE_CYCLE_COUNT;
+    cl_mem zoneCountCompleteCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
+        memsizeZoneCountComplete,
+        &zoneCountComplete,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernel, 2, sizeof( cl_mem ), &zoneCountCompleteCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 3
+    // # Заселять мир будем исключительно взрослыми особями
+    const pd::LIFE_CYCLE lifeCycle = pd::LC_ADULT;
+    errorCL = clSetKernelArg( kernel, 3, sizeof( pd::LIFE_CYCLE ), &lifeCycle );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 4
+    errorCL = clSetKernelArg( kernel, 4, sizeof( cl_mem ), &componentCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 5
+    errorCL = clSetKernelArg( kernel, 5, sizeof( cl_mem ), &temperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 6
+    // Добавляем каждый раз другое значение - получаем большее разнообразие.
+    // Включается в цикле ниже.
+
+
+    const auto& al = tp.aboutPlanet.living;
+
+    // желаемое кол-во особей
+    float allZoneDesireCount = 0.0f;
+    pd::zoneLivingCount_t zoneDesireCount = {};
+    /* - Проще копировать код. См. ниже.
+    const auto fnDesireCount = [ &zoneDesireCount, lifeCycle ] (
+        float& zolValue,
+        const pl::zoneLiving_t& zl
+    ) -> void {
+        const pl::CODE_LIVING code = zl.code;
+        if (code != pl::CL_NONE) {
+            const float q = zl.count;
+            zolValue += q;
+            zoneDesireCount[ code ][ lifeCycle ].all += q;
+        }
+    };
+    */
+    for (size_t k = 0; k < pd::LIVING_CELL; ++k) {
+        // space
+        {
+            const auto& zk = al.space[k];
+            const pl::CODE_LIVING code = zk.code;
+            if (code != pl::CL_NONE) {
+                zoneDesireCount[ code ][ lifeCycle ].space += zk.count;
+                zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
+                allZoneDesireCount += zk.count;
+            }
+        }
+        // atmosphere
+        {
+            const auto& zk = al.atmosphere[k];
+            const pl::CODE_LIVING code = zk.code;
+            if (code != pl::CL_NONE) {
+                zoneDesireCount[ code ][ lifeCycle ].atmosphere += zk.count;
+                zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
+                allZoneDesireCount += zk.count;
+            }
+        }
+        // crust
+        {
+            const auto& zk = al.crust[k];
+            const pl::CODE_LIVING code = zk.code;
+            if (code != pl::CL_NONE) {
+                zoneDesireCount[ code ][ lifeCycle ].crust += zk.count;
+                zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
+                allZoneDesireCount += zk.count;
+            }
+        }
+        // mantle
+        {
+            const auto& zk = al.mantle[k];
+            const pl::CODE_LIVING code = zk.code;
+            if (code != pl::CL_NONE) {
+                zoneDesireCount[ code ][ lifeCycle ].mantle += zk.count;
+                zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
+                allZoneDesireCount += zk.count;
+            }
+        }
+        // core
+        {
+            const auto& zk = al.core[k];
+            const pl::CODE_LIVING code = zk.code;
+            if (code != pl::CL_NONE) {
+                zoneDesireCount[ code ][ lifeCycle ].core += zk.count;
+                zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
+                allZoneDesireCount += zk.count;
+            }
+        }
+    } // for (size_t k
+
+
+    // вызываем init(), анализируем полученное кол-во
+    // @see Параметры для init().
+    size_t iteration = 0;
+    for ( ; ; ) {
+        // синхронизируем потоки
+        // (см. выше прим. после вызова ядра clear())
+        errorCL = clFinish( commandQueueCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        // результат
+        // первый вызов - проинициализированное выше нулями содержание,
+        // последующие - результат работы ядра init()
+        // @todo optimize Попробовать использовать livingCL без
+        //       закачки данных в tp.living.content.
+        errorCL = clEnqueueReadBuffer(
+            commandQueueCL,
+            livingCL,
+            CL_TRUE,
+            0,
+            memsizeLiving,
+            tp.living.content,
+            0, nullptr, nullptr
+        );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        // подсчитываем кол-ва
+        float allZoneCount = 0.0f;
+        pd::zoneLivingCount_t zoneCount = {};
+        // пробежим по всем ячейкам
+        static const size_t LG = pd::LIVING_GRID * pd::LIVING_GRID * pd::LIVING_GRID;
+        for (size_t i = 0; i < LG; ++i) {
+            // в каждой ячейке содержится не более LIVING_CELL особей
+            for (size_t k = 0; k < pd::LIVING_CELL; ++k) {
+                // информация об особях сгруппирована по LIFE_CYCLE
+                for (size_t l = static_cast< size_t >( pd::LC_EMBRYO);
+                     l < static_cast< size_t >( pd::LC_last );  ++l
+                ) {
+                    const pl::portionLiving_t& p = tp.living.content[i][k][l];
+                    const pl::CODE_LIVING code = p.code;
+                    assert( ((code >= pl::CL_NONE) && (code < pl::CL_last))
+                        && "Код особи не распознан. Вероятно, ошибка при инициализации матрицы." );
+                    // суммируем (инициализация была выше)
+                    zoneCount[ code ][ l ].all += p.count;
+                    allZoneCount += p.count;
+                }
+            }
+        }
+
+        // кол-во особей должно быть близко к желаемому
+        std::memset( zoneCountComplete, false, memsizeZoneCountComplete );
+        bool allComplete = true;
+        for (size_t code = 0; code < pd::LIVING_COUNT; ++code) {
+            for (size_t l = static_cast< size_t >( pd::LC_EMBRYO);
+                    l < static_cast< size_t >( pd::LC_last );  ++l
+            ) {
+                const float desireCount = zoneDesireCount[ code ][ l ].all;
+                const float count       = zoneCount[ code ][ l ].all;
+                // # Не используем группировку по зонам.
+                auto& zcc = zoneCountComplete[ code ][ l ];
+                zcc.all = (desireCount <= count * 1.1f);
+                if ( !zcc.all ) {
+                    allComplete = false;
+                    break;
+                }
+            }
+            if ( !allComplete ) {
+                // true уже не будет
+                break;
+            }
+
+        } // for (size_t code
+
+        if ( allComplete ) {
+            // планета заселена, количества особей соотв. желаемым
+            break;
+        }
+
+        // 6 (см. прим. для аргументов выше)
+        const cl_uint rseed = randomGenerator();
+        errorCL = clSetKernelArg( kernel, 6, sizeof( cl_uint ), &rseed );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clEnqueueNDRangeKernel(
+            commandQueueCL,
+            kernel,
+            GRID_WORK_DIM,
+            nullptr,
+            GRID_GLOBAL_WORK_SIZE,
+            nullptr,
+            0, nullptr, nullptr
+        );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        // синхронизация
+        /* - (синхронизируем в начале цикла)
+        errorCL = clFinish( commandQueueCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        */
+
+        // результат
+        // (получаем в начале цикла)
+
+        ++iteration;
+
+#ifdef _DEBUG
+        //std::cout << ".";
+        // человечный индикатор прогресса
+        static const size_t W = 50;
+        static const size_t PRECISION_DIGIT = 0;
+        static const float PRECISION_POW =
+            boost::math::pow< PRECISION_DIGIT >( 10 );
+        if (iteration % W == 0) {
+            const float percent = std::floor(
+                allZoneCount / allZoneDesireCount * 100.0f * PRECISION_POW
+            ) / PRECISION_POW;
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision( PRECISION_DIGIT ) <<
+                " " << percent << " %";
+            std::cout << ss.str() <<
+                std::string( ss.str().length(), '\b');
+        }
+#endif
+    } // for ( ; ; )
+
+#ifdef _DEBUG
+    std::cout << " ОК          " << std::endl;
+#endif
 }
 
 
@@ -308,7 +643,6 @@ inline void DungeonCrawl::initTemperature() {
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
 }
 
 
@@ -673,9 +1007,9 @@ inline void DungeonCrawl::prepareCLCommandQueue() {
 
 
 inline void DungeonCrawl::prepareCLKernel() {
-    prepareComponentCLKernel();
+    //prepareComponentCLKernel();
     prepareLivingCLKernel();
-    prepareTemperatureCLKernel();
+    //prepareTemperatureCLKernel();
 }
 
 
@@ -685,85 +1019,19 @@ inline void DungeonCrawl::prepareCLKernel() {
 inline void DungeonCrawl::prepareComponentCLKernel() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace pc = portulan::planet::set::dungeoncrawl::component;
 
     // # Контекст и очередь команд инициализированы в конструкторе.
-
-    // Компилируем ядра OpenCL
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/component/top/init" )
     ;
-    // @todo Искать по папкам в "scale". Сейчас - фиксированный путь, плохо.
-    for (auto itr = std::begin( kernelKeys ); itr != std::end( kernelKeys ); ++itr) {
-        //   # Последнее за "/" название является именем ядра.
-        const std::string kernelKey = *itr;
-        const std::string kernelName = itr->substr( itr->find_last_of( '/' ) + 1 );
 
-        // Program Setup
-        size_t programLength;
-        const std::string fileKernel = kernelKey + ".cl";
-        const std::string pathAndName = PATH_CL_DUNGEONCRAWL + "/" + fileKernel;
-        const char* pureSourceCode = oclLoadProgSource( pathAndName.c_str(), "", &programLength );
-        oclCheckErrorEX( (pureSourceCode != nullptr), true, &fnErrorCL );
-
-        // create the program
-        cl_program programCL = clCreateProgramWithSource(
-            gpuContextCL,  1,  (const char**)&pureSourceCode,  &programLength, &errorCL
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    // Подготавливаем ядерные опции
+    static const size_t grid = pd::COMPONENT_GRID;
     
-
-        // Подготавливаем параметры для ядер
-        static const size_t grid = pd::COMPONENT_GRID;
-        typedef typelib::StaticMapContent3D< grid, grid, grid >  smc_t;
-
-        // масштаб для рабочей сетки считаем здесь, чтобы не нагружать ядра
-        // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки.
-        const float scale =
-            mPortulan->topology().topology().aboutPlanet.size /
-            static_cast< float >( grid );
-
-        std::ostringstream options;
-        options
-            // лечим точность для float
-            << std::fixed
-            // #! Рабочие сетки декларируются отдельно: есть методы
-            //   в helper.hcl, которые используют их.
-            << " -D GRID=" << grid
-            << " -D MIN_COORD_GRID=" << smc_t::minCoord().x
-            << " -D MAX_COORD_GRID=" << smc_t::maxCoord().x
-            << " -D SCALE=" << scale
-            << commonConstantCLKernel()
-            << commonOptionCLKernel()
-            << "";
-    
-#ifdef _DEBUG
-        // @test
-        std::cout << "Опции OpenCL для ключа ядра \"" << kernelKey << "\":" << std::endl << options.str() << std::endl;
-#endif
-
-        // build the program
-        errorCL = clBuildProgram( programCL, 0, nullptr, options.str().c_str(), nullptr, nullptr );
-        if (errorCL != CL_SUCCESS) {
-            shrLogEx( LOGCONSOLE | ERRORMSG, errorCL, STDERROR );
-            oclLogBuildInfo( programCL, oclGetFirstDev( gpuContextCL ) );
-            const std::string debugFileKernel = kernelName + ".ptx";
-            oclLogPtx( programCL, oclGetFirstDev( gpuContextCL ), debugFileKernel.c_str() );
-            fnErrorCL( errorCL );
-        }
-
-        // create the kernel
-        cl_kernel oneKernelCL = clCreateKernel( programCL, kernelName.c_str(), &errorCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        kernelCL[ kernelKey ] = oneKernelCL;
-
-        // Некоторые ресурсы надо освободить прямо сейчас
-        clReleaseProgram( programCL );
-
-    } // for (auto itr
-
+    // Компилируем ядра OpenCL
+    compileCLKernel< grid >( kernelKeys );
 }
 
 
@@ -771,7 +1039,53 @@ inline void DungeonCrawl::prepareComponentCLKernel() {
 
 
 inline void DungeonCrawl::prepareLivingCLKernel() {
-    // @todo ...
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+    // # Контекст и очередь команд инициализированы в конструкторе.
+
+    // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
+    const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "scale/living/top/clear" )
+        ( "scale/living/top/init" )
+    ;
+
+    // Подготавливаем ядерные опции
+    static const size_t grid = pd::LIVING_GRID;
+
+    std::ostringstream options;
+    options
+        // лечим точность для float
+        << std::fixed
+
+        // Для метода init(), определяют как быстро будет
+        // увеличиваться кол-во особей в 1-й ячейке.
+        // Коэф. прямо пропорционален желаемому кол-ву из zoneLiving_t.
+        // (малые значения - быстрее вычисления, но более грубое
+        // расселение особей)
+        << " -D ITERATION_GROW_COUNT=" << 10000
+
+        // При включении:
+        // Наличие в соседних ячейках подобных особей повышает вероятность
+        // увеличения кол-ва особей в текущей ячейке.
+        // #! Т.к. расселение особей ведётся без промежуточной матрицы
+        //    и в ядре OpenCL отсутствует возможность синхронизовать потоки
+        //    на глобальном уровне, возможна неточность при подсчёте кол-ва
+        //    соседей. Здесь ошибка в кол-ве - вполне приемлема. Но надо
+        //    помнить, что в общем случае она влечёт разное наполнение
+        //    матриц даже при одинаковом "seed" (см. __kernel).
+        //<< " -D WITH_NEIGHBOUR_EXPANSION"
+
+        // При включении:
+        // Наличие в текущей ячейке подобных особей повышает вероятность
+        // увеличения кол-ва особей в этой же ячейке.
+        // Матрица, в отличии от WITH_NEIGHBOUR_EXPANSION, стабильна.
+        << " -D WITH_SELF_EXPANSION"
+
+        << "";
+
+    // Компилируем ядра OpenCL
+    compileCLKernel< grid >( kernelKeys, options.str() );
 }
 
 
@@ -782,17 +1096,58 @@ inline void DungeonCrawl::prepareLivingCLKernel() {
 inline void DungeonCrawl::prepareTemperatureCLKernel() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace pt = portulan::planet::set::dungeoncrawl::temperature;
 
     // # Контекст и очередь команд инициализированы в конструкторе.
-
-    // Компилируем ядра OpenCL
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/temperature/top/init" )
     ;
-    // @todo Искать по папкам в "scale". Сейчас - фиксированный путь, плохо.
+
+    // Подготавливаем ядерные опции
+    static const size_t grid = pd::TEMPERATURE_GRID;
+
+    // Компилируем ядра OpenCL
+    compileCLKernel< grid >( kernelKeys );
+}
+
+
+
+
+
+
+template< size_t G >
+inline void DungeonCrawl::compileCLKernel(
+    const std::vector< std::string >&  kernelKeys,
+    const std::string& options
+) {
+    // # Контекст и очередь команд инициализированы в конструкторе.
+
+    typedef typelib::StaticMapContent3D< G, G, G >  smc_t;
+
+    // масштаб для рабочей сетки считаем здесь, чтобы не нагружать ядра
+    // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки.
+    const float scale =
+        mPortulan->topology().topology().aboutPlanet.size /
+        static_cast< float >( G );
+
+    std::ostringstream commonOptions;
+    commonOptions
+        // лечим точность для float
+        << std::fixed
+        // #! Рабочие сетки декларируются отдельно: есть методы
+        //   в helper.hcl, которые используют их.
+        << " -D GRID=" << G
+        << " -D MIN_COORD_GRID=" << smc_t::minCoord().x
+        << " -D MAX_COORD_GRID=" << smc_t::maxCoord().x
+        << " -D SCALE=" << scale
+        << " " << options
+        << commonConstantCLKernel()
+        << commonOptionCLKernel()
+        << "";
+
+    // @todo Искать по папкам в "scale". Сейчас - фиксированный путь в
+    //       kernelKeys, плохо.
     for (auto itr = std::begin( kernelKeys ); itr != std::end( kernelKeys ); ++itr) {
         //   # Последнее за "/" название является именем ядра.
         const std::string kernelKey = *itr;
@@ -811,38 +1166,13 @@ inline void DungeonCrawl::prepareTemperatureCLKernel() {
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     
-
-        // Подготавливаем параметры для ядер
-        static const size_t grid = pd::TEMPERATURE_GRID;
-        typedef typelib::StaticMapContent3D< grid, grid, grid >  smc_t;
-
-        // масштаб для рабочей сетки считаем здесь, чтобы не нагружать ядра
-        // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки.
-        const float scale =
-            mPortulan->topology().topology().aboutPlanet.size /
-            static_cast< float >( grid );
-
-        std::ostringstream options;
-        options
-            // лечим точность для float
-            << std::fixed
-            // #! Рабочие сетки декларируются отдельно: есть методы
-            //   в helper.hcl, которые используют их.
-            << " -D GRID=" << grid
-            << " -D MIN_COORD_GRID=" << smc_t::minCoord().x
-            << " -D MAX_COORD_GRID=" << smc_t::maxCoord().x
-            << " -D SCALE=" << scale
-            << commonConstantCLKernel()
-            << commonOptionCLKernel()
-            << "";
-    
 #ifdef _DEBUG
         // @test
-        std::cout << "Опции OpenCL для ключа ядра \"" << kernelKey << "\":" << std::endl << options.str() << std::endl;
+        std::cout << std::endl << "Опции OpenCL для ядра \"" << kernelKey << "\"" << std::endl << commonOptions.str() << std::endl;
 #endif
 
         // build the program
-        errorCL = clBuildProgram( programCL, 0, nullptr, options.str().c_str(), nullptr, nullptr );
+        errorCL = clBuildProgram( programCL, 0, nullptr, commonOptions.str().c_str(), nullptr, nullptr );
         if (errorCL != CL_SUCCESS) {
             shrLogEx( LOGCONSOLE | ERRORMSG, errorCL, STDERROR );
             oclLogBuildInfo( programCL, oclGetFirstDev( gpuContextCL ) );
@@ -899,7 +1229,7 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D MAX_COORD_LIVING_GRID=" << componentSMC_t::maxCoord().x
         << " -D LIVING_COUNT=" << pd::LIVING_COUNT
         << " -D LIVING_CELL=" << pd::LIVING_CELL
-        << " -D LIFE_CYCLE=" << pd::LIFE_CYCLE
+        << " -D LIFE_CYCLE_COUNT=" << pd::LIFE_CYCLE_COUNT
         << " -D PART_LIVING_COUNT=" << pd::PART_LIVING_COUNT
         << " -D ATTACK_PART_LIVING_COUNT=" << pd::ATTACK_PART_LIVING_COUNT
         << " -D RESIST_PART_LIVING_COUNT=" << pd::RESIST_PART_LIVING_COUNT
@@ -928,14 +1258,14 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         // @source http://ru.wikipedia.org/wiki/%D0%A3%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_%D0%B3%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D1%8F_%D0%BF%D0%BE%D1%81%D1%82%D0%BE%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F
         << " -D R_GAS=8.31441f"
         */
-
+#ifdef ALWAYS_BUILD_CL_KERNEL_PORTE
         // добавляем к настройкам (в 2012 г. драйвер OpenCL от NVIDIA
         // научился хешировать файл без учёта комментариев) уникальный
         // хвост, чтобы OpenCL не думал брать построенную ранее программу
         // из кеша устройства: иначе рискуем получать феноменальные ошибки,
         // когда изменения во *включаемых файлах* учитываются "через раз"
         << " -D BUILD_RANDSTAMP=" << randstamp
-
+#endif
         << "";
 
     return options.str();

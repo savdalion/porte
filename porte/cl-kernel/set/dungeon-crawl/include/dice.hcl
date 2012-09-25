@@ -55,3 +55,12 @@ inline uint dice( uint2* rstate, uint n, uint m ) {
 
 
 
+inline float floatDice( uint2* rstate, uint n, float m ) {
+    float a = 0;
+    for (uint i = 0; i < n; ++i) {
+        const ulong v = (ulong)uintRandom( rstate );
+        const ulong vm = (v % (ulong)m) + 1UL;
+        a += (float)vm;
+    }
+    return a;
+}

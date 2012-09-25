@@ -3,8 +3,15 @@
 #include <porte/porte.h>
 #include <portulan/portulan.h>
 
-// Включается в "porte" для интерпретации структур C++ как OpenCL
+// Включается в "porte" для интерпретации структур C++ как OpenCL.
 #undef PORTULAN_AS_OPEN_CL_STRUCT
+
+// (!) Убираем определения define, заданные в файлах cl.h и wingdi.h, т.к.
+// они совпадают с именем наших структур.
+// @todo bad solution
+#undef CC_NONE
+#undef CL_NONE
+
 
 
 /**
@@ -87,11 +94,12 @@ int main( int argc, char** argv ) {
         {
             // space
             {
-                { }
+                { pc::CC_NONE, 0.0f },
             },
             // atmosphere
             {
                 { pc::CC_AIR,        100.0f / 100.0f },
+                { pc::CC_NONE, 0.0f },
             },
             // crust
             {
@@ -100,22 +108,28 @@ int main( int argc, char** argv ) {
                 { pc::CC_RICH_SOIL,    1.0f / 100.0f },
                 { pc::CC_SAND,        10.0f / 100.0f },
                 { pc::CC_ROCK,        20.0f / 100.0f },
-                { pc::CC_BOULDER,      5.0f / 100.0f },
+                { pc::CC_BOULDER,      4.0f / 100.0f },
                 { pc::CC_WATER,       47.0f / 100.0f },
+                { pc::CC_SPARSE,       0.5f / 100.0f },
+                { pc::CC_NONE, 0.0f },
             },
             // mantle
             {
                 { pc::CC_AIR,          1.0f / 100.0f },
-                { pc::CC_BARREN_SOIL, 17.0f / 100.0f },
+                { pc::CC_BARREN_SOIL, 12.0f / 100.0f },
                 { pc::CC_SAND,        20.0f / 100.0f },
                 { pc::CC_ROCK,        60.0f / 100.0f },
                 { pc::CC_WATER,        2.0f / 100.0f },
+                { pc::CC_SPARSE,       5.0f / 100.0f },
+                { pc::CC_NONE, 0.0f },
             },
             // core
             {
                 { pc::CC_AIR,          0.1f / 100.0f },
-                { pc::CC_ROCK,        99.0f / 100.0f },
+                { pc::CC_ROCK,        90.0f / 100.0f },
                 { pc::CC_WATER,        0.9f / 100.0f },
+                { pc::CC_SPARSE,       9.0f / 100.0f },
+                { pc::CC_NONE, 0.0f },
             }
         },
 
@@ -123,33 +137,37 @@ int main( int argc, char** argv ) {
         {
             // space
             {
-                { }
+                { pl::CL_NONE, 0.0f },
             },
             // atmosphere
             {
-                { },
+                { pl::CL_NONE, 0.0f },
             },
             // crust
             {
                 // #i На 1 кв. км саванны в Кот-д’Ивуаре (Африка) обитает почти
                 //     2 млрд муравьёв, образующих примерно 740 тыс колоний.
                 // #i Общая площадь суши планеты Земля 149 млн кв. км.
-                { pl::CL_WORKER_ANT,  static_cast< float >(2e9 * 150e6 / 2.0),  2000.0f, 5000.0f },
+                // #i Размер муравья Dungeon Crawl ~70 см, что в ~70 раз
+                //    больше обычного.
+                { pl::CL_WORKER_ANT,  static_cast< float >(2e9 * (150e6 / 10.0) / 70.0),  2000.0f, 5000.0f },
+                { pl::CL_NONE, 0.0f, 0.0f, 0.0f },
             },
             // mantle
             {
-                { },
+                { pl::CL_NONE, 0.0f, 0.0f, 0.0f },
             },
             // core
             {
-                { },
+                { pl::CL_NONE, 0.0f, 0.0f, 0.0f },
             },
         },
 
+        // temperature
         {
             // space
             {
-                { 1.0f,  1.0f }
+                {    1.0f,              1.0f }
             },
             // atmosphere
             {
@@ -321,7 +339,7 @@ int main( int argc, char** argv ) {
             ;
 
             // метаболизм муравья
-            topology_t::aboutOneLiving_t::metabolism_t  metabolism[ topology_t::LIFE_CYCLE ];
+            topology_t::aboutOneLiving_t::metabolism_t  metabolism[ topology_t::LC_count ];
 
             // нормы для человека (100 кг):
             //   - кислород: 10 л / мин = 10 * 1.43 г ~ 14.3 г / мин
@@ -559,7 +577,9 @@ int main( int argc, char** argv ) {
 
     // Сделаем снимок результата
     pio::SnapshotVTK  snapshot( &planet );
-    snapshot.averageTemperature();
+    //snapshot.component();
+    snapshot.living();
+    //snapshot.temperature();
 
 
     std::cout << std::endl << "Нажимаем 'Enter' для изменения планеты..." << std::endl << std::endl;
