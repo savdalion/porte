@@ -80,8 +80,8 @@ inline void zoneLiving(
             continue;
         }
         
-        // подмешаем к генератору код особи, €чейку и жизненный цикл
-        *rstate ^= (uint2)( (uint)code,  k ^ (uint)lifeCycle );
+        // подмешаем к генератору новые значени€
+        rstate->x ^= (uint)code ^ (uint)lifeCycle ^ k;
 
         // ‘акт увеличение кол-ва особей определ€етс€ веро€тностью.
         // веро€тность по€влени€ новых групп особей в этой €чейке
@@ -92,10 +92,18 @@ inline void zoneLiving(
         for (; o < LIVING_CELL; ++o) {
             if (lc[i][o][lifeCycle].code == code) {
                 // особь уже есть
+                // ещЄ более разнообразим генератор
+                rstate->y ^= (uint)( lc[i][o][lifeCycle].count );
                 break;
             }
         }
         const bool absent = (o >= LIVING_CELL);
+
+
+        // ¬водим "коэффициент роста": он позволит сделать кол-ва не плоскими.
+        //float grow = floatDice( rstate, 1, 20.0 );
+        float grow = floatDiapasonRandom( rstate,  (float2)( -0.2f, 1.0f ) );
+
 
 #ifdef WITH_SELF_EXPANSION
         // Ќаличие в текущей €чейке подобных особей повышает веро€тность
@@ -103,6 +111,7 @@ inline void zoneLiving(
         if ( !absent ) {
             diceGroup++;
             diceGroup++;
+            grow *= 2.0f;
         }
 #endif
 
@@ -119,12 +128,15 @@ inline void zoneLiving(
         const float n = neighbourCount( code, lifeCycle, lc, nc );
         if (n > 0.0f) {
             diceGroup++;
+            grow *= 1.3f;
         }
         if (n > 1000000.0f) {
             diceGroup++;
+            grow *= 1.3f;
         }
         if (n > 1000000000.0f) {
             diceGroup++;
+            grow *= 1.3f;
         }
 #endif
 
@@ -147,7 +159,7 @@ inline void zoneLiving(
         if (o >= LIVING_CELL) {
             // все места зан€ты, ничто новое не может быть добавлено
             // в эту €чейку
-            // @todo optimize bad Ћишн€€ проверка. ¬едь кол-во переданных
+            // @todo optimize bad Ћишн€€ проверка. ¬едь # кол-во переданных
             //       в параметрах особей никогда не превышает макс. кол-ва
             //       мест дл€ особей в €чейке.
             return;
@@ -177,10 +189,16 @@ inline void zoneLiving(
         */
 
         lc[i][o][lifeCycle].code = code;
-        const float powerIteration = z[k].count / (float)ITERATION_GROW_COUNT;
-        const float qty = floatDice( rstate, 1, powerIteration );
+        static const float VOLUME_K = (float)(GRID * GRID * GRID / 9 + 1);
+        const float powerIteration = z[k].count / ((float)ITERATION_GROW_COUNT * VOLUME_K);
+        const float qty = grow * floatDice( rstate, 1, powerIteration );
         lc[i][o][lifeCycle].count += qty;
-        lc[i][o][lifeCycle].group = lc[i][o][lifeCycle].count / averageGroup;
+        // @todo optimize ÷елостность можно проверить после всех init-итераций.
+        if (lc[i][o][lifeCycle].count < 1.0f) {
+            lc[i][o][lifeCycle].count = floatDice( rstate, 1, powerIteration ) + 1.0f;
+        }
+        // @todo optimize √руппы можно посчитать после init-итераций.
+        lc[i][o][lifeCycle].group = (uint)( lc[i][o][lifeCycle].count / averageGroup ) + 1;
 
     } // for (uint k
 
@@ -193,7 +211,7 @@ inline void zoneLiving(
 __kernel void init(
     __global const aboutPlanet_t*               ap,    // 0
     __global livingCell_t*                      lc,    // 1
-    // # Ќе используем группировку по зонам.
+    // # Ќе используем группировку по зонам дл€ проверки кол-ва.
     __global const zoneLivingCountComplete_t*  zcc,    // 2
     const enum LIFE_CYCLE                lifeCycle,    // 3
     __global const componentCell_t*             cc,    // 4

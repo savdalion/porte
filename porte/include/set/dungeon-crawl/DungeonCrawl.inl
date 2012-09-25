@@ -337,7 +337,7 @@ inline void DungeonCrawl::initLiving() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // 3
-    // # «асел€ть мир будем исключительно взрослыми особ€ми
+    // # «асел€ть мир будем исключительно взрослыми особ€ми.
     const pd::LIFE_CYCLE lifeCycle = pd::LC_ADULT;
     errorCL = clSetKernelArg( kernel, 3, sizeof( pd::LIFE_CYCLE ), &lifeCycle );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -351,8 +351,11 @@ inline void DungeonCrawl::initLiving() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // 6
-    // ƒобавл€ем каждый раз другое значение - получаем большее разнообразие.
-    // ¬ключаетс€ в цикле ниже.
+    // Ќет смысла добавл€ть другое значение при каждом вызове €дра, чтобы
+    // разнообразить мир: в €дре OpenCL предостаточно "магических чисел".
+    const cl_uint rseed = randomGenerator();
+    errorCL = clSetKernelArg( kernel, 6, sizeof( cl_uint ), &rseed );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
     const auto& al = tp.aboutPlanet.living;
@@ -503,11 +506,6 @@ inline void DungeonCrawl::initLiving() {
             // планета заселена, количества особей соотв. желаемым
             break;
         }
-
-        // 6 (см. прим. дл€ аргументов выше)
-        const cl_uint rseed = randomGenerator();
-        errorCL = clSetKernelArg( kernel, 6, sizeof( cl_uint ), &rseed );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
         errorCL = clEnqueueNDRangeKernel(
             commandQueueCL,
@@ -1063,7 +1061,7 @@ inline void DungeonCrawl::prepareLivingCLKernel() {
         //  оэф. пр€мо пропорционален желаемому кол-ву из zoneLiving_t.
         // (малые значени€ - быстрее вычислени€, но более грубое
         // расселение особей)
-        << " -D ITERATION_GROW_COUNT=" << 10000
+        << " -D ITERATION_GROW_COUNT=" << 10
 
         // ѕри включении:
         // Ќаличие в соседних €чейках подобных особей повышает веро€тность
