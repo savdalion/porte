@@ -27,7 +27,6 @@ __kernel void clear(
         for (uint l = 0; l < LIFE_CYCLE_COUNT; ++l) {
             lc[i][o][l].code  = CL_NONE;
             lc[i][o][l].count = 0.0f;
-            lc[i][o][l].group = 0;
         }
     }
 

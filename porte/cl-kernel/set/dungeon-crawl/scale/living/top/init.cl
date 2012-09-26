@@ -185,7 +185,6 @@ inline void zoneLiving(
             rstate,  (int2)( minGroup, maxGroup )
         ) * delta;
         lc[i][o][lifeCycle].count += qty;
-        lc[i][o][lifeCycle].group = lc[i][o][lifeCycle].count / averageGroup;
         */
 
         lc[i][o][lifeCycle].code = code;
@@ -197,8 +196,6 @@ inline void zoneLiving(
         if (lc[i][o][lifeCycle].count < 1.0f) {
             lc[i][o][lifeCycle].count = floatDice( rstate, 1, powerIteration ) + 1.0f;
         }
-        // @todo optimize Группы можно посчитать после init-итераций.
-        lc[i][o][lifeCycle].group = (uint)( lc[i][o][lifeCycle].count / averageGroup ) + 1;
 
     } // for (uint k
 
