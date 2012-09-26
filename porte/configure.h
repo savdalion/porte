@@ -22,4 +22,16 @@ namespace porte {
 const std::string PATH_CL = "D:/Projects/workspace/porte/porte/cl-kernel";
 const std::string PATH_CL_DUNGEONCRAWL = PATH_CL + "/set/dungeon-crawl";
 
+
+
+/**
+* Элементы мира Dungeon Crawl, которые будут включены в движок.
+* Отключается, как правило, для отладки.
+*   # Необходимо помнить о зависимостях элементов друг от друга.
+*/
+//#define COMPONENT_DUNGEONCRAWL_PORTE
+#define LIVING_DUNGEONCRAWL_PORTE
+//#define TEMPERATURE_DUNGEONCRAWL_PORTE
+
+
 } // porte

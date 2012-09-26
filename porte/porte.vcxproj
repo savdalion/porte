@@ -26,7 +26,9 @@
   <ItemGroup>
     <None Include="include\chemistry\Chemistry.inl" />
     <None Include="include\porte\PortulanBooster.inl" />
+    <None Include="include\set\dungeon-crawl\init.inl" />
     <None Include="include\set\dungeon-crawl\DungeonCrawl.inl" />
+    <None Include="include\set\dungeon-crawl\prepare.inl" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl" />

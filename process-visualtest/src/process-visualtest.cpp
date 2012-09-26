@@ -561,6 +561,7 @@ int main( int argc, char** argv ) {
 
 
     // Инициализируем область планеты
+    std::cout << std::endl;
     dungeonCrawl.init();
 
 
@@ -575,14 +576,20 @@ int main( int argc, char** argv ) {
     visual << planet;
     
 
-    // Сделаем снимок результата
+    // Сделаем снимок топологии
     pio::SnapshotVTK  snapshot( &planet );
-    //snapshot.component();
+#ifdef COMPONENT_DUNGEONCRAWL_PORTE
+    snapshot.component();
+#endif
+#ifdef LIVING_DUNGEONCRAWL_PORTE
     snapshot.living();
-    //snapshot.temperature();
+#endif
+#ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
+    snapshot.temperature();
+#endif
 
 
-    std::cout << std::endl << "Нажимаем 'Enter' для изменения планеты..." << std::endl << std::endl;
+    // @todo std::cout << std::endl << "Нажимаем 'Enter' для изменения планеты..." << std::endl << std::endl;
 
     const int PULSE = 1;
     int age = 0;

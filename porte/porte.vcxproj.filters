@@ -68,5 +68,11 @@
     <None Include="include\set\dungeon-crawl\DungeonCrawl.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
+    <None Include="include\set\dungeon-crawl\prepare.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\set\dungeon-crawl\init.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
   </ItemGroup>
 </Project>

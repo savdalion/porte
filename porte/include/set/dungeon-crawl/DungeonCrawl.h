@@ -193,4 +193,7 @@ private:
 
 
 
+// разбито на неск. файлов для удобства
 #include "DungeonCrawl.inl"
+#include "prepare.inl"
+#include "init.inl"
