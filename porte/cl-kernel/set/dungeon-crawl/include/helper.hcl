@@ -57,6 +57,26 @@ inline bool one( const float a) {
 
 
 
+/**
+* @return true, если значение лежит в диапазоне [a; b].
+*/
+inline bool between( const float v, const float a, const float b ) {
+    // @todo optimize ѕереписать все сравнени€ через нативные функции.
+    return (v >= a) && (v <= b);
+}
+
+
+
+/**
+* @return true, если значение лежит в диапазоне (a; b).
+*/
+inline bool betweenExclude( const float v, const float a, const float b ) {
+    return (v > a) && (v < b);
+}
+
+
+
+
 
 
 /**
@@ -153,7 +173,7 @@ inline bool inside( const int4 nc ) {
 
 
 /**
-* @return ѕризнак, что указанна€ точка лежит вне матрицы N x M.
+* @return ѕризнак, что указанна€ точка лежит вне матрицы.
 * == !insideMatrix()
 */
 inline bool outside( const int4 nc ) {

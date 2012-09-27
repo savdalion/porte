@@ -1,12 +1,10 @@
-#include "include/pragma.hcl"
-#include "include/restruct.hcl"
-#include "include/helper.hcl"
-#include "include/zone.hcl"
-//#include "include/dice.hcl"
+// @require Библиотеки из "include".
 
 
 /**
 * Инициализирует карту температур в области планеты.
+* 
+* @see surface.cl
 */
 
 
@@ -58,7 +56,6 @@ inline void coreTemperature( __global temperatureCell_t t, __global const aboutP
 
     // @see Вычисления по карте температуры - zoneTemperature().
     t[0].average = zoneTemperature( &ap->temperature.core, ap->radius.core, distanceByHalfSize );
-    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
@@ -66,7 +63,6 @@ inline void coreTemperature( __global temperatureCell_t t, __global const aboutP
 inline void mantleTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     // @see coreTemperature()
     t[0].average = zoneTemperature( &ap->temperature.mantle, ap->radius.core, distanceByHalfSize );
-    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
@@ -74,7 +70,6 @@ inline void mantleTemperature( __global temperatureCell_t t, __global const abou
 
 inline void crustTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     t[0].average = zoneTemperature( &ap->temperature.crust, ap->radius.core, distanceByHalfSize );
-    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
@@ -82,7 +77,6 @@ inline void crustTemperature( __global temperatureCell_t t, __global const about
 
 inline void atmosphereTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     t[0].average = zoneTemperature( &ap->temperature.atmosphere, ap->radius.core, distanceByHalfSize );
-    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
@@ -90,7 +84,6 @@ inline void atmosphereTemperature( __global temperatureCell_t t, __global const 
 
 inline void spaceTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     t[0].average = zoneTemperature( &ap->temperature.space, ap->radius.core, distanceByHalfSize );
-    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
@@ -114,8 +107,11 @@ __kernel void init(
 
 
     // @test
-    //tc[i].rate = -56789.0f;
-    //return;    
+    //tc[i].average = -56789.0f;
+    //return;
+    
+    // @test
+    //tc[i].average = (distanceByHalfSize <= ap->radius.core) ? 1.0f : 2.0f;
 
     /* @test
     uint2 rstate = (uint2)( dnx ^ dny ^ i, dny ^ dnz ^ i );
@@ -152,10 +148,5 @@ __kernel void init(
     } else {
         spaceTemperature( tc[i], ap, distanceByHalfSize );
     }
-
-
-    // @test
-    //tc[i].average = (distanceByHalfSize <= ap->radius.core) ? 1.0f : 2.0f;
-    //tc[i].average = tc[i].dispersion = tc[i].rate = -12345.0f;
     
 }

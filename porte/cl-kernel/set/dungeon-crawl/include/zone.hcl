@@ -1,3 +1,6 @@
+// @require helper.hcl
+
+
 /**
 * ћетоды помогают определить зону области планеты по указанным
 * координатам.
@@ -56,4 +59,25 @@ inline bool atmosphereZone( __global const aboutPlanet_t* ap, float distanceByHa
 */
 inline bool spaceZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     return (distanceByHalfSize > ap->radius.atmosphere);
+}
+
+
+
+
+/**
+* @return «аданна€ точка сетки находитс€ на внешней поверхности планетарной коры.
+*/
+inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+    const float r = ap->radius.crust;
+    return between( distanceByHalfSize,  r - PART_SCALE * 1.4f,  r );
+}
+
+
+
+/**
+* @return «аданна€ точка сетки находитс€ на внутренней поверхности атмосферы планеты.
+*/
+inline bool interiorAtmosphereZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+    const float r = ap->radius.atmosphere;
+    return between( distanceByHalfSize,  r,  r + PART_SCALE * 1.6f );
 }

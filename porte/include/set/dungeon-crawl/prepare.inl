@@ -58,6 +58,7 @@ inline void DungeonCrawl::prepareTemperatureCLKernel() {
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/temperature/top/init" )
+        ( "scale/temperature/top/surface" )
     ;
 
     // Подготавливаем ядерные опции

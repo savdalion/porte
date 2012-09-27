@@ -1,8 +1,4 @@
-#include "include/pragma.hcl"
-#include "include/restruct.hcl"
-#include "include/helper.hcl"
-#include "include/zone.hcl"
-//#include "include/dice.hcl"
+// @require Библиотеки из "include".
 
 
 /**

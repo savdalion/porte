@@ -223,10 +223,13 @@ inline void DungeonCrawl::compileCLKernel(
     typedef typelib::StaticMapContent3D< G, G, G >  smc_t;
 
     // масштаб для рабочей сетки считаем здесь, чтобы не нагружать ядра
-    // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки.
+    // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки и
+    //   какую часть портулана занимает эта ячейка.
     const float scale =
         mPortulan->topology().topology().aboutPlanet.size /
         static_cast< float >( G );
+    const float partScale =
+        scale / mPortulan->topology().topology().aboutPlanet.size;
 
     std::ostringstream commonOptions;
     commonOptions
@@ -238,11 +241,49 @@ inline void DungeonCrawl::compileCLKernel(
         << " -D MIN_COORD_GRID=" << smc_t::minCoord().x
         << " -D MAX_COORD_GRID=" << smc_t::maxCoord().x
         << " -D SCALE=" << scale
+        << " -D PART_SCALE=" << partScale
         << " " << options
         << commonConstantCLKernel()
         << commonOptionCLKernel()
         << "";
 
+    // здесь будет код необходимых ядру библиотек
+    std::string kernelLibraryCode = "";
+
+    // подключаем общие библиотеки и структуры
+    // #! Важен порядок подключения.
+    const std::vector< std::string > hcl = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/pragma.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/restruct.hcl" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/structure.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/component.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+    ;
+    for (auto itr = hcl.cbegin(); itr != hcl.cend(); ++itr) {
+        const std::string& pathAndName = *itr;
+#ifdef _DEBUG
+        const std::string shortName =
+            itr->substr( pathAndName.find_last_of( '/' ) + 1 );
+        std::cout << "Собираем \"" << shortName << "\" .. ";
+#endif
+        const std::ifstream  file( pathAndName.c_str() );
+        assert( file.is_open()
+            && "Файл не найден." );
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        kernelLibraryCode += "\n\n\n\n\n" + buffer.str();
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+    }
+
+
+    // компилируем ядро
     // @todo Искать по папкам в "scale". Сейчас - фиксированный путь в
     //       kernelKeys, плохо.
     for (auto itr = std::begin( kernelKeys ); itr != std::end( kernelKeys ); ++itr) {
@@ -251,21 +292,34 @@ inline void DungeonCrawl::compileCLKernel(
         const std::string kernelName = itr->substr( itr->find_last_of( '/' ) + 1 );
 
         // Program Setup
-        size_t programLength;
         const std::string fileKernel = kernelKey + ".cl";
-        const std::string pathAndName = PATH_CL_DUNGEONCRAWL + "/" + fileKernel;
-        const char* pureSourceCode =
-            oclLoadProgSource( pathAndName.c_str(), "", &programLength );
-        oclCheckErrorEX( (pureSourceCode != nullptr), true, &fnErrorCL );
+        const std::string pathAndName =
+            PATH_CL_DUNGEONCRAWL + "/" + fileKernel;
+#ifdef _DEBUG
+        std::cout << "Собираем \"" << fileKernel << "\" .. ";
+#endif
+        const std::ifstream  file( pathAndName.c_str() );
+        assert( file.is_open()
+            && "Файл ядра не найден." );
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        const std::string kernelSC = buffer.str();
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
 
         // create the program
+        const std::string kernelSourceCode =
+            kernelLibraryCode + "\n\n\n\n\n" + kernelSC;
+        const char* programSource = kernelSourceCode.c_str();
+        const size_t programLength = kernelSourceCode.length();
         cl_program programCL = clCreateProgramWithSource(
-            gpuContextCL,  1,  (const char**)&pureSourceCode,  &programLength, &errorCL
+            gpuContextCL,  1,  &programSource,
+            &programLength, &errorCL
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     
 #ifdef _DEBUG
-        // @test
         std::cout << std::endl << "Опции OpenCL для ядра \"" << kernelKey << "\"" << std::endl << commonOptions.str() << std::endl;
 #endif
 
@@ -356,19 +410,6 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         */
 
         << "";
-
-#ifdef ALWAYS_BUILD_CL_KERNEL_PORTE
-    static const std::string randstamp = boost::lexical_cast< std::string >(
-        static_cast< unsigned int >( time( nullptr ) )
-    );
-    options
-        // добавляем к настройкам (в 2012 г. драйвер OpenCL от NVIDIA
-        // научился хешировать файл без учёта комментариев) уникальный
-        // хвост, чтобы OpenCL не думал брать построенную ранее программу
-        // из кеша устройства: иначе рискуем получать феноменальные ошибки,
-        // когда изменения во *включаемых файлах* учитываются "через раз"
-        << " -D BUILD_RANDSTAMP=" << randstamp;
-#endif
 
     return options.str();
 }

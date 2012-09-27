@@ -1,3 +1,6 @@
+// @require pragma.hcl
+
+
 /**
 * (!) Все определения из этого файла должны быть согласованы со
 * структурами C++.
@@ -26,9 +29,14 @@ typedef ushort  cl_ushort;
 //    к феноменальным ошибкам.
 // # Хорошее решение для отладки феноменальных ошибок > https://sourceforge.net/projects/clcc
 
+// @see Соглашения в helper.hcl.
+
+
+/* - Подключаем в коде C++ при сборке ядра.
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/structure.h"
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/component.h"
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/living.h"
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/temperature.h"
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/planet.h"
 //#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/topology.h"
+*/

@@ -118,9 +118,8 @@ inline void DungeonCrawl::initTemperature() {
     // €чеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
 
 
-    // »нициализируем сетку
-    const cl_kernel kernel = kernelCL[ "scale/temperature/top/init" ];
-
+    // I. »нициализируем температуру на планете.
+    const cl_kernel kernelInit = kernelCL[ "scale/temperature/top/init" ];
 
     /* @test
     pd::test_t test;
@@ -150,16 +149,46 @@ inline void DungeonCrawl::initTemperature() {
 
 
     // 0
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // 1
-    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &temperatureCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
         commandQueueCL,
-        kernel,
+        kernelInit,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизаци€
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << ".";
+#endif
+
+    // II. ”точн€ем температуру на поверхности планеты.
+    const cl_kernel kernelSurface = kernelCL[ "scale/temperature/top/surface" ];
+
+    // 0
+    errorCL = clSetKernelArg( kernelSurface, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 1
+    errorCL = clSetKernelArg( kernelSurface, 1, sizeof( cl_mem ), &temperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelSurface,
         GRID_WORK_DIM,
         nullptr,
         GRID_GLOBAL_WORK_SIZE,

@@ -1,14 +1,10 @@
-#include "include/pragma.hcl"
-#include "include/restruct.hcl"
-#include "include/helper.hcl"
-#include "include/zone.hcl"
-#include "include/dice.hcl"
+// @require Библиотеки из "include".
 
 
 /**
 * Инициализирует особей в области планеты.
 *
-* #! Перед вызовом этого ядра следует выполнить ядро "clear".
+* #! Предварительно надо выполнить ядро clear.hcl.
 */
 
 

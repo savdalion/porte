@@ -120,7 +120,7 @@ int main( int argc, char** argv ) {
             }
         },
 
-        // temperature
+        // temperature: center, surface
         {
             // space
             {    1.0f,              1.0f },
@@ -132,6 +132,24 @@ int main( int argc, char** argv ) {
             { 4000.0f - tc::CK,  1000.0f - tc::CK },
             // core
             { 6000.0f - tc::CK,  4000.0f - tc::CK }
+        },
+
+        // surfaceTemperature: equator, pole
+        {
+            // crust
+            { -50.0f - tc::CK,  50.0f - tc::CK }
+        },
+
+        // rainfall: min, max
+        {
+            // crust
+            { 50.0f,  5000.0f }
+        },
+
+        // drainage: min, max
+        {
+            // crust
+            { 50.0f,  5000.0f }
         },
 
         // living
@@ -150,7 +168,7 @@ int main( int argc, char** argv ) {
                 //     2 млрд муравьёв, образующих примерно 740 тыс колоний.
                 // #i Общая площадь суши планеты Земля 149 млн кв. км.
                 // #i Размер муравья Dungeon Crawl ~70 см, что в ~70 раз
-                //    больше обычного.
+                //    больше земного.
                 { pd::CL_WORKER_ANT,  static_cast< float >(2e9 * (150e6 / 10.0) / 70.0) },
                 { pd::CL_NONE, 0.0f },
             },
@@ -174,6 +192,9 @@ int main( int argc, char** argv ) {
     const auto& testC = topology.aboutPlanet.component;
     const auto& testL = topology.aboutPlanet.living;
     const auto& testT = topology.aboutPlanet.temperature;
+    const auto& testST = topology.aboutPlanet.surfaceTemperature;
+    const auto& testR = topology.aboutPlanet.rainfall;
+    const auto& testD = topology.aboutPlanet.drainage;
 
     /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
     //topology.aboutComponent = aboutComponent;
