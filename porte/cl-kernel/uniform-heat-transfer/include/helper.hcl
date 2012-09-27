@@ -97,7 +97,7 @@ inline uint4 denormalizeCoord( const int4 nc ) {
 *         Граничные координаты передаются ядру.
 */
 inline bool borderRight( const int4 nc ) {
-    return (nc.x = MAXX);
+    return (nc.x == MAXX);
 }
 
 inline bool borderLeft( const int4 nc ) {

@@ -18,7 +18,14 @@ typedef ushort  cl_ushort;
 #define CL_FLT_MAX          340282346638528859811704183484516925440.0f
 
 
-// #! Важен порядок подключения.
+// #! Важен порядок подключения. Иначе при компиляции ядра рискуем получить
+//    феноменальные ошибки... в которых нет мало-мальского сообщения о
+//    причине ошибке.
+// #! Символ Unicode в ядре OpenCL (появится может, например, после копирования
+//    справки из Википедии) или файл, сохранённый в Unicode, может привести
+//    к феноменальным ошибкам.
+// # Хорошее решение для отладки феноменальных ошибок > https://sourceforge.net/projects/clcc
+
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/structure.h"
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/component.h"
 #include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/living.h"

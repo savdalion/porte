@@ -19,8 +19,10 @@ namespace porte {
 //#define ALWAYS_BUILD_CL_KERNEL_PORTE
 
 
-const std::string PATH_CL = "D:/Projects/workspace/porte/porte/cl-kernel";
-const std::string PATH_CL_DUNGEONCRAWL = PATH_CL + "/set/dungeon-crawl";
+static const std::string PATH_CL =
+    "D:/Projects/workspace/porte/porte/cl-kernel";
+static const std::string PATH_CL_DUNGEONCRAWL =
+    PATH_CL + "/set/dungeon-crawl";
 
 
 
@@ -29,9 +31,9 @@ const std::string PATH_CL_DUNGEONCRAWL = PATH_CL + "/set/dungeon-crawl";
 * Отключается, как правило, для отладки.
 *   # Необходимо помнить о зависимостях элементов друг от друга.
 */
-//#define COMPONENT_DUNGEONCRAWL_PORTE
+#define COMPONENT_DUNGEONCRAWL_PORTE
 #define LIVING_DUNGEONCRAWL_PORTE
-//#define TEMPERATURE_DUNGEONCRAWL_PORTE
+#define TEMPERATURE_DUNGEONCRAWL_PORTE
 
 
 } // porte

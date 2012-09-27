@@ -73,18 +73,18 @@ public:
 
 
     /**
-    * Инициализирует живые организмы в области планеты.
-    */
-    void initLiving();
-
-    
-    /**
     * Инициализирует сетку температур в области планеты.
     */
     void initTemperature();
 
 
+    /**
+    * Инициализирует живые организмы в области планеты.
+    */
+    void initLiving();
 
+
+    
 
 protected:
     /**
@@ -99,10 +99,11 @@ private:
     void prepareCLContext();
     void prepareCLCommandQueue();
 
+    // # Порядок следования методов соотв. порядку инициализации.
     void prepareCLKernel();
     void prepareComponentCLKernel();
-    void prepareLivingCLKernel();
     void prepareTemperatureCLKernel();
+    void prepareLivingCLKernel();
 
     template< size_t G >
     void compileCLKernel(
@@ -138,21 +139,20 @@ private:
     * Структуры для OpenCL-вычислений.
     *   # Префикс "work" добавляется к структуре, которая используются ядрами для
     *     промежуточных вычислений.
+    *   # Однотипные переменные упорядочены по алфавиту.
     */
     cl_mem aboutPlanetCL;
     const size_t memsizeAboutPlanet;
 
     cl_mem componentCL;
-    cl_mem workComponentCL;
     const size_t memsizeComponent;
 
     cl_mem livingCL;
-    cl_mem workLivingCL;
     const size_t memsizeLiving;
 
     cl_mem temperatureCL;
-    cl_mem workTemperatureCL;
     const size_t memsizeTemperature;
+
 
     /**
     * Генератор случ. чисел.
@@ -186,6 +186,22 @@ private:
 
 } // porte
 
+
+
+
+
+
+void __stdcall pfn_notify_cl(
+    const char* errinfo, const void* private_info,
+    size_t cb, void* user_data
+);
+
+
+/* - Не ошибка, только вызов после компиляции.
+void __stdcall pfn_notify_program_cl(
+    cl_program, void* user_data
+);
+*/
 
 
 

@@ -10,25 +10,22 @@ inline DungeonCrawl::DungeonCrawl(
     memsizeAboutPlanet( sizeof( portulan::planet::set::dungeoncrawl::aboutPlanet_t ) ),
 
     componentCL( nullptr ),
-    workComponentCL( nullptr ),
     // #! Если память выделена динамически, работаем с содержанием структуры.
-    memsizeComponent( sizeof( portulan::planet::set::dungeoncrawl::component::componentCell_t ) *
+    memsizeComponent( sizeof( portulan::planet::set::dungeoncrawl::componentCell_t ) *
         portulan::planet::set::dungeoncrawl::COMPONENT_GRID *
         portulan::planet::set::dungeoncrawl::COMPONENT_GRID *
         portulan::planet::set::dungeoncrawl::COMPONENT_GRID
     ),
 
     livingCL( nullptr ),
-    workLivingCL( nullptr ),
-    memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::living::livingCell_t ) *
+    memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
         portulan::planet::set::dungeoncrawl::LIVING_GRID *
         portulan::planet::set::dungeoncrawl::LIVING_GRID *
         portulan::planet::set::dungeoncrawl::LIVING_GRID
     ),
 
     temperatureCL( nullptr ),
-    workTemperatureCL( nullptr ),
-    memsizeTemperature( sizeof( portulan::planet::set::dungeoncrawl::temperature::temperatureCell_t ) *
+    memsizeTemperature( sizeof( portulan::planet::set::dungeoncrawl::temperatureCell_t ) *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID
@@ -85,15 +82,6 @@ inline DungeonCrawl::DungeonCrawl(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    workComponentCL = clCreateBuffer(
-        gpuContextCL,
-        CL_MEM_READ_WRITE,
-        memsizeComponent,
-        nullptr,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
     // living
     livingCL = clCreateBuffer(
         gpuContextCL,
@@ -106,15 +94,6 @@ inline DungeonCrawl::DungeonCrawl(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    workLivingCL = clCreateBuffer(
-        gpuContextCL,
-        CL_MEM_READ_WRITE,
-        memsizeLiving,
-        nullptr,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
     // temperature
     temperatureCL = clCreateBuffer(
         gpuContextCL,
@@ -123,15 +102,6 @@ inline DungeonCrawl::DungeonCrawl(
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().temperature.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    workTemperatureCL = clCreateBuffer(
-        gpuContextCL,
-        CL_MEM_READ_WRITE,
-        memsizeTemperature,
-        nullptr,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -156,9 +126,9 @@ inline DungeonCrawl::~DungeonCrawl() {
     ...
     */
     // ...но временные структуры - исключение
-    clReleaseMemObject( workComponentCL );
-    clReleaseMemObject( workLivingCL );
-    clReleaseMemObject( workTemperatureCL );
+    //clReleaseMemObject( workComponentCL );
+    //clReleaseMemObject( workLivingCL );
+    //clReleaseMemObject( workTemperatureCL );
 
     // удаляем собранные ядра
     for (auto itr = kernelCL.begin(); itr != kernelCL.end(); ++itr) {
@@ -212,7 +182,10 @@ inline void DungeonCrawl::prepareCLContext() {
     const cl_context_properties props[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformCL, 0 };
     // (!) Если установлен слишком большой размер стека, OpenCL не будет инициализирован.
     //     Включение LARGEADDRESSAWARE не решает проблему.
-    gpuContextCL = clCreateContext( props, 1, &devicesCL[ deviceUsedCL ], nullptr, nullptr, &errorCL );
+    gpuContextCL = clCreateContext(
+        props, 1, &devicesCL[ deviceUsedCL ],
+        &pfn_notify_cl, nullptr, &errorCL
+    );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
@@ -281,7 +254,8 @@ inline void DungeonCrawl::compileCLKernel(
         size_t programLength;
         const std::string fileKernel = kernelKey + ".cl";
         const std::string pathAndName = PATH_CL_DUNGEONCRAWL + "/" + fileKernel;
-        const char* pureSourceCode = oclLoadProgSource( pathAndName.c_str(), "", &programLength );
+        const char* pureSourceCode =
+            oclLoadProgSource( pathAndName.c_str(), "", &programLength );
         oclCheckErrorEX( (pureSourceCode != nullptr), true, &fnErrorCL );
 
         // create the program
@@ -296,7 +270,11 @@ inline void DungeonCrawl::compileCLKernel(
 #endif
 
         // build the program
-        errorCL = clBuildProgram( programCL, 0, nullptr, commonOptions.str().c_str(), nullptr, nullptr );
+        errorCL = clBuildProgram(
+            programCL, 0, nullptr, commonOptions.str().c_str(),
+            //pfn_notify_program_cl, nullptr
+            nullptr, nullptr
+        );
         if (errorCL != CL_SUCCESS) {
             shrLogEx( LOGCONSOLE | ERRORMSG, errorCL, STDERROR );
             oclLogBuildInfo( programCL, oclGetFirstDev( gpuContextCL ) );
@@ -323,17 +301,11 @@ inline void DungeonCrawl::compileCLKernel(
 
 inline std::string DungeonCrawl::commonConstantCLKernel() {
     namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace pc = portulan::planet::set::dungeoncrawl::component;
-    namespace pl = portulan::planet::set::dungeoncrawl::living;
-    namespace pt = portulan::planet::set::dungeoncrawl::temperature;
-
-    static const std::string randstamp =
-        boost::lexical_cast< std::string >( static_cast< unsigned int >( time( nullptr ) ) );
 
     // структуры для вычисления минимаксов координат для сеток
     typedef typelib::StaticMapContent3D< pd::COMPONENT_GRID, pd::COMPONENT_GRID, pd::COMPONENT_GRID >        componentSMC_t;
-    typedef typelib::StaticMapContent3D< pd::LIVING_GRID, pd::LIVING_GRID, pd::LIVING_GRID >                 livingSMC_t;
     typedef typelib::StaticMapContent3D< pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID >  temperatureSMC_t;
+    typedef typelib::StaticMapContent3D< pd::LIVING_GRID, pd::LIVING_GRID, pd::LIVING_GRID >                 livingSMC_t;
 
     std::ostringstream options;
     options
@@ -347,10 +319,15 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D COMPONENT_COUNT=" << pd::COMPONENT_COUNT
         << " -D COMPONENT_CELL=" << pd::COMPONENT_CELL
 
+        // temperature
+        << " -D TEMPERATURE_GRID=" << pd::TEMPERATURE_GRID
+        << " -D MIN_COORD_TEMPERATURE_GRID=" << temperatureSMC_t::minCoord().x
+        << " -D MAX_COORD_TEMPERATURE_GRID=" << temperatureSMC_t::maxCoord().x
+
         // living
         << " -D LIVING_GRID=" << pd::LIVING_GRID
-        << " -D MIN_COORD_LIVING_GRID=" << componentSMC_t::minCoord().x
-        << " -D MAX_COORD_LIVING_GRID=" << componentSMC_t::maxCoord().x
+        << " -D MIN_COORD_LIVING_GRID=" << livingSMC_t::minCoord().x
+        << " -D MAX_COORD_LIVING_GRID=" << livingSMC_t::maxCoord().x
         << " -D LIVING_COUNT=" << pd::LIVING_COUNT
         << " -D LIVING_CELL=" << pd::LIVING_CELL
         << " -D LIFE_CYCLE_COUNT=" << pd::LIFE_CYCLE_COUNT
@@ -366,11 +343,6 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D ENVIRONMENT_SURVIVOR_LIVING=" << pd::ENVIRONMENT_SURVIVOR_LIVING
         << " -D COMPONENT_COMPOSITION_LIVING=" << pd::COMPONENT_COMPOSITION_LIVING
 
-        // temperature
-        << " -D TEMPERATURE_GRID=" << pd::TEMPERATURE_GRID
-        << " -D MIN_COORD_TEMPERATURE_GRID=" << componentSMC_t::minCoord().x
-        << " -D MAX_COORD_TEMPERATURE_GRID=" << componentSMC_t::maxCoord().x
-
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION
 
@@ -382,15 +354,21 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         // @source http://ru.wikipedia.org/wiki/%D0%A3%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_%D0%B3%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D1%8F_%D0%BF%D0%BE%D1%81%D1%82%D0%BE%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F
         << " -D R_GAS=8.31441f"
         */
+
+        << "";
+
 #ifdef ALWAYS_BUILD_CL_KERNEL_PORTE
+    static const std::string randstamp = boost::lexical_cast< std::string >(
+        static_cast< unsigned int >( time( nullptr ) )
+    );
+    options
         // добавляем к настройкам (в 2012 г. драйвер OpenCL от NVIDIA
         // научился хешировать файл без учёта комментариев) уникальный
         // хвост, чтобы OpenCL не думал брать построенную ранее программу
         // из кеша устройства: иначе рискуем получать феноменальные ошибки,
         // когда изменения во *включаемых файлах* учитываются "через раз"
-        << " -D BUILD_RANDSTAMP=" << randstamp
+        << " -D BUILD_RANDSTAMP=" << randstamp;
 #endif
-        << "";
 
     return options.str();
 }
@@ -413,20 +391,21 @@ inline std::string DungeonCrawl::commonOptionCLKernel() {
         // серьёзная оптимизация
         // (i) ~10% прирост только с включением опций ниже.
         // @todo optimize Тонкая оптимизация OpenCL.
-        //       http://khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clBuildProgram.html
+        //       http://khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
         << " -cl-fast-relaxed-math"
         << " -cl-mad-enable"
 #endif
 #if 0
         // внимательная отладка
         // (i) Включать следует только при вылавливании блох: более чем
-        //     20-кратное замедление 
+        //     20-кратное замедление.
         << " -cl-opt-disable"
 #endif
         << "";
 
     return options.str();
 }
+
 
 
 
@@ -443,3 +422,25 @@ inline void DungeonCrawl::fnErrorCL( int exitCode ) {
 
 
 } // porte
+
+
+
+
+
+inline void __stdcall pfn_notify_cl(
+    const char* errinfo, const void* private_info,
+    size_t cb, void* user_data
+) {
+    //fprintf( stderr, "\n(!) OpenCL error via pfn_notify_cl(): %s\n", errinfo );
+    std::cout << std::endl << "(!) OpenCL error via pfn_notify_cl(): " << *errinfo << std::endl;
+};
+
+
+
+/*
+inline void __stdcall pfn_notify_program_cl(
+    cl_program, void* user_data
+) {
+    fprintf( stderr, "\n(!) OpenCL error via pfn_notify_program_cl().\n" );
+};
+*/

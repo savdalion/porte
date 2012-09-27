@@ -168,9 +168,11 @@ inline void zoneLiving(
 
         // Т.к. может потребоваться "разместить" сотни млрд особей,
         // ускоряем этот процесс, оценивая базовые кол-ва.
+        /* - не используем.
         const float minGroup = z[k].minGroup;
         const float maxGroup = z[k].maxGroup;
         const float averageGroup = (minGroup + maxGroup) / 2.0f;
+        */
 
         /* - Другой подход. См. ниже.
         // вычисляем коэффициент с учётом кол-ва ячеек в области планеты и
@@ -186,7 +188,7 @@ inline void zoneLiving(
         ) * delta;
         lc[i][o][lifeCycle].count += qty;
         */
-
+        
         lc[i][o][lifeCycle].code = code;
         static const float VOLUME_K = (float)(GRID * GRID * GRID / 9 + 1);
         const float powerIteration = z[k].count / ((float)ITERATION_GROW_COUNT * VOLUME_K);

@@ -11,12 +11,12 @@ inline void DungeonCrawl::init() {
     initComponent();
 #endif
 
-#ifdef LIVING_DUNGEONCRAWL_PORTE
-    initLiving();
-#endif
-
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
     initTemperature();
+#endif
+
+#ifdef LIVING_DUNGEONCRAWL_PORTE
+    initLiving();
 #endif
 }
 
@@ -29,7 +29,6 @@ inline void DungeonCrawl::initComponent() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponentCLKernel().
 
     namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace pc = portulan::planet::set::dungeoncrawl::component;
 
 #ifdef _DEBUG
     std::cout << "Определяем состав планеты ..";
@@ -96,12 +95,110 @@ inline void DungeonCrawl::initComponent() {
 
 
 
+#ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::initTemperature() {
+    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareTemperatureCLKernel().
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+#ifdef _DEBUG
+    std::cout << "Создаём погоду ..";
+#endif
+
+    static const size_t grid = pd::TEMPERATURE_GRID;
+
+    // размерность сетки
+    static const size_t GRID_WORK_DIM = 3;
+    // количество Work Item
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+    // размер Work Item
+    /* - Пусть OpenCL выберет лучший размер сам.
+    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
+    */
+    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
+
+
+    // Инициализируем сетку
+    const cl_kernel kernel = kernelCL[ "scale/temperature/top/init" ];
+
+
+    /* @test
+    pd::test_t test;
+    const size_t memsizeTest = sizeof( pd::test_t );
+    cl_mem testCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeTest,
+        &test,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &testCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernel,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    */
+
+
+    // 0
+    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 1
+    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &temperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernel,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        temperatureCL,
+        CL_TRUE,
+        0,
+        memsizeTemperature,
+        mPortulan->topology().topology().temperature.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+}
+#endif
+
+
+
+
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponentCLKernel().
 
     namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace pl = portulan::planet::set::dungeoncrawl::living;
 
 #ifdef _DEBUG
     std::cout << "Населяем планету ..";
@@ -216,10 +313,10 @@ inline void DungeonCrawl::initLiving() {
     /* - Проще копировать код. См. ниже.
     const auto fnDesireCount = [ &zoneDesireCount, lifeCycle ] (
         float& zolValue,
-        const pl::zoneLiving_t& zl
+        const pd::zoneLiving_t& zl
     ) -> void {
-        const pl::CODE_LIVING code = zl.code;
-        if (code != pl::CL_NONE) {
+        const pd::CODE_LIVING code = zl.code;
+        if (code != pd::CL_NONE) {
             const float q = zl.count;
             zolValue += q;
             zoneDesireCount[ code ][ lifeCycle ].all += q;
@@ -230,8 +327,8 @@ inline void DungeonCrawl::initLiving() {
         // space
         {
             const auto& zk = al.space[k];
-            const pl::CODE_LIVING code = zk.code;
-            if (code != pl::CL_NONE) {
+            const pd::CODE_LIVING code = zk.code;
+            if (code != pd::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].space += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -240,8 +337,8 @@ inline void DungeonCrawl::initLiving() {
         // atmosphere
         {
             const auto& zk = al.atmosphere[k];
-            const pl::CODE_LIVING code = zk.code;
-            if (code != pl::CL_NONE) {
+            const pd::CODE_LIVING code = zk.code;
+            if (code != pd::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].atmosphere += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -250,8 +347,8 @@ inline void DungeonCrawl::initLiving() {
         // crust
         {
             const auto& zk = al.crust[k];
-            const pl::CODE_LIVING code = zk.code;
-            if (code != pl::CL_NONE) {
+            const pd::CODE_LIVING code = zk.code;
+            if (code != pd::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].crust += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -260,8 +357,8 @@ inline void DungeonCrawl::initLiving() {
         // mantle
         {
             const auto& zk = al.mantle[k];
-            const pl::CODE_LIVING code = zk.code;
-            if (code != pl::CL_NONE) {
+            const pd::CODE_LIVING code = zk.code;
+            if (code != pd::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].mantle += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -270,8 +367,8 @@ inline void DungeonCrawl::initLiving() {
         // core
         {
             const auto& zk = al.core[k];
-            const pl::CODE_LIVING code = zk.code;
-            if (code != pl::CL_NONE) {
+            const pd::CODE_LIVING code = zk.code;
+            if (code != pd::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].core += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -317,9 +414,9 @@ inline void DungeonCrawl::initLiving() {
                 for (size_t l = static_cast< size_t >( pd::LC_EMBRYO);
                      l < static_cast< size_t >( pd::LC_last );  ++l
                 ) {
-                    const pl::portionLiving_t& p = tp.living.content[i][k][l];
-                    const pl::CODE_LIVING code = p.code;
-                    assert( ((code >= pl::CL_NONE) && (code < pl::CL_last))
+                    const pd::portionLiving_t& p = tp.living.content[i][k][l];
+                    const pd::CODE_LIVING code = p.code;
+                    assert( ((code >= pd::CL_NONE) && (code < pd::CL_last))
                         && "Код особи не распознан. Вероятно, ошибка при инициализации матрицы." );
                     // суммируем (инициализация была выше)
                     zoneCount[ code ][ l ].all += p.count;
@@ -401,106 +498,6 @@ inline void DungeonCrawl::initLiving() {
 
 #ifdef _DEBUG
     std::cout << " ОК          " << std::endl;
-#endif
-}
-#endif
-
-
-
-
-
-#ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initTemperature() {
-    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareTemperatureCLKernel().
-
-    namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace pt = portulan::planet::set::dungeoncrawl::temperature;
-
-#ifdef _DEBUG
-    std::cout << "Создаём погоду ..";
-#endif
-
-    static const size_t grid = pd::TEMPERATURE_GRID;
-
-    // размерность сетки
-    static const size_t GRID_WORK_DIM = 3;
-    // количество Work Item
-    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
-    // размер Work Item
-    /* - Пусть OpenCL выберет лучший размер сам.
-    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
-    */
-    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
-
-
-    // Инициализируем сетку
-    const cl_kernel kernel = kernelCL[ "scale/temperature/top/init" ];
-
-
-    /* @test
-    pd::test_t test;
-    const size_t memsizeTest = sizeof( pd::test_t );
-    cl_mem testCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeTest,
-        &test,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &testCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    errorCL = clEnqueueNDRangeKernel(
-        commandQueueCL,
-        kernel,
-        GRID_WORK_DIM,
-        nullptr,
-        GRID_GLOBAL_WORK_SIZE,
-        nullptr,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    */
-
-
-    // 0
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // 1
-    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &temperatureCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    errorCL = clEnqueueNDRangeKernel(
-        commandQueueCL,
-        kernel,
-        GRID_WORK_DIM,
-        nullptr,
-        GRID_GLOBAL_WORK_SIZE,
-        nullptr,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // синхронизация
-    errorCL = clFinish( commandQueueCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // результат
-    errorCL = clEnqueueReadBuffer(
-        commandQueueCL,
-        temperatureCL,
-        CL_TRUE,
-        0,
-        memsizeTemperature,
-        mPortulan->topology().topology().temperature.content,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-#ifdef _DEBUG
-    std::cout << " ОК" << std::endl;
 #endif
 }
 #endif

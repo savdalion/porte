@@ -26,9 +26,7 @@ int main( int argc, char** argv ) {
 
     //namespace co = portulan::command::planet;
     namespace ps  = portulan::planet::set;
-    namespace pdc = portulan::planet::set::dungeoncrawl;
-    namespace pc  = portulan::planet::set::dungeoncrawl::component;
-    namespace pl  = portulan::planet::set::dungeoncrawl::living;
+    namespace pd = portulan::planet::set::dungeoncrawl;
     namespace tc  = typelib::constant::physics;
 
 
@@ -56,17 +54,6 @@ int main( int argc, char** argv ) {
     ps::topology_t& topology = planet.topology().topology();
 
 
-    /**
-    * Величина пульса в обласи планеты.
-    */
-    //    # 1 пульс = 1 год = 400 дней
-    //    # 1 день = 25 часов
-    const double DAY_IN_YEAR = 400;
-    const double HOUR_IN_YEAR = DAY_IN_YEAR * 25;
-    const double MINUTE_IN_YEAR = HOUR_IN_YEAR * 60;
-    const double SECOND_IN_YEAR = MINUTE_IN_YEAR * 60;
-
-
     // общая информация об области планеты
     // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BD%D0%B0%D1%8F_%D0%BA%D0%BE%D1%80%D0%B0
     const float radiusCrust = 7000.0f * 1000.0f;
@@ -80,7 +67,7 @@ int main( int argc, char** argv ) {
     const float massMantle = static_cast< cl_float >( 4e24 );
     const float massCore = static_cast< cl_float >( 3e24 );
 
-    static const pdc::aboutPlanet_t aboutPlanet = {
+    static const pd::aboutPlanet_t aboutPlanet = {
         // size
         halfSize * 2.0f,
 
@@ -94,54 +81,68 @@ int main( int argc, char** argv ) {
         {
             // space
             {
-                { pc::CC_NONE, 0.0f },
+                { pd::CC_NONE, 0.0f },
             },
             // atmosphere
             {
-                { pc::CC_AIR,        100.0f / 100.0f },
-                { pc::CC_NONE, 0.0f },
+                { pd::CC_AIR,        100.0f / 100.0f },
+                { pd::CC_NONE, 0.0f },
             },
             // crust
             {
-                { pc::CC_AIR,          3.0f / 100.0f },
-                { pc::CC_BARREN_SOIL, 14.0f / 100.0f },
-                { pc::CC_RICH_SOIL,    1.0f / 100.0f },
-                { pc::CC_SAND,        10.0f / 100.0f },
-                { pc::CC_ROCK,        20.0f / 100.0f },
-                { pc::CC_BOULDER,      4.0f / 100.0f },
-                { pc::CC_WATER,       47.0f / 100.0f },
-                { pc::CC_SPARSE,       0.5f / 100.0f },
-                { pc::CC_NONE, 0.0f },
+                { pd::CC_AIR,          3.0f / 100.0f },
+                { pd::CC_BARREN_SOIL, 14.0f / 100.0f },
+                { pd::CC_RICH_SOIL,    1.0f / 100.0f },
+                { pd::CC_SAND,        10.0f / 100.0f },
+                { pd::CC_ROCK,        20.0f / 100.0f },
+                { pd::CC_BOULDER,      4.0f / 100.0f },
+                { pd::CC_WATER,       47.0f / 100.0f },
+                { pd::CC_SPARSE,       0.5f / 100.0f },
+                { pd::CC_NONE, 0.0f },
             },
             // mantle
             {
-                { pc::CC_AIR,          1.0f / 100.0f },
-                { pc::CC_BARREN_SOIL, 12.0f / 100.0f },
-                { pc::CC_SAND,        20.0f / 100.0f },
-                { pc::CC_ROCK,        60.0f / 100.0f },
-                { pc::CC_WATER,        2.0f / 100.0f },
-                { pc::CC_SPARSE,       5.0f / 100.0f },
-                { pc::CC_NONE, 0.0f },
+                { pd::CC_AIR,          1.0f / 100.0f },
+                { pd::CC_BARREN_SOIL, 12.0f / 100.0f },
+                { pd::CC_SAND,        20.0f / 100.0f },
+                { pd::CC_ROCK,        60.0f / 100.0f },
+                { pd::CC_WATER,        2.0f / 100.0f },
+                { pd::CC_SPARSE,       5.0f / 100.0f },
+                { pd::CC_NONE, 0.0f },
             },
             // core
             {
-                { pc::CC_AIR,          0.1f / 100.0f },
-                { pc::CC_ROCK,        90.0f / 100.0f },
-                { pc::CC_WATER,        0.9f / 100.0f },
-                { pc::CC_SPARSE,       9.0f / 100.0f },
-                { pc::CC_NONE, 0.0f },
+                { pd::CC_AIR,          0.1f / 100.0f },
+                { pd::CC_ROCK,        90.0f / 100.0f },
+                { pd::CC_WATER,        0.9f / 100.0f },
+                { pd::CC_SPARSE,       9.0f / 100.0f },
+                { pd::CC_NONE, 0.0f },
             }
         },
 
-        // livingPlanet
+        // temperature
+        {
+            // space
+            {    1.0f,              1.0f },
+            // atmosphere
+            {   20.0f - tc::CK,     2.0f },
+            // crust
+            { 1000.0f - tc::CK,    20.0f - tc::CK },
+            // mantle
+            { 4000.0f - tc::CK,  1000.0f - tc::CK },
+            // core
+            { 6000.0f - tc::CK,  4000.0f - tc::CK }
+        },
+
+        // living
         {
             // space
             {
-                { pl::CL_NONE, 0.0f },
+                { pd::CL_NONE, 0.0f },
             },
             // atmosphere
             {
-                { pl::CL_NONE, 0.0f },
+                { pd::CL_NONE, 0.0f },
             },
             // crust
             {
@@ -150,55 +151,36 @@ int main( int argc, char** argv ) {
                 // #i Общая площадь суши планеты Земля 149 млн кв. км.
                 // #i Размер муравья Dungeon Crawl ~70 см, что в ~70 раз
                 //    больше обычного.
-                { pl::CL_WORKER_ANT,  static_cast< float >(2e9 * (150e6 / 10.0) / 70.0),  2000.0f, 5000.0f },
-                { pl::CL_NONE, 0.0f, 0.0f, 0.0f },
+                { pd::CL_WORKER_ANT,  static_cast< float >(2e9 * (150e6 / 10.0) / 70.0) },
+                { pd::CL_NONE, 0.0f },
             },
             // mantle
             {
-                { pl::CL_NONE, 0.0f, 0.0f, 0.0f },
+                { pd::CL_NONE, 0.0f },
             },
             // core
             {
-                { pl::CL_NONE, 0.0f, 0.0f, 0.0f },
-            },
-        },
-
-        // temperature
-        {
-            // space
-            {
-                {    1.0f,              1.0f }
-            },
-            // atmosphere
-            {
-                // map
-                {   20.0f - tc::CK,     2.0f }
-            },
-            // crust
-            {
-                { 1000.0f - tc::CK,    20.0f - tc::CK }
-            },
-            // mantle
-            {
-                { 4000.0f - tc::CK,  1000.0f - tc::CK }
-            },
-            // core
-            {
-                { 6000.0f - tc::CK,  4000.0f - tc::CK }
+                { pd::CL_NONE, 0.0f },
             }
         }
+
     };
 
 
 
     topology.aboutPlanet = aboutPlanet;
 
+    // @test
+    const auto& testC = topology.aboutPlanet.component;
+    const auto& testL = topology.aboutPlanet.living;
+    const auto& testT = topology.aboutPlanet.temperature;
+
     /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
     //topology.aboutComponent = aboutComponent;
-    std::memcpy( topology.aboutComponent,  pc::aboutComponent,  sizeof( pc::aboutComponent ) );
+    std::memcpy( topology.aboutComponent,  pd::aboutComponent,  sizeof( pd::aboutComponent ) );
     topology.component = component;    
     //topology.aboutLiving = aboutLiving;
-    std::memcpy( topology.aboutLiving,  pl::aboutLiving,  sizeof( pl::aboutLiving ) );
+    std::memcpy( topology.aboutLiving,  pd::aboutLiving,  sizeof( pd::aboutLiving ) );
     topology.living = living;
     */
 

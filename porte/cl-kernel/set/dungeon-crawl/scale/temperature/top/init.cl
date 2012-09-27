@@ -18,6 +18,7 @@
 * @param z  Карта температур в Кельвинах.
 */
 inline float zoneTemperature( __global const zoneTemperature_t* z, float radius, float distanceByHalfSize ) {
+
     /* - Формула упрощена. См. ниже.
     const float radius = ap->radius.core * ap->size / 2.0f;
     const float realDistance = distanceByHalfSize * ap->size / 2.0f;
@@ -31,12 +32,17 @@ inline float zoneTemperature( __global const zoneTemperature_t* z, float radius,
     //   планируемого зоной диапазона. Поэтому, делаем clamp().
     
     // упорядочиваем значения
+    /* - Не используется массив.
     // оптимизировано: Bool == 0 / 1
     // @see http://khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/isgreater.html
-    const uint a = (uint)isgreater( z->map[0], z->map[1] );
+    const uint a = (uint)isgreater( z->center, z->surface );
     const uint b = (uint)( !a );
+    */
+    const bool g = isgreater( z->center, z->surface );
+    const float a = g ? z->surface : z->center;
+    const float b = g ? z->center  : z->surface;
 
-    return clamp( z->map[0] + (z->map[1] - z->map[0]) * (distanceBySurface - 1.0f),  z->map[a],  z->map[b] );
+    return clamp( z->center + (z->surface - z->center) * (distanceBySurface - 1.0f),  a,  b );
 }
 
 
@@ -46,43 +52,45 @@ inline float zoneTemperature( __global const zoneTemperature_t* z, float radius,
 * Инициализирует температуру в заданной зоне области планеты.
 *   # Проверка, что координата находится в требуемой зоне уже осуществлена.
 */
-inline void coreTemperature( __global temperatureCell_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void coreTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+    // # Чтобы сохранить похожесть с другими структурами, температура
+    //   хранится в наборе с кол-вом ячеек = 1.
+
     // @see Вычисления по карте температуры - zoneTemperature().
-    t->average = zoneTemperature( &ap->temperature.core, ap->radius.core, distanceByHalfSize );
-    t->dispersion = t->rate = 0.0f;
+    t[0].average = zoneTemperature( &ap->temperature.core, ap->radius.core, distanceByHalfSize );
+    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
 
-
-inline void mantleTemperature( __global temperatureCell_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void mantleTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     // @see coreTemperature()
-    t->average = zoneTemperature( &ap->temperature.mantle, ap->radius.core, distanceByHalfSize );
-    t->dispersion = t->rate = 0.0f;
+    t[0].average = zoneTemperature( &ap->temperature.mantle, ap->radius.core, distanceByHalfSize );
+    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
 
 
-inline void crustTemperature( __global temperatureCell_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
-    t->average = zoneTemperature( &ap->temperature.crust, ap->radius.core, distanceByHalfSize );
-    t->dispersion = t->rate = 0.0f;
+inline void crustTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+    t[0].average = zoneTemperature( &ap->temperature.crust, ap->radius.core, distanceByHalfSize );
+    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
 
 
-inline void atmosphereTemperature( __global temperatureCell_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
-    t->average = zoneTemperature( &ap->temperature.atmosphere, ap->radius.core, distanceByHalfSize );
-    t->dispersion = t->rate = 0.0f;
+inline void atmosphereTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+    t[0].average = zoneTemperature( &ap->temperature.atmosphere, ap->radius.core, distanceByHalfSize );
+    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
 
 
-inline void spaceTemperature( __global temperatureCell_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
-    t->average = zoneTemperature( &ap->temperature.space, ap->radius.core, distanceByHalfSize );
-    t->dispersion = t->rate = 0.0f;
+inline void spaceTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+    t[0].average = zoneTemperature( &ap->temperature.space, ap->radius.core, distanceByHalfSize );
+    t[0].dispersion = t[0].rate = 0.0f;
 }
 
 
@@ -104,7 +112,11 @@ __kernel void init(
     // @see Опцию -D при при построении ядра  
     const uint i = icDenorm( dnc );
 
-    
+
+    // @test
+    //tc[i].rate = -56789.0f;
+    //return;    
+
     /* @test
     uint2 rstate = (uint2)( dnx ^ dny ^ i, dny ^ dnz ^ i );
     const int tInt   = (int)uintRandom( &rstate );
@@ -124,22 +136,23 @@ __kernel void init(
     const float distance = distanceNC( nc ) * (float)SCALE;
     const float halfSize = ap->size / 2.0f;
     const float distanceByHalfSize = distance / halfSize;
-    
+
     if ( coreZone( ap, distanceByHalfSize ) ) {
-        coreTemperature( &tc[i], ap, distanceByHalfSize );
+        coreTemperature( tc[i], ap, distanceByHalfSize );
         
     } else if ( mantleZone( ap, distanceByHalfSize ) ) {
-        mantleTemperature( &tc[i], ap, distanceByHalfSize );
+        mantleTemperature( tc[i], ap, distanceByHalfSize );
 
     } else if ( crustZone( ap, distanceByHalfSize ) ) {
-        crustTemperature( &tc[i], ap, distanceByHalfSize );
+        crustTemperature( tc[i], ap, distanceByHalfSize );
         
     } else if ( atmosphereZone( ap, distanceByHalfSize ) ) {
-        atmosphereTemperature( &tc[i], ap, distanceByHalfSize );
+        atmosphereTemperature( tc[i], ap, distanceByHalfSize );
         
     } else {
-        spaceTemperature( &tc[i], ap, distanceByHalfSize );
+        spaceTemperature( tc[i], ap, distanceByHalfSize );
     }
+
 
     // @test
     //tc[i].average = (distanceByHalfSize <= ap->radius.core) ? 1.0f : 2.0f;
