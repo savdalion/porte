@@ -134,22 +134,22 @@ int main( int argc, char** argv ) {
             { 6000.0f - tc::CK,  4000.0f - tc::CK }
         },
 
-        // surfaceTemperature: equator, pole
+        // surfaceTemperature: pole, equator
         {
             // crust
-            { -50.0f - tc::CK,  50.0f - tc::CK }
+            { -20.0f - tc::CK,  50.0f - tc::CK }
         },
 
         // rainfall: min, max
         {
             // crust
-            { 50.0f,  5000.0f }
+            { 5.0f,  5000.0f }
         },
 
         // drainage: min, max
         {
             // crust
-            { 50.0f,  5000.0f }
+            { 5.0f,  5000.0f }
         },
 
         // living
@@ -584,11 +584,14 @@ int main( int argc, char** argv ) {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
     snapshot.component();
 #endif
-#ifdef LIVING_DUNGEONCRAWL_PORTE
-    snapshot.living();
-#endif
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
     snapshot.temperature();
+#endif
+#ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
+    snapshot.surfaceTemperature();
+#endif
+#ifdef LIVING_DUNGEONCRAWL_PORTE
+    snapshot.living();
 #endif
 
 

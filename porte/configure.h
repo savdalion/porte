@@ -21,8 +21,9 @@ static const std::string PATH_STRUCTURE_CL_DUNGEONCRAWL =
 *   # Необходимо помнить о зависимостях элементов друг от друга.
 */
 //#define COMPONENT_DUNGEONCRAWL_PORTE
+//#define TEMPERATURE_DUNGEONCRAWL_PORTE
+#define SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 //#define LIVING_DUNGEONCRAWL_PORTE
-#define TEMPERATURE_DUNGEONCRAWL_PORTE
 
 
 } // porte

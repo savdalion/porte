@@ -17,18 +17,25 @@ inline DungeonCrawl::DungeonCrawl(
         portulan::planet::set::dungeoncrawl::COMPONENT_GRID
     ),
 
-    livingCL( nullptr ),
-    memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
-        portulan::planet::set::dungeoncrawl::LIVING_GRID *
-        portulan::planet::set::dungeoncrawl::LIVING_GRID *
-        portulan::planet::set::dungeoncrawl::LIVING_GRID
-    ),
-
     temperatureCL( nullptr ),
     memsizeTemperature( sizeof( portulan::planet::set::dungeoncrawl::temperatureCell_t ) *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID
+    ),
+
+    surfaceTemperatureCL( nullptr ),
+    memsizeSurfaceTemperature( sizeof( portulan::planet::set::dungeoncrawl::surfaceTemperatureCell_t ) *
+        portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID *
+        portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID *
+        portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID
+    ),
+
+    livingCL( nullptr ),
+    memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
+        portulan::planet::set::dungeoncrawl::LIVING_GRID *
+        portulan::planet::set::dungeoncrawl::LIVING_GRID *
+        portulan::planet::set::dungeoncrawl::LIVING_GRID
     ),
 
     // проинициализируем генератор случ. чисел
@@ -82,18 +89,6 @@ inline DungeonCrawl::DungeonCrawl(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // living
-    livingCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. пам€ть не выдел€етс€
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeLiving,
-        // #! ≈сли пам€ть выделена динамически, обращаемс€ к содержанию.
-        mPortulan->topology().topology().living.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
     // temperature
     temperatureCL = clCreateBuffer(
         gpuContextCL,
@@ -102,6 +97,30 @@ inline DungeonCrawl::DungeonCrawl(
         memsizeTemperature,
         // #! ≈сли пам€ть выделена динамически, обращаемс€ к содержанию.
         mPortulan->topology().topology().temperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // surfaceTemperature
+    surfaceTemperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. пам€ть не выдел€етс€
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeSurfaceTemperature,
+        // #! ≈сли пам€ть выделена динамически, обращаемс€ к содержанию.
+        mPortulan->topology().topology().surfaceTemperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // living
+    livingCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. пам€ть не выдел€етс€
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeLiving,
+        // #! ≈сли пам€ть выделена динамически, обращаемс€ к содержанию.
+        mPortulan->topology().topology().living.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -127,8 +146,8 @@ inline DungeonCrawl::~DungeonCrawl() {
     */
     // ...но временные структуры - исключение
     //clReleaseMemObject( workComponentCL );
-    //clReleaseMemObject( workLivingCL );
     //clReleaseMemObject( workTemperatureCL );
+    //clReleaseMemObject( workLivingCL );
 
     // удал€ем собранные €дра
     for (auto itr = kernelCL.begin(); itr != kernelCL.end(); ++itr) {
@@ -258,7 +277,8 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/structure.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/component.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
+        //( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/surface-temperature.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
         ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
         ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
@@ -359,6 +379,7 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
     // структуры дл€ вычислени€ минимаксов координат дл€ сеток
     typedef typelib::StaticMapContent3D< pd::COMPONENT_GRID, pd::COMPONENT_GRID, pd::COMPONENT_GRID >        componentSMC_t;
     typedef typelib::StaticMapContent3D< pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID >  temperatureSMC_t;
+    typedef typelib::StaticMapContent3D< pd::SURFACE_TEMPERATURE_GRID, pd::SURFACE_TEMPERATURE_GRID, pd::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
     typedef typelib::StaticMapContent3D< pd::LIVING_GRID, pd::LIVING_GRID, pd::LIVING_GRID >                 livingSMC_t;
 
     std::ostringstream options;
@@ -377,6 +398,11 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D TEMPERATURE_GRID=" << pd::TEMPERATURE_GRID
         << " -D MIN_COORD_TEMPERATURE_GRID=" << temperatureSMC_t::minCoord().x
         << " -D MAX_COORD_TEMPERATURE_GRID=" << temperatureSMC_t::maxCoord().x
+
+        // surfaceTemperature
+        << " -D SURFACE_TEMPERATURE_GRID=" << pd::SURFACE_TEMPERATURE_GRID
+        << " -D MIN_COORD_SURFACE_TEMPERATURE_GRID=" << surfaceTemperatureSMC_t::minCoord().x
+        << " -D MAX_COORD_SURFACE_TEMPERATURE_GRID=" << surfaceTemperatureSMC_t::maxCoord().x
 
         // living
         << " -D LIVING_GRID=" << pd::LIVING_GRID

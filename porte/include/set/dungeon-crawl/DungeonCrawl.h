@@ -79,6 +79,12 @@ public:
 
 
     /**
+    * Инициализирует сетку температур на поверхности планеты.
+    */
+    void initSurfaceTemperature();
+
+
+    /**
     * Инициализирует живые организмы в области планеты.
     */
     void initLiving();
@@ -103,6 +109,7 @@ private:
     void prepareCLKernel();
     void prepareComponentCLKernel();
     void prepareTemperatureCLKernel();
+    void prepareSurfaceTemperatureCLKernel();
     void prepareLivingCLKernel();
 
     template< size_t G >
@@ -139,7 +146,6 @@ private:
     * Структуры для OpenCL-вычислений.
     *   # Префикс "work" добавляется к структуре, которая используются ядрами для
     *     промежуточных вычислений.
-    *   # Однотипные переменные упорядочены по алфавиту.
     */
     cl_mem aboutPlanetCL;
     const size_t memsizeAboutPlanet;
@@ -147,11 +153,14 @@ private:
     cl_mem componentCL;
     const size_t memsizeComponent;
 
-    cl_mem livingCL;
-    const size_t memsizeLiving;
-
     cl_mem temperatureCL;
     const size_t memsizeTemperature;
+
+    cl_mem surfaceTemperatureCL;
+    const size_t memsizeSurfaceTemperature;
+
+    cl_mem livingCL;
+    const size_t memsizeLiving;
 
 
     /**

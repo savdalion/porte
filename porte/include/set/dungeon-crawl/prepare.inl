@@ -15,6 +15,10 @@ inline void DungeonCrawl::prepareCLKernel() {
     prepareTemperatureCLKernel();
 #endif
 
+#ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
+    prepareSurfaceTemperatureCLKernel();
+#endif
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
     prepareLivingCLKernel();
 #endif
@@ -58,11 +62,34 @@ inline void DungeonCrawl::prepareTemperatureCLKernel() {
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/temperature/top/init" )
-        ( "scale/temperature/top/surface" )
     ;
 
     // Подготавливаем ядерные опции
     static const size_t grid = pd::TEMPERATURE_GRID;
+
+    // Компилируем ядра OpenCL
+    compileCLKernel< grid >( kernelKeys );
+}
+#endif
+
+
+
+
+
+#ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::prepareSurfaceTemperatureCLKernel() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+    // # Контекст и очередь команд инициализированы в конструкторе.
+
+    // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
+    const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "scale/surface-temperature/top/init" )
+    ;
+
+    // Подготавливаем ядерные опции
+    static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
 
     // Компилируем ядра OpenCL
     compileCLKernel< grid >( kernelKeys );

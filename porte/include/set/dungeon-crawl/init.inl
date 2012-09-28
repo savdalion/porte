@@ -15,6 +15,10 @@ inline void DungeonCrawl::init() {
     initTemperature();
 #endif
 
+#ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
+    initSurfaceTemperature();
+#endif
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
     initLiving();
 #endif
@@ -102,7 +106,7 @@ inline void DungeonCrawl::initTemperature() {
     namespace pd = portulan::planet::set::dungeoncrawl;
 
 #ifdef _DEBUG
-    std::cout << "Создаём погоду ..";
+    std::cout << "Разогреваем планету ..";
 #endif
 
     static const size_t grid = pd::TEMPERATURE_GRID;
@@ -118,7 +122,7 @@ inline void DungeonCrawl::initTemperature() {
     // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
 
 
-    // I. Инициализируем температуру на планете.
+    // Задаём температуру планетной области
     const cl_kernel kernelInit = kernelCL[ "scale/temperature/top/init" ];
 
     /* @test
@@ -171,24 +175,65 @@ inline void DungeonCrawl::initTemperature() {
     errorCL = clFinish( commandQueueCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        temperatureCL,
+        CL_TRUE,
+        0,
+        memsizeTemperature,
+        mPortulan->topology().topology().temperature.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 #ifdef _DEBUG
-    std::cout << ".";
+    std::cout << " ОК" << std::endl;
+#endif
+}
 #endif
 
-    // II. Уточняем температуру на поверхности планеты.
-    const cl_kernel kernelSurface = kernelCL[ "scale/temperature/top/surface" ];
+
+
+
+
+#ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::initSurfaceTemperature() {
+    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareTemperatureCLKernel().
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+#ifdef _DEBUG
+    std::cout << "Создаём погоду ..";
+#endif
+
+    static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
+
+    // размерность сетки
+    static const size_t GRID_WORK_DIM = 3;
+    // количество Work Item
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+    // размер Work Item
+    /* - Пусть OpenCL выберет лучший размер сам.
+    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
+    */
+    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
+
+
+    // Задаём температуру на поверхности планеты
+    const cl_kernel kernelInit = kernelCL[ "scale/surface-temperature/top/init" ];
 
     // 0
-    errorCL = clSetKernelArg( kernelSurface, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // 1
-    errorCL = clSetKernelArg( kernelSurface, 1, sizeof( cl_mem ), &temperatureCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &surfaceTemperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
         commandQueueCL,
-        kernelSurface,
+        kernelInit,
         GRID_WORK_DIM,
         nullptr,
         GRID_GLOBAL_WORK_SIZE,
@@ -204,11 +249,11 @@ inline void DungeonCrawl::initTemperature() {
     // результат
     errorCL = clEnqueueReadBuffer(
         commandQueueCL,
-        temperatureCL,
+        surfaceTemperatureCL,
         CL_TRUE,
         0,
-        memsizeTemperature,
-        mPortulan->topology().topology().temperature.content,
+        memsizeSurfaceTemperature,
+        mPortulan->topology().topology().surfaceTemperature.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
