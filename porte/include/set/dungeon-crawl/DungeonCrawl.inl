@@ -31,6 +31,20 @@ inline DungeonCrawl::DungeonCrawl(
         portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID
     ),
 
+    rainfallCL( nullptr ),
+    memsizeRainfall( sizeof( portulan::planet::set::dungeoncrawl::rainfallCell_t ) *
+        portulan::planet::set::dungeoncrawl::RAINFALL_GRID *
+        portulan::planet::set::dungeoncrawl::RAINFALL_GRID *
+        portulan::planet::set::dungeoncrawl::RAINFALL_GRID
+    ),
+
+    drainageCL( nullptr ),
+    memsizeDrainage( sizeof( portulan::planet::set::dungeoncrawl::drainageCell_t ) *
+        portulan::planet::set::dungeoncrawl::DRAINAGE_GRID *
+        portulan::planet::set::dungeoncrawl::DRAINAGE_GRID *
+        portulan::planet::set::dungeoncrawl::DRAINAGE_GRID
+    ),
+
     livingCL( nullptr ),
     memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
         portulan::planet::set::dungeoncrawl::LIVING_GRID *
@@ -113,6 +127,30 @@ inline DungeonCrawl::DungeonCrawl(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+    // rainfall
+    rainfallCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. пам€ть не выдел€етс€
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeRainfall,
+        // #! ≈сли пам€ть выделена динамически, обращаемс€ к содержанию.
+        mPortulan->topology().topology().rainfall.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // drainage
+    drainageCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. пам€ть не выдел€етс€
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeDrainage,
+        // #! ≈сли пам€ть выделена динамически, обращаемс€ к содержанию.
+        mPortulan->topology().topology().drainage.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
     // living
     livingCL = clCreateBuffer(
         gpuContextCL,
@@ -147,7 +185,7 @@ inline DungeonCrawl::~DungeonCrawl() {
     // ...но временные структуры - исключение
     //clReleaseMemObject( workComponentCL );
     //clReleaseMemObject( workTemperatureCL );
-    //clReleaseMemObject( workLivingCL );
+    //...
 
     // удал€ем собранные €дра
     for (auto itr = kernelCL.begin(); itr != kernelCL.end(); ++itr) {
@@ -239,6 +277,10 @@ inline void DungeonCrawl::compileCLKernel(
 ) {
     // #  онтекст и очередь команд инициализированы в конструкторе.
 
+#ifdef _DEBUG
+        std::cout << std::endl << std::endl;
+#endif
+
     typedef typelib::StaticMapContent3D< G, G, G >  smc_t;
 
     // масштаб дл€ рабочей сетки считаем здесь, чтобы не нагружать €дра
@@ -277,8 +319,10 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/structure.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/component.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
-        //( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/surface-temperature.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/rainfall.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/drainage.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
         ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
         ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
@@ -377,10 +421,12 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
     namespace pd = portulan::planet::set::dungeoncrawl;
 
     // структуры дл€ вычислени€ минимаксов координат дл€ сеток
-    typedef typelib::StaticMapContent3D< pd::COMPONENT_GRID, pd::COMPONENT_GRID, pd::COMPONENT_GRID >        componentSMC_t;
+    typedef typelib::StaticMapContent3D< pd::COMPONENT_GRID, pd::COMPONENT_GRID, pd::COMPONENT_GRID >  componentSMC_t;
     typedef typelib::StaticMapContent3D< pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID >  temperatureSMC_t;
     typedef typelib::StaticMapContent3D< pd::SURFACE_TEMPERATURE_GRID, pd::SURFACE_TEMPERATURE_GRID, pd::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
-    typedef typelib::StaticMapContent3D< pd::LIVING_GRID, pd::LIVING_GRID, pd::LIVING_GRID >                 livingSMC_t;
+    typedef typelib::StaticMapContent3D< pd::RAINFALL_GRID, pd::RAINFALL_GRID, pd::RAINFALL_GRID >     rainfallSMC_t;
+    typedef typelib::StaticMapContent3D< pd::DRAINAGE_GRID, pd::DRAINAGE_GRID, pd::DRAINAGE_GRID >     drainageSMC_t;
+    typedef typelib::StaticMapContent3D< pd::LIVING_GRID, pd::LIVING_GRID, pd::LIVING_GRID >           livingSMC_t;
 
     std::ostringstream options;
     options
@@ -403,6 +449,16 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D SURFACE_TEMPERATURE_GRID=" << pd::SURFACE_TEMPERATURE_GRID
         << " -D MIN_COORD_SURFACE_TEMPERATURE_GRID=" << surfaceTemperatureSMC_t::minCoord().x
         << " -D MAX_COORD_SURFACE_TEMPERATURE_GRID=" << surfaceTemperatureSMC_t::maxCoord().x
+
+        // rainfall
+        << " -D RAINFALL_GRID=" << pd::RAINFALL_GRID
+        << " -D MIN_COORD_RAINFALL_GRID=" << rainfallSMC_t::minCoord().x
+        << " -D MAX_COORD_RAINFALL_GRID=" << rainfallSMC_t::maxCoord().x
+
+        // drainage
+        << " -D DRAINAGE_GRID=" << pd::DRAINAGE_GRID
+        << " -D MIN_COORD_DRAINAGE_GRID=" << drainageSMC_t::minCoord().x
+        << " -D MAX_COORD_DRAINAGE_GRID=" << drainageSMC_t::maxCoord().x
 
         // living
         << " -D LIVING_GRID=" << pd::LIVING_GRID

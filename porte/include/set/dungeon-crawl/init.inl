@@ -19,6 +19,14 @@ inline void DungeonCrawl::init() {
     initSurfaceTemperature();
 #endif
 
+#ifdef RAINFALL_DUNGEONCRAWL_PORTE
+    initRainfall();
+#endif
+
+#ifdef DRAINAGE_DUNGEONCRAWL_PORTE
+    initDrainage();
+#endif
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
     initLiving();
 #endif
@@ -30,7 +38,6 @@ inline void DungeonCrawl::init() {
 
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initComponent() {
-    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponentCLKernel().
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
@@ -40,16 +47,8 @@ inline void DungeonCrawl::initComponent() {
 
     static const size_t grid = pd::COMPONENT_GRID;
 
-    // размерность сетки
     static const size_t GRID_WORK_DIM = 3;
-    // количество Work Item
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
-    // размер Work Item
-    /* - Пусть OpenCL выберет лучший размер сам.
-    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
-    */
-    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
-
 
     // Инициализируем сетку
     const cl_kernel kernel = kernelCL[ "scale/component/top/init" ];
@@ -101,7 +100,6 @@ inline void DungeonCrawl::initComponent() {
 
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initTemperature() {
-    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareTemperatureCLKernel().
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
@@ -111,16 +109,8 @@ inline void DungeonCrawl::initTemperature() {
 
     static const size_t grid = pd::TEMPERATURE_GRID;
 
-    // размерность сетки
     static const size_t GRID_WORK_DIM = 3;
-    // количество Work Item
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
-    // размер Work Item
-    /* - Пусть OpenCL выберет лучший размер сам.
-    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
-    */
-    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
-
 
     // Задаём температуру планетной области
     const cl_kernel kernelInit = kernelCL[ "scale/temperature/top/init" ];
@@ -199,26 +189,17 @@ inline void DungeonCrawl::initTemperature() {
 
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initSurfaceTemperature() {
-    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareTemperatureCLKernel().
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
 #ifdef _DEBUG
-    std::cout << "Создаём погоду ..";
+    std::cout << "Создаём погоду - Температура ..";
 #endif
 
     static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
 
-    // размерность сетки
     static const size_t GRID_WORK_DIM = 3;
-    // количество Work Item
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
-    // размер Work Item
-    /* - Пусть OpenCL выберет лучший размер сам.
-    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
-    */
-    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
-
 
     // Задаём температуру на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/surface-temperature/top/init" ];
@@ -268,6 +249,141 @@ inline void DungeonCrawl::initSurfaceTemperature() {
 
 
 
+#ifdef RAINFALL_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::initRainfall() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+#ifdef _DEBUG
+    std::cout << "Создаём погоду - Атмосферные осадки ..";
+#endif
+
+    static const size_t grid = pd::RAINFALL_GRID;
+
+    static const size_t GRID_WORK_DIM = 3;
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+
+    // Задаём атм. осадки на поверхности планеты
+    const cl_kernel kernelInit = kernelCL[ "scale/rainfall/top/init" ];
+
+    // 0
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 1
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &rainfallCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 2
+    const cl_uint rseed = randomGenerator();
+    errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_uint ), &rseed );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelInit,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        rainfallCL,
+        CL_TRUE,
+        0,
+        memsizeRainfall,
+        mPortulan->topology().topology().rainfall.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+}
+#endif
+
+
+
+
+
+#ifdef DRAINAGE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::initDrainage() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+#ifdef _DEBUG
+    std::cout << "Создаём погоду - Дренаж ..";
+#endif
+
+    static const size_t grid = pd::DRAINAGE_GRID;
+
+    static const size_t GRID_WORK_DIM = 3;
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+
+
+    // Задаём дренаж на поверхности планеты
+    const cl_kernel kernelInit = kernelCL[ "scale/drainage/top/init" ];
+
+    // 0
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 1
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &drainageCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 2
+    const cl_uint rseed = randomGenerator();
+    errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_uint ), &rseed );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelInit,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        drainageCL,
+        CL_TRUE,
+        0,
+        memsizeSurfaceTemperature,
+        mPortulan->topology().topology().drainage.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+}
+#endif
+
+
+
+
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponentCLKernel().
@@ -280,16 +396,8 @@ inline void DungeonCrawl::initLiving() {
 
     static const size_t grid = pd::LIVING_GRID;
 
-    // размерность сетки
     static const size_t GRID_WORK_DIM = 3;
-    // количество Work Item
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
-    // размер Work Item
-    /* - Пусть OpenCL выберет лучший размер сам.
-    const cl::NDRange GRID_LOCAL_WORK_COUNT( ... );
-    */
-    // ячеек в рабочей группе = GRID_GLOBAL_WORK_SIZE / GRID_LOCAL_WORK_COUNT
-
 
     auto& tp = mPortulan->topology().topology();
 
@@ -315,7 +423,7 @@ inline void DungeonCrawl::initLiving() {
 
     /** - Синхронизируем поток в начале цикла (см. ниже).
           Благодаря параллельной работе CPU и GPU это позволит
-          сократить время на выполнение кода.
+          ускорить выполнение кода.
     errorCL = clFinish( commandQueueCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     */

@@ -8,6 +8,7 @@ namespace porte {
 
 inline void DungeonCrawl::prepareCLKernel() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
+    // @todo fine Убрать суффикс CLKernel.
     prepareComponentCLKernel();
 #endif
 
@@ -17,6 +18,14 @@ inline void DungeonCrawl::prepareCLKernel() {
 
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
     prepareSurfaceTemperatureCLKernel();
+#endif
+
+#ifdef RAINFALL_DUNGEONCRAWL_PORTE
+    prepareRainfallCLKernel();
+#endif
+
+#ifdef DRAINAGE_DUNGEONCRAWL_PORTE
+    prepareDrainageCLKernel();
 #endif
 
 #ifdef LIVING_DUNGEONCRAWL_PORTE
@@ -57,17 +66,12 @@ inline void DungeonCrawl::prepareTemperatureCLKernel() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    // # Контекст и очередь команд инициализированы в конструкторе.
-
-    // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/temperature/top/init" )
     ;
 
-    // Подготавливаем ядерные опции
     static const size_t grid = pd::TEMPERATURE_GRID;
 
-    // Компилируем ядра OpenCL
     compileCLKernel< grid >( kernelKeys );
 }
 #endif
@@ -81,17 +85,50 @@ inline void DungeonCrawl::prepareSurfaceTemperatureCLKernel() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    // # Контекст и очередь команд инициализированы в конструкторе.
-
-    // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/surface-temperature/top/init" )
     ;
 
-    // Подготавливаем ядерные опции
     static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
 
-    // Компилируем ядра OpenCL
+    compileCLKernel< grid >( kernelKeys );
+}
+#endif
+
+
+
+
+
+#ifdef RAINFALL_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::prepareRainfallCLKernel() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+    const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "scale/rainfall/top/init" )
+    ;
+
+    static const size_t grid = pd::RAINFALL_GRID;
+
+    compileCLKernel< grid >( kernelKeys );
+}
+#endif
+
+
+
+
+
+#ifdef DRAINAGE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::prepareDrainageCLKernel() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+    const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "scale/drainage/top/init" )
+    ;
+
+    static const size_t grid = pd::DRAINAGE_GRID;
+
     compileCLKernel< grid >( kernelKeys );
 }
 #endif
@@ -105,15 +142,11 @@ inline void DungeonCrawl::prepareLivingCLKernel() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    // # Контекст и очередь команд инициализированы в конструкторе.
-
-    // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/living/top/clear" )
         ( "scale/living/top/init" )
     ;
 
-    // Подготавливаем ядерные опции
     static const size_t grid = pd::LIVING_GRID;
 
     std::ostringstream options;
@@ -147,7 +180,6 @@ inline void DungeonCrawl::prepareLivingCLKernel() {
 
         << "";
 
-    // Компилируем ядра OpenCL
     compileCLKernel< grid >( kernelKeys, options.str() );
 }
 #endif

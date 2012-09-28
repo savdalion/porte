@@ -190,11 +190,11 @@ int main( int argc, char** argv ) {
 
     // @test
     const auto& testC = topology.aboutPlanet.component;
-    const auto& testL = topology.aboutPlanet.living;
     const auto& testT = topology.aboutPlanet.temperature;
     const auto& testST = topology.aboutPlanet.surfaceTemperature;
     const auto& testR = topology.aboutPlanet.rainfall;
     const auto& testD = topology.aboutPlanet.drainage;
+    const auto& testL = topology.aboutPlanet.living;
 
     /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
     //topology.aboutComponent = aboutComponent;
@@ -576,7 +576,7 @@ int main( int argc, char** argv ) {
 #endif
 
     pio::TextVisual  visual( std::cout, o );
-    visual << planet;
+    visual << "\n\n" << planet;
     
 
     // Сделаем снимок топологии
@@ -589,6 +589,12 @@ int main( int argc, char** argv ) {
 #endif
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
     snapshot.surfaceTemperature();
+#endif
+#ifdef RAINFALL_DUNGEONCRAWL_PORTE
+    snapshot.rainfall();
+#endif
+#ifdef DRAINAGE_DUNGEONCRAWL_PORTE
+    snapshot.drainage();
 #endif
 #ifdef LIVING_DUNGEONCRAWL_PORTE
     snapshot.living();

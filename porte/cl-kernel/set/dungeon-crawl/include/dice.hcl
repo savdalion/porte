@@ -34,7 +34,7 @@ inline float floatRandom( uint2* rstate ) {
 inline int intDiapasonRandom( uint2* rstate, int2 range ) {
     // @source http://stackoverflow.com/questions/5008804/generating-random-integer-from-a-range
     const uint v = uintRandom( rstate );
-    return range.x + (v % (int)(range.y - range.x + 1));
+    return range.x + (v % (range.y - range.x + 1));
 }
 
 

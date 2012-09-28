@@ -85,6 +85,18 @@ public:
 
 
     /**
+    * Инициализирует сетку атмосферных осадков на поверхности планеты.
+    */
+    void initRainfall();
+
+
+    /**
+    * Инициализирует сетку дренажа на поверхности планеты.
+    */
+    void initDrainage();
+
+
+    /**
     * Инициализирует живые организмы в области планеты.
     */
     void initLiving();
@@ -110,6 +122,8 @@ private:
     void prepareComponentCLKernel();
     void prepareTemperatureCLKernel();
     void prepareSurfaceTemperatureCLKernel();
+    void prepareRainfallCLKernel();
+    void prepareDrainageCLKernel();
     void prepareLivingCLKernel();
 
     template< size_t G >
@@ -158,6 +172,12 @@ private:
 
     cl_mem surfaceTemperatureCL;
     const size_t memsizeSurfaceTemperature;
+
+    cl_mem rainfallCL;
+    const size_t memsizeRainfall;
+
+    cl_mem drainageCL;
+    const size_t memsizeDrainage;
 
     cl_mem livingCL;
     const size_t memsizeLiving;
