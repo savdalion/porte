@@ -384,7 +384,7 @@ inline void DungeonCrawl::compileCLKernel(
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     
 #ifdef _DEBUG
-        std::cout << std::endl << "Опции OpenCL для ядра \"" << kernelKey << "\"" << std::endl << commonOptions.str() << std::endl;
+        std::cout << "Опции OpenCL для ядра \"" << kernelKey << "\"" << std::endl << commonOptions.str() << std::endl;
 #endif
 
         // build the program
