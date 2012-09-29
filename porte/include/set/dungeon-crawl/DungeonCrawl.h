@@ -97,6 +97,12 @@ public:
 
 
     /**
+    * »нициализирует сетку биомов в области планеты.
+    */
+    void initBiome();
+
+
+    /**
     * »нициализирует живые организмы в области планеты.
     */
     void initLiving();
@@ -124,6 +130,7 @@ private:
     void prepareSurfaceTemperatureCLKernel();
     void prepareRainfallCLKernel();
     void prepareDrainageCLKernel();
+    void prepareBiomeCLKernel();
     void prepareLivingCLKernel();
 
     template< size_t G >
@@ -178,6 +185,9 @@ private:
 
     cl_mem drainageCL;
     const size_t memsizeDrainage;
+
+    cl_mem biomeCL;
+    const size_t memsizeBiome;
 
     cl_mem livingCL;
     const size_t memsizeLiving;

@@ -68,6 +68,7 @@ int main( int argc, char** argv ) {
     const float massCore = static_cast< cl_float >( 3e24 );
 
     static const pd::aboutPlanet_t aboutPlanet = {
+#if 1
         // size
         halfSize * 2.0f,
 
@@ -181,7 +182,7 @@ int main( int argc, char** argv ) {
                 { pd::CL_NONE, 0.0f },
             }
         }
-
+#endif
     };
 
 
@@ -189,12 +190,12 @@ int main( int argc, char** argv ) {
     topology.aboutPlanet = aboutPlanet;
 
     // @test
-    const auto& testC = topology.aboutPlanet.component;
-    const auto& testT = topology.aboutPlanet.temperature;
+    const auto& testC  = topology.aboutPlanet.component;
+    const auto& testT  = topology.aboutPlanet.temperature;
     const auto& testST = topology.aboutPlanet.surfaceTemperature;
-    const auto& testR = topology.aboutPlanet.rainfall;
-    const auto& testD = topology.aboutPlanet.drainage;
-    const auto& testL = topology.aboutPlanet.living;
+    const auto& testR  = topology.aboutPlanet.rainfall;
+    const auto& testD  = topology.aboutPlanet.drainage;
+    const auto& testL  = topology.aboutPlanet.living;
 
     /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
     //topology.aboutComponent = aboutComponent;
@@ -581,22 +582,25 @@ int main( int argc, char** argv ) {
 
     // Сделаем снимок топологии
     pio::SnapshotVTK  snapshot( &planet );
-#ifdef COMPONENT_DUNGEONCRAWL_PORTE
+#ifdef COMPONENT_SNAPSHOT_VISUALTEST
     snapshot.component();
 #endif
-#ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
+#ifdef TEMPERATURE_SNAPSHOT_VISUALTEST
     snapshot.temperature();
 #endif
-#ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
+#ifdef SURFACE_TEMPERATURE_SNAPSHOT_VISUALTEST
     snapshot.surfaceTemperature();
 #endif
-#ifdef RAINFALL_DUNGEONCRAWL_PORTE
+#ifdef RAINFALL_SNAPSHOT_VISUALTEST
     snapshot.rainfall();
 #endif
-#ifdef DRAINAGE_DUNGEONCRAWL_PORTE
+#ifdef DRAINAGE_SNAPSHOT_VISUALTEST
     snapshot.drainage();
 #endif
-#ifdef LIVING_DUNGEONCRAWL_PORTE
+#ifdef BIOME_SNAPSHOT_VISUALTEST
+    snapshot.biome();
+#endif
+#ifdef LIVING_SNAPSHOT_VISUALTEST
     snapshot.living();
 #endif
 

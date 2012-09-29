@@ -28,6 +28,10 @@ inline void DungeonCrawl::prepareCLKernel() {
     prepareDrainageCLKernel();
 #endif
 
+#ifdef BIOME_DUNGEONCRAWL_PORTE
+    prepareBiomeCLKernel();
+#endif
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
     prepareLivingCLKernel();
 #endif
@@ -128,6 +132,25 @@ inline void DungeonCrawl::prepareDrainageCLKernel() {
     ;
 
     static const size_t grid = pd::DRAINAGE_GRID;
+
+    compileCLKernel< grid >( kernelKeys );
+}
+#endif
+
+
+
+
+
+#ifdef BIOME_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::prepareBiomeCLKernel() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+    const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "scale/biome/top/init" )
+    ;
+
+    static const size_t grid = pd::BIOME_GRID;
 
     compileCLKernel< grid >( kernelKeys );
 }

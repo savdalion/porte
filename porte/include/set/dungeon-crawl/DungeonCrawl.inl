@@ -45,6 +45,13 @@ inline DungeonCrawl::DungeonCrawl(
         portulan::planet::set::dungeoncrawl::DRAINAGE_GRID
     ),
 
+    biomeCL( nullptr ),
+    memsizeBiome( sizeof( portulan::planet::set::dungeoncrawl::biomeCell_t ) *
+        portulan::planet::set::dungeoncrawl::BIOME_GRID *
+        portulan::planet::set::dungeoncrawl::BIOME_GRID *
+        portulan::planet::set::dungeoncrawl::BIOME_GRID
+    ),
+
     livingCL( nullptr ),
     memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
         portulan::planet::set::dungeoncrawl::LIVING_GRID *
@@ -147,6 +154,18 @@ inline DungeonCrawl::DungeonCrawl(
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().drainage.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // biome
+    biomeCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeBiome,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().biome.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -281,7 +300,7 @@ inline void DungeonCrawl::compileCLKernel(
         std::cout << std::endl << std::endl;
 #endif
 
-    typedef typelib::StaticMapContent3D< G, G, G >  smc_t;
+    typedef typelib::CubeSMC3D< G >  smc_t;
 
     // масштаб для рабочей сетки считаем здесь, чтобы не нагружать ядра
     // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки и
@@ -318,15 +337,19 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_CL_DUNGEONCRAWL + "/include/restruct.hcl" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/structure.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/component.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/surface-temperature.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/rainfall.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/drainage.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-set.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
         ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
         ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        // методы для работы со структурами
+        ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
     for (auto itr = hcl.cbegin(); itr != hcl.cend(); ++itr) {
         const std::string& pathAndName = *itr;
@@ -421,12 +444,13 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
     namespace pd = portulan::planet::set::dungeoncrawl;
 
     // структуры для вычисления минимаксов координат для сеток
-    typedef typelib::StaticMapContent3D< pd::COMPONENT_GRID, pd::COMPONENT_GRID, pd::COMPONENT_GRID >  componentSMC_t;
-    typedef typelib::StaticMapContent3D< pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID, pd::TEMPERATURE_GRID >  temperatureSMC_t;
-    typedef typelib::StaticMapContent3D< pd::SURFACE_TEMPERATURE_GRID, pd::SURFACE_TEMPERATURE_GRID, pd::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
-    typedef typelib::StaticMapContent3D< pd::RAINFALL_GRID, pd::RAINFALL_GRID, pd::RAINFALL_GRID >     rainfallSMC_t;
-    typedef typelib::StaticMapContent3D< pd::DRAINAGE_GRID, pd::DRAINAGE_GRID, pd::DRAINAGE_GRID >     drainageSMC_t;
-    typedef typelib::StaticMapContent3D< pd::LIVING_GRID, pd::LIVING_GRID, pd::LIVING_GRID >           livingSMC_t;
+    typedef typelib::CubeSMC3D< pd::COMPONENT_GRID >    componentSMC_t;
+    typedef typelib::CubeSMC3D< pd::TEMPERATURE_GRID >  temperatureSMC_t;
+    typedef typelib::CubeSMC3D< pd::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
+    typedef typelib::CubeSMC3D< pd::RAINFALL_GRID >     rainfallSMC_t;
+    typedef typelib::CubeSMC3D< pd::DRAINAGE_GRID >     drainageSMC_t;
+    typedef typelib::CubeSMC3D< pd::BIOME_GRID >        biomeSMC_t;
+    typedef typelib::CubeSMC3D< pd::LIVING_GRID >       livingSMC_t;
 
     std::ostringstream options;
     options
@@ -460,6 +484,13 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D MIN_COORD_DRAINAGE_GRID=" << drainageSMC_t::minCoord().x
         << " -D MAX_COORD_DRAINAGE_GRID=" << drainageSMC_t::maxCoord().x
 
+        // biome
+        << " -D BIOME_GRID=" << pd::BIOME_GRID
+        << " -D MIN_COORD_BIOME_GRID=" << biomeSMC_t::minCoord().x
+        << " -D MAX_COORD_BIOME_GRID=" << biomeSMC_t::maxCoord().x
+        << " -D BIOME_COUNT=" << pd::BIOME_COUNT
+        << " -D BIOME_CELL=" << pd::BIOME_CELL
+
         // living
         << " -D LIVING_GRID=" << pd::LIVING_GRID
         << " -D MIN_COORD_LIVING_GRID=" << livingSMC_t::minCoord().x
@@ -467,20 +498,24 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D LIVING_COUNT=" << pd::LIVING_COUNT
         << " -D LIVING_CELL=" << pd::LIVING_CELL
         << " -D LIFE_CYCLE_COUNT=" << pd::LIFE_CYCLE_COUNT
-        << " -D PART_LIVING_COUNT=" << pd::PART_LIVING_COUNT
-        << " -D ATTACK_PART_LIVING_COUNT=" << pd::ATTACK_PART_LIVING_COUNT
-        << " -D RESIST_PART_LIVING_COUNT=" << pd::RESIST_PART_LIVING_COUNT
-        << " -D HABITAT_LIVING_COUNT=" << pd::HABITAT_LIVING_COUNT
+        << " -D PART_LIVING=" << pd::PART_LIVING
+        << " -D ATTACK_PART_LIVING=" << pd::ATTACK_PART_LIVING
+        << " -D RESIST_PART_LIVING=" << pd::RESIST_PART_LIVING
         << " -D COMPONENT_COMPOSITION_LIVING=" << pd::COMPONENT_COMPOSITION_LIVING
         << " -D COMPONENT_NEED_LIVING=" << pd::COMPONENT_NEED_LIVING
         << " -D COMPONENT_WASTE_LIVING=" << pd::COMPONENT_WASTE_LIVING
         << " -D ENERGY_NEED_LIVING=" << pd::ENERGY_NEED_LIVING
         << " -D ENERGY_WASTE_LIVING=" << pd::ENERGY_WASTE_LIVING
-        << " -D ENVIRONMENT_SURVIVOR_LIVING=" << pd::ENVIRONMENT_SURVIVOR_LIVING
-        << " -D COMPONENT_COMPOSITION_LIVING=" << pd::COMPONENT_COMPOSITION_LIVING
+        << " -D HABITAT_SURVIVOR_LIVING=" << pd::HABITAT_SURVIVOR_LIVING
+        << " -D BIOME_COMFORT_SURVIVOR_LIVING=" << pd::BIOME_COMFORT_SURVIVOR_LIVING
 
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION
+
+        // константы для числовых значений
+        << " -D IMMUNE=" << pd::IMMUNE
+        << " -D INFINITYf=" << pd::INFINITYf
+        << " -D ANYf=" << pd::ANYf
 
         // физические константы
         // перевод из Кельвина в Цельсий
@@ -506,8 +541,6 @@ inline std::string DungeonCrawl::commonOptionCLKernel() {
         // лечим точность для float
         //<< std::fixed
 
-        // путь к включаемым файлам (*.hcl)
-        << " -I " << PATH_CL_DUNGEONCRAWL
         // предупреждения в ядрах считаем ошибками
         << " -Werror"
 #if 0

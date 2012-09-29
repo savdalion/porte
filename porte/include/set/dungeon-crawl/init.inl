@@ -27,6 +27,10 @@ inline void DungeonCrawl::init() {
     initDrainage();
 #endif
 
+#ifdef BIOME_DUNGEONCRAWL_PORTE
+    initBiome();
+#endif
+
 #ifdef LIVING_DUNGEONCRAWL_PORTE
     initLiving();
 #endif
@@ -368,8 +372,93 @@ inline void DungeonCrawl::initDrainage() {
         drainageCL,
         CL_TRUE,
         0,
-        memsizeSurfaceTemperature,
+        memsizeDrainage,
         mPortulan->topology().topology().drainage.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+}
+#endif
+
+
+
+
+
+#ifdef BIOME_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::initBiome() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+#ifdef _DEBUG
+    std::cout << "Распознаём биомы ..";
+#endif
+
+    static const size_t grid = pd::BIOME_GRID;
+
+    static const size_t GRID_WORK_DIM = 3;
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+
+
+    // Распознаём биомы
+    // # Все составляющие биомов должны быть предварительно инициализированы.
+    const cl_kernel kernelInit = kernelCL[ "scale/biome/top/init" ];
+
+    // 0
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 1
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &biomeCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 2
+    errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_mem ), &temperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 3
+    errorCL = clSetKernelArg( kernelInit, 3, sizeof( cl_mem ), &surfaceTemperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 4
+    errorCL = clSetKernelArg( kernelInit, 4, sizeof( cl_mem ), &rainfallCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 5
+    errorCL = clSetKernelArg( kernelInit, 5, sizeof( cl_mem ), &drainageCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // 6
+    const cl_uint rseed = randomGenerator();
+    errorCL = clSetKernelArg( kernelInit, 6, sizeof( cl_uint ), &rseed );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelInit,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        biomeCL,
+        CL_TRUE,
+        0,
+        memsizeBiome,
+        mPortulan->topology().topology().biome.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
