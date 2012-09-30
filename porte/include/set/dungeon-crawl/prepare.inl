@@ -6,34 +6,34 @@ namespace porte {
 */
 
 
-inline void DungeonCrawl::prepareCLKernel() {
+inline void DungeonCrawl::prepare() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
     // @todo fine Убрать суффикс CLKernel.
-    prepareComponentCLKernel();
+    prepareComponent();
 #endif
 
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
-    prepareTemperatureCLKernel();
+    prepareTemperature();
 #endif
 
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
-    prepareSurfaceTemperatureCLKernel();
+    prepareSurfaceTemperature();
 #endif
 
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
-    prepareRainfallCLKernel();
+    prepareRainfall();
 #endif
 
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
-    prepareDrainageCLKernel();
+    prepareDrainage();
 #endif
 
 #ifdef BIOME_DUNGEONCRAWL_PORTE
-    prepareBiomeCLKernel();
+    prepareBiome();
 #endif
 
 #ifdef LIVING_DUNGEONCRAWL_PORTE
-    prepareLivingCLKernel();
+    prepareLiving();
 #endif
 }
 
@@ -42,22 +42,26 @@ inline void DungeonCrawl::prepareCLKernel() {
 
 
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareComponentCLKernel() {
+inline void DungeonCrawl::prepareComponent() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
     // # Контекст и очередь команд инициализированы в конструкторе.
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/component/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     // Подготавливаем ядерные опции
     static const size_t grid = pd::COMPONENT_GRID;
     
     // Компилируем ядра OpenCL
-    compileCLKernel< grid >( kernelKeys );
+    compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif
 
@@ -66,17 +70,21 @@ inline void DungeonCrawl::prepareComponentCLKernel() {
 
 
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareTemperatureCLKernel() {
+inline void DungeonCrawl::prepareTemperature() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/temperature/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     static const size_t grid = pd::TEMPERATURE_GRID;
 
-    compileCLKernel< grid >( kernelKeys );
+    compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif
 
@@ -85,17 +93,21 @@ inline void DungeonCrawl::prepareTemperatureCLKernel() {
 
 
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareSurfaceTemperatureCLKernel() {
+inline void DungeonCrawl::prepareSurfaceTemperature() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/surface-temperature/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
 
-    compileCLKernel< grid >( kernelKeys );
+    compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif
 
@@ -104,17 +116,21 @@ inline void DungeonCrawl::prepareSurfaceTemperatureCLKernel() {
 
 
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareRainfallCLKernel() {
+inline void DungeonCrawl::prepareRainfall() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/rainfall/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     static const size_t grid = pd::RAINFALL_GRID;
 
-    compileCLKernel< grid >( kernelKeys );
+    compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif
 
@@ -123,17 +139,21 @@ inline void DungeonCrawl::prepareRainfallCLKernel() {
 
 
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareDrainageCLKernel() {
+inline void DungeonCrawl::prepareDrainage() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/drainage/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     static const size_t grid = pd::DRAINAGE_GRID;
 
-    compileCLKernel< grid >( kernelKeys );
+    compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif
 
@@ -142,17 +162,22 @@ inline void DungeonCrawl::prepareDrainageCLKernel() {
 
 
 #ifdef BIOME_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareBiomeCLKernel() {
+inline void DungeonCrawl::prepareBiome() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/biome/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     static const size_t grid = pd::BIOME_GRID;
 
-    compileCLKernel< grid >( kernelKeys );
+    compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif
 
@@ -161,13 +186,18 @@ inline void DungeonCrawl::prepareBiomeCLKernel() {
 
 
 #ifdef LIVING_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::prepareLivingCLKernel() {
+inline void DungeonCrawl::prepareLiving() {
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 
-    const std::vector< std::string > kernelKeys = boost::assign::list_of
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
         ( "scale/living/top/clear" )
         ( "scale/living/top/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
 
     static const size_t grid = pd::LIVING_GRID;
@@ -203,7 +233,7 @@ inline void DungeonCrawl::prepareLivingCLKernel() {
 
         << "";
 
-    compileCLKernel< grid >( kernelKeys, options.str() );
+    compileCLKernel< grid >( kernelKeys, includeHCL, options.str() );
 }
 #endif
 

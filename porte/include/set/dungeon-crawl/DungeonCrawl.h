@@ -124,18 +124,27 @@ private:
     void prepareCLCommandQueue();
 
     // # Порядок следования методов соотв. порядку инициализации.
-    void prepareCLKernel();
-    void prepareComponentCLKernel();
-    void prepareTemperatureCLKernel();
-    void prepareSurfaceTemperatureCLKernel();
-    void prepareRainfallCLKernel();
-    void prepareDrainageCLKernel();
-    void prepareBiomeCLKernel();
-    void prepareLivingCLKernel();
+    void prepare();
+    void prepareComponent();
+    void prepareTemperature();
+    void prepareSurfaceTemperature();
+    void prepareRainfall();
+    void prepareDrainage();
+    void prepareBiome();
+    void prepareLiving();
 
+
+    /**
+    * Компилирует ядра с сеткой "G".
+    *
+    * @param kernelKeys  Ядра для компиляции.
+    * @param includeHCL  Используемые в ядрах дополнит. библиотеки.
+    * @param options     Дополнит. параметры ядра.
+    */
     template< size_t G >
     void compileCLKernel(
         const std::vector< std::string >&  kernelKeys,
+        const std::vector< std::string >&  includeHCL = std::vector< std::string >(),
         const std::string& options = ""
     );
 

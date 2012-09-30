@@ -184,7 +184,7 @@ inline DungeonCrawl::DungeonCrawl(
 
 
     // Подготавливаем ядра OpenCL (ядра требуют компиляции)
-    prepareCLKernel();
+    prepare();
 
 
     // Установим зерно для генератора случ. чисел
@@ -292,6 +292,7 @@ inline void DungeonCrawl::prepareCLCommandQueue() {
 template< size_t G >
 inline void DungeonCrawl::compileCLKernel(
     const std::vector< std::string >&  kernelKeys,
+    const std::vector< std::string >&  includeHCL,
     const std::string& options
 ) {
     // # Контекст и очередь команд инициализированы в конструкторе.
@@ -331,10 +332,12 @@ inline void DungeonCrawl::compileCLKernel(
     std::string kernelLibraryCode = "";
 
     // подключаем общие библиотеки и структуры
+    // (используются всеми ядрами движка)
     // #! Важен порядок подключения.
-    const std::vector< std::string > hcl = boost::assign::list_of
+    std::vector< std::string > hcl = boost::assign::list_of
         ( PATH_CL_DUNGEONCRAWL + "/include/pragma.hcl" )
         ( PATH_CL_DUNGEONCRAWL + "/include/restruct.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/structure.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/component.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
@@ -344,19 +347,17 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-set.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
+        // все h-файлы выше включены, т.к. они принимают участие
+        // в строении planet.h, который используется во всех ядрах
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        // методы для работы со структурами
-        ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
     ;
+    hcl.insert( hcl.end(), includeHCL.cbegin(), includeHCL.cend() );
     for (auto itr = hcl.cbegin(); itr != hcl.cend(); ++itr) {
         const std::string& pathAndName = *itr;
 #ifdef _DEBUG
         const std::string shortName =
             itr->substr( pathAndName.find_last_of( '/' ) + 1 );
-        std::cout << "Собираем \"" << shortName << "\" .. ";
+        std::cout << "Собираем \"" << shortName << "\" ..";
 #endif
         const std::ifstream  file( pathAndName.c_str() );
         assert( file.is_open()
@@ -383,7 +384,7 @@ inline void DungeonCrawl::compileCLKernel(
         const std::string pathAndName =
             PATH_CL_DUNGEONCRAWL + "/" + fileKernel;
 #ifdef _DEBUG
-        std::cout << "Собираем \"" << fileKernel << "\" .. ";
+        std::cout << "Собираем \"" << fileKernel << "\" ..";
 #endif
         const std::ifstream  file( pathAndName.c_str() );
         assert( file.is_open()

@@ -67,7 +67,7 @@ protected:
 
 
 private:
-    void prepareCLKernel();
+    void prepare();
     static void fnErrorCL( int exitCode );
 
 

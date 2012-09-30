@@ -12,7 +12,7 @@ inline UniformHeatTransfer< SX, SY, SZ >::UniformHeatTransfer(
     workBoosterCL( nullptr )
 {
     // подготавливаем ядра OpenCL (ядра требуют компиляции)
-    prepareCLKernel();
+    prepare();
 }
 
 
@@ -53,7 +53,7 @@ inline UniformHeatTransfer< SX, SY, SZ >::~UniformHeatTransfer() {
 template< size_t SX, size_t SY, size_t SZ >
 inline void UniformHeatTransfer< SX, SY, SZ >::pulse( int n ) {
     // (!) Карта уже должна быть синхронизирована с бустер-структурой.
-    // (!) Структуры для передачи OpenCL должны быть подготовлены в prepareCLKernel().
+    // (!) Структуры для передачи OpenCL должны быть подготовлены в prepare().
 
     cl_int errorCL = CL_SUCCESS;
 
@@ -185,7 +185,7 @@ inline void UniformHeatTransfer< SX, SY, SZ >::pulse( int n ) {
 
 // @source Проект "v3d".
 template< size_t SX, size_t SY, size_t SZ >
-inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
+inline void UniformHeatTransfer< SX, SY, SZ >::prepare() {
 
     // @source http://www10.informatik.uni-erlangen.de/Teaching/Courses/SS2010/SiWiR2/teaching/siwir2-lecture07-4on1.pdf
     // @source http://developer.amd.com/gpu_assets/OpenCL_Parallel_Computing_for_CPUs_and_GPUs_201003.pdf
@@ -355,7 +355,7 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
 
 
 template< size_t SX, size_t SY, size_t SZ >
-inline void UniformHeatTransfer< SX, SY, SZ >::prepareCLKernel() {
+inline void UniformHeatTransfer< SX, SY, SZ >::prepare() {
 
     // Подготавливаем ядра OpenCL
     // @source http://nvidia.com/content/cuda/cuda-downloads.html / oclMarchingCubes.cpp

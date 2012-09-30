@@ -475,7 +475,7 @@ inline void DungeonCrawl::initBiome() {
 
 #ifdef LIVING_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initLiving() {
-    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponentCLKernel().
+    // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponent().
 
     namespace pd = portulan::planet::set::dungeoncrawl;
 

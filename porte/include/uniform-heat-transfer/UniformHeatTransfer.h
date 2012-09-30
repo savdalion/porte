@@ -69,7 +69,7 @@ protected:
 
 
 private:
-    void prepareCLKernel();
+    void prepare();
     static void fnErrorCL( int exitCode );
 
 
@@ -81,7 +81,7 @@ private:
     */
     std::map< std::string, cl_kernel >  kernelCL;
 
-    /* - Вынесено внутрь prepareCLKernel().
+    /* - Вынесено внутрь prepare().
     cl_int errorCL;
     cl_uint numDevicesCL;
     cl_device_id* devicesCL;
