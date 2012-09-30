@@ -69,8 +69,8 @@ inline bool spaceZone( __global const aboutPlanet_t* ap, float distanceByHalfSiz
 */
 inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     const float r = ap->radius.crust;
-    const float delta = PART_SCALE * 0.9f;
-    return between( distanceByHalfSize,  r - delta,  r + delta );
+    // #i Диапазон расширяется т.о., чтобы обеспечить непрерывность сферы.
+    return between( distanceByHalfSize,  r - PART_SCALE * 3.0f,  r + PART_SCALE * 2.0f );
 }
 
 
@@ -80,6 +80,6 @@ inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distanceB
 */
 inline bool interiorAtmosphereZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     const float r = ap->radius.atmosphere;
-    const float delta = PART_SCALE * 0.9f;
-    return between( distanceByHalfSize,  r - delta,  r + delta );
+    // #i Диапазон расширяется т.о., чтобы обеспечить непрерывность сферы.
+    return between( distanceByHalfSize,  r - PART_SCALE * 2.0f,  r + PART_SCALE * 3.0f );
 }

@@ -63,7 +63,7 @@ __kernel void init(
     // работаем только с поверхностью планеты
     // # ƒренаж всегда распределЄн по поверхности.
     if ( exteriorCrustZone( ap, distanceByHalfSize ) ) {
-        // диапазон расширир€ем, т.к. скорость дренажа задана средн€€
+        // расширир€ем, т.к. скорость дренажа задана средн€€
         const float min = ap->drainage.crust.min * 0.5f;
         const float max = ap->drainage.crust.max * 1.5f;
         dc[i][0].average = drainage( min, max, seed, i );
