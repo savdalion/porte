@@ -14,7 +14,8 @@ __kernel void init(
     __global const surfaceTemperatureCell_t*  stc,   // 3
     __global const rainfallCell_t*            rc,    // 4
     __global const drainageCell_t*            dc,    // 5
-    const uint                                seed   // 6
+    __global const landscapeCell_t*           lc,    // 6
+    const uint                                seed   // 7
 ) {
     // всегда - координаты ячейки 3D-карты
     const uint dnx = get_global_id( 0 );
@@ -27,16 +28,14 @@ __kernel void init(
     const uint i = icDenorm( dnc );
 
 
-    // Работаем с реальными размерами.
-
-    const float distance = distanceNC( nc ) * (float)SCALE;
-    const float halfSize = ap->size / 2.0f;
-    const float distanceByHalfSize = distance / halfSize;
+    // Работаем с размерами сетки.
+    const float distance = distanceNC( nc );
 
     // работаем только с поверхностью планеты
     // @todo Определять биомы и в других зонах планетарной области.
-    if ( exteriorCrustZone( ap, distanceByHalfSize ) ) {
-        biome( bc[i], tc[i], stc[i], rc[i], dc[i], seed, i );
+    if ( exteriorCrustZone( ap, distance, nc ) ) {
+        // @define include/biome.hcl
+        biome( bc[i], tc[i], stc[i], rc[i], dc[i], lc[i], seed );
 
     } else {
         // остальные ячейки делаем нулевыми

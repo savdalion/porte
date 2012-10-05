@@ -1,4 +1,4 @@
-// @require helper.hcl
+// @require Библиотеки из "include".
 
 
 /**
@@ -19,7 +19,7 @@ inline void biome(
     __global const surfaceTemperatureCell_t  stc,
     __global const rainfallCell_t            rc,
     __global const drainageCell_t            dc,
-    const uint                               i,
+    __global const landscapeCell_t           lc,
     const uint                               seed
 ) {
     // @test

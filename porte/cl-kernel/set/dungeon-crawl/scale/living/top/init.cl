@@ -250,6 +250,10 @@ __kernel void init(
 
     } else {
         zoneLiving( lc, ap->living.space, zcc, lifeCycle, &rstate, nc, i );
+        
     }
+
+    // Т.к. эта инициализация вызывается много раз, заполнять каждый раз
+    // пустотой - неэффективно. Обнуление вынесено в ядро clear().
 
 }

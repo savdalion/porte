@@ -27,6 +27,10 @@ inline void DungeonCrawl::init() {
     initDrainage();
 #endif
 
+#ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
+    initLandscape();
+#endif
+
 #ifdef BIOME_DUNGEONCRAWL_PORTE
     initBiome();
 #endif
@@ -57,11 +61,9 @@ inline void DungeonCrawl::initComponent() {
     // Инициализируем сетку
     const cl_kernel kernel = kernelCL[ "scale/component/top/init" ];
 
-    // 0
     errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &componentCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
@@ -146,11 +148,9 @@ inline void DungeonCrawl::initTemperature() {
     */
 
 
-    // 0
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
@@ -197,7 +197,7 @@ inline void DungeonCrawl::initSurfaceTemperature() {
     namespace pd = portulan::planet::set::dungeoncrawl;
 
 #ifdef _DEBUG
-    std::cout << "Создаём погоду - Температура ..";
+    std::cout << "Рассчитываем температуру поверхности ..";
 #endif
 
     static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
@@ -208,11 +208,9 @@ inline void DungeonCrawl::initSurfaceTemperature() {
     // Задаём температуру на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/surface-temperature/top/init" ];
 
-    // 0
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &surfaceTemperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
@@ -259,7 +257,7 @@ inline void DungeonCrawl::initRainfall() {
     namespace pd = portulan::planet::set::dungeoncrawl;
 
 #ifdef _DEBUG
-    std::cout << "Создаём погоду - Атмосферные осадки ..";
+    std::cout << "Оцениваем атмосферные осадки ..";
 #endif
 
     static const size_t grid = pd::RAINFALL_GRID;
@@ -270,15 +268,12 @@ inline void DungeonCrawl::initRainfall() {
     // Задаём атм. осадки на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/rainfall/top/init" ];
 
-    // 0
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &rainfallCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 2
     const cl_uint rseed = randomGenerator();
     errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_uint ), &rseed );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -326,7 +321,7 @@ inline void DungeonCrawl::initDrainage() {
     namespace pd = portulan::planet::set::dungeoncrawl;
 
 #ifdef _DEBUG
-    std::cout << "Создаём погоду - Дренаж ..";
+    std::cout << "Генерируем дренаж ..";
 #endif
 
     static const size_t grid = pd::DRAINAGE_GRID;
@@ -338,15 +333,12 @@ inline void DungeonCrawl::initDrainage() {
     // Задаём дренаж на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/drainage/top/init" ];
 
-    // 0
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &drainageCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 2
     const cl_uint rseed = randomGenerator();
     errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_uint ), &rseed );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -388,6 +380,112 @@ inline void DungeonCrawl::initDrainage() {
 
 
 
+#ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::initLandscape() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+#ifdef _DEBUG
+    std::cout << "Задаём ландшафты ..";
+#endif
+
+    static const size_t grid = pd::LANDSCAPE_GRID;
+
+    static const size_t GRID_WORK_DIM = 3;
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+
+
+    // Очищаем матрицу
+    cl_kernel kernelClear = kernelCL[ "scale/landscape/top/clear" ];
+
+    errorCL = clSetKernelArg( kernelClear, 0, sizeof( cl_mem ), &landscapeCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelClear,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << ".";
+#endif
+
+
+    // Проход A
+    // # Все составляющие ландшафтов должны быть предварительно очищены.
+    const cl_kernel kernelInitA = kernelCL[ "scale/landscape/top/initA" ];
+
+    errorCL = clSetKernelArg( kernelInitA, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInitA, 1, sizeof( cl_mem ), &landscapeCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInitA, 2, sizeof( cl_mem ), &componentCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInitA, 3, sizeof( cl_mem ), &temperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInitA, 4, sizeof( cl_mem ), &surfaceTemperatureCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInitA, 5, sizeof( cl_mem ), &rainfallCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInitA, 6, sizeof( cl_mem ), &drainageCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    const cl_uint rseed = randomGenerator();
+    errorCL = clSetKernelArg( kernelInitA, 7, sizeof( cl_uint ), &rseed );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelInitA,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        landscapeCL,
+        CL_TRUE,
+        0,
+        memsizeLandscape,
+        mPortulan->topology().topology().landscape.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+}
+#endif
+
+
+
+
 #ifdef BIOME_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initBiome() {
 
@@ -407,33 +505,29 @@ inline void DungeonCrawl::initBiome() {
     // # Все составляющие биомов должны быть предварительно инициализированы.
     const cl_kernel kernelInit = kernelCL[ "scale/biome/top/init" ];
 
-    // 0
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &biomeCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 2
     errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 3
     errorCL = clSetKernelArg( kernelInit, 3, sizeof( cl_mem ), &surfaceTemperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 4
     errorCL = clSetKernelArg( kernelInit, 4, sizeof( cl_mem ), &rainfallCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 5
     errorCL = clSetKernelArg( kernelInit, 5, sizeof( cl_mem ), &drainageCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 6
+    errorCL = clSetKernelArg( kernelInit, 6, sizeof( cl_mem ), &landscapeCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
     const cl_uint rseed = randomGenerator();
-    errorCL = clSetKernelArg( kernelInit, 6, sizeof( cl_uint ), &rseed );
+    errorCL = clSetKernelArg( kernelInit, 7, sizeof( cl_uint ), &rseed );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
@@ -495,7 +589,6 @@ inline void DungeonCrawl::initLiving() {
     // очищаем матрицу количеств
     cl_kernel kernel = kernelCL[ "scale/living/top/clear" ];
 
-    // 0
     errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &livingCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
@@ -526,15 +619,12 @@ inline void DungeonCrawl::initLiving() {
     // не будет близко к желаемому
     kernel = kernelCL[ "scale/living/top/init" ];
 
-    // 0
     errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 1
     errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &livingCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 2
     // На сколько мы приблизились к расселению заданного кол-ва особей.
     // подготавливаем проверочный аргумент
     pd::zoneLivingCountComplete_t zoneCountComplete;
@@ -554,21 +644,17 @@ inline void DungeonCrawl::initLiving() {
     errorCL = clSetKernelArg( kernel, 2, sizeof( cl_mem ), &zoneCountCompleteCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 3
     // # Заселять мир будем исключительно взрослыми особями.
     const pd::LIFE_CYCLE lifeCycle = pd::LC_ADULT;
     errorCL = clSetKernelArg( kernel, 3, sizeof( pd::LIFE_CYCLE ), &lifeCycle );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 4
     errorCL = clSetKernelArg( kernel, 4, sizeof( cl_mem ), &componentCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 5
     errorCL = clSetKernelArg( kernel, 5, sizeof( cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // 6
     // Нет смысла добавлять другое значение при каждом вызове ядра, чтобы
     // разнообразить мир: в ядре OpenCL предостаточно "магических чисел".
     const cl_uint rseed = randomGenerator();

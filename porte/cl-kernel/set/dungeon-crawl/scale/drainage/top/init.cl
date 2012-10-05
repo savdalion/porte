@@ -24,7 +24,7 @@ inline float drainage(
 
     // метод должен возвращать одинаковое значение дл€ одинаковых seed
     uint2 rstate = (uint2)( seed,  i );
-    
+
     // дренаж делаем случайным
     // #i —трого говор€, с таким seed и генератором, распределение далеко от
     //    равномерного. Ќо фактура - интересна€. ќставл€ем.
@@ -54,18 +54,22 @@ __kernel void init(
     const uint i = icDenorm( dnc );
 
 
-    // –аботаем с реальными размерами.
+    /* @test
+    const float outerSphere = (float)GRID * ap->radius.crust / 2.0f;
+    const float innerSphere = (float)(GRID - 1) * ap->radius.crust / 2.0f;
+    dc[i][0].average = innerSphere;
+    return;
+    */
 
-    const float distance = distanceNC( nc ) * (float)SCALE;
-    const float halfSize = ap->size / 2.0f;
-    const float distanceByHalfSize = distance / halfSize;
+    // –аботаем с размерами сетки.
+    const float distance = distanceNC( nc );
 
     // работаем только с поверхностью планеты
     // # ƒренаж всегда распределЄн по поверхности.
-    if ( exteriorCrustZone( ap, distanceByHalfSize ) ) {
+    if ( exteriorCrustZone( ap, distance, nc ) ) {
         // расширир€ем, т.к. скорость дренажа задана средн€€
-        const float min = ap->drainage.crust.min * 0.5f;
-        const float max = ap->drainage.crust.max * 1.5f;
+        const float min = ap->drainage.crust.min * (1.0f - 0.5f);
+        const float max = ap->drainage.crust.max * (1.0f + 0.5f);
         dc[i][0].average = drainage( min, max, seed, i );
 
     } else {

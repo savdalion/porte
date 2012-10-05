@@ -69,20 +69,15 @@ __kernel void init(
     const uint i = icDenorm( dnc );
 
 
-    // Работаем с реальными размерами.
+    // Работаем с размерами сетки.
+    const float distance = distanceNC( nc );
 
-    const float distance = distanceNC( nc ) * (float)SCALE;
-    const float halfSize = ap->size / 2.0f;
-    // @todo optimize Считать 1 / halfSize перед вызовом ядра. См. и др. ядра.
-    const float distanceByHalfSize = distance / halfSize;
-
-    // работаем только с поверхностью планеты
     // # Атмосферные осадки всегда распределены между
     //   двумя зонами: поверхностью и прилегающей к ней зоне.
     //   Причина: т.о. будет проще и быстрее определить осадки в
     //   конкретной ячейке портулана.
-    if ( exteriorCrustZone( ap, distanceByHalfSize ) ||
-         interiorAtmosphereZone( ap, distanceByHalfSize )
+    if ( exteriorCrustZone( ap, distance, nc ) ||
+         interiorAtmosphereZone( ap, distance, nc )
     ) {
         // диапазон расшириряем, т.к. кол-во осадков задано среднее
         const float min = ap->rainfall.crust.min * 0.5f;

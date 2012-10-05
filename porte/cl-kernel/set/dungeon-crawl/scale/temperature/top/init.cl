@@ -128,6 +128,7 @@ __kernel void init(
     // Температуры разделены по зонам области планеты.
     // Температуру определим простой линейной функцией.
     // Работаем с реальными размерами.
+    // @todo optimize? Переписать на работу по сетке? См. landscape/init.cl.
     
     const float distance = distanceNC( nc ) * (float)SCALE;
     const float halfSize = ap->size / 2.0f;

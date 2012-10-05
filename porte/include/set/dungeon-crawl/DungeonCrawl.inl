@@ -45,6 +45,13 @@ inline DungeonCrawl::DungeonCrawl(
         portulan::planet::set::dungeoncrawl::DRAINAGE_GRID
     ),
 
+    landscapeCL( nullptr ),
+    memsizeLandscape( sizeof( portulan::planet::set::dungeoncrawl::landscapeCell_t ) *
+        portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID *
+        portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID *
+        portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID
+    ),
+
     biomeCL( nullptr ),
     memsizeBiome( sizeof( portulan::planet::set::dungeoncrawl::biomeCell_t ) *
         portulan::planet::set::dungeoncrawl::BIOME_GRID *
@@ -154,6 +161,19 @@ inline DungeonCrawl::DungeonCrawl(
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().drainage.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // landscape
+    const size_t t = sizeof( pd::aboutElementLandscape_t );
+    landscapeCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeLandscape,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().landscape.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -344,6 +364,7 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/surface-temperature.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/rainfall.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/drainage.h" )
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/landscape.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-set.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
@@ -364,11 +385,14 @@ inline void DungeonCrawl::compileCLKernel(
             && "Файл не найден." );
         std::stringstream buffer;
         buffer << file.rdbuf();
-        kernelLibraryCode += "\n\n\n\n\n" + buffer.str();
+        kernelLibraryCode +=
+            (std::string)"\n\n\n\n\n" +
+            "// @include " + pathAndName + "\n" +
+            buffer.str();
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
-    }
+    } // for (auto itr = hcl.cbegin(); ...
 
 
     // компилируем ядро
@@ -398,7 +422,19 @@ inline void DungeonCrawl::compileCLKernel(
 
         // create the program
         const std::string kernelSourceCode =
-            kernelLibraryCode + "\n\n\n\n\n" + kernelSC;
+            kernelLibraryCode + "\n\n\n\n\n" +
+            "// @include kernel " + pathAndName + "\n" +
+            kernelSC;
+
+#ifdef _DEBUG
+        // сохраняем полный код ядра в файл
+        const std::string fn =
+            boost::replace_all_copy( kernelKey, "/", "_" ) + ".debug.cl";
+        std::ofstream  out( fn.c_str() );
+        out << kernelSourceCode;
+        out.close();
+#endif
+
         const char* programSource = kernelSourceCode.c_str();
         const size_t programLength = kernelSourceCode.length();
         cl_program programCL = clCreateProgramWithSource(
@@ -450,6 +486,7 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
     typedef typelib::CubeSMC3D< pd::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
     typedef typelib::CubeSMC3D< pd::RAINFALL_GRID >     rainfallSMC_t;
     typedef typelib::CubeSMC3D< pd::DRAINAGE_GRID >     drainageSMC_t;
+    typedef typelib::CubeSMC3D< pd::LANDSCAPE_GRID >    landscapeSMC_t;
     typedef typelib::CubeSMC3D< pd::BIOME_GRID >        biomeSMC_t;
     typedef typelib::CubeSMC3D< pd::LIVING_GRID >       livingSMC_t;
 
@@ -485,12 +522,19 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
         << " -D MIN_COORD_DRAINAGE_GRID=" << drainageSMC_t::minCoord().x
         << " -D MAX_COORD_DRAINAGE_GRID=" << drainageSMC_t::maxCoord().x
 
+        // landscape
+        << " -D LANDSCAPE_GRID=" << pd::LANDSCAPE_GRID
+        << " -D MIN_COORD_LANDSCAPE_GRID=" << landscapeSMC_t::minCoord().x
+        << " -D MAX_COORD_LANDSCAPE_GRID=" << landscapeSMC_t::maxCoord().x
+        << " -D LANDSCAPE_CELL=" << pd::LANDSCAPE_CELL
+
         // biome
         << " -D BIOME_GRID=" << pd::BIOME_GRID
         << " -D MIN_COORD_BIOME_GRID=" << biomeSMC_t::minCoord().x
         << " -D MAX_COORD_BIOME_GRID=" << biomeSMC_t::maxCoord().x
         << " -D BIOME_COUNT=" << pd::BIOME_COUNT
         << " -D BIOME_CELL=" << pd::BIOME_CELL
+        << " -D LANDSCAPE_BIOME_COUNT=" << pd::LANDSCAPE_BIOME_COUNT
 
         // living
         << " -D LIVING_GRID=" << pd::LIVING_GRID

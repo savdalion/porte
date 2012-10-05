@@ -97,6 +97,12 @@ public:
 
 
     /**
+    * Инициализирует сетку элементов ландшафта на поверхности планеты.
+    */
+    void initLandscape();
+
+
+    /**
     * Инициализирует сетку биомов в области планеты.
     */
     void initBiome();
@@ -130,6 +136,7 @@ private:
     void prepareSurfaceTemperature();
     void prepareRainfall();
     void prepareDrainage();
+    void prepareLandscape();
     void prepareBiome();
     void prepareLiving();
 
@@ -194,6 +201,9 @@ private:
 
     cl_mem drainageCL;
     const size_t memsizeDrainage;
+
+    cl_mem landscapeCL;
+    const size_t memsizeLandscape;
 
     cl_mem biomeCL;
     const size_t memsizeBiome;

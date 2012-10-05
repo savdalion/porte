@@ -67,10 +67,13 @@ inline bool spaceZone( __global const aboutPlanet_t* ap, float distanceByHalfSiz
 /**
 * @return Заданная точка сетки находится на внешней поверхности планетарной коры.
 */
-inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
-    const float r = ap->radius.crust;
-    // #i Диапазон расширяется т.о., чтобы обеспечить непрерывность сферы.
-    return between( distanceByHalfSize,  r - PART_SCALE * 3.0f,  r + PART_SCALE * 2.0f );
+inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distance, int4 nc ) {
+    // обеспечиваем непрерывность сферы
+    static const float K = 2.5f;
+    const float outerSphere = (float)GRID / 2.0f * ap->radius.crust;
+    const float innerSphere = ((float)GRID / 2.0f - K) * ap->radius.crust;
+
+    return (distance <= outerSphere) && (distance > innerSphere);
 }
 
 
@@ -78,8 +81,11 @@ inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distanceB
 /**
 * @return Заданная точка сетки находится на внутренней поверхности атмосферы планеты.
 */
-inline bool interiorAtmosphereZone( __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
-    const float r = ap->radius.atmosphere;
-    // #i Диапазон расширяется т.о., чтобы обеспечить непрерывность сферы.
-    return between( distanceByHalfSize,  r - PART_SCALE * 2.0f,  r + PART_SCALE * 3.0f );
+inline bool interiorAtmosphereZone( __global const aboutPlanet_t* ap, float distance, int4 nc ) {
+    // обеспечиваем непрерывность сферы
+    static const float K = 2.5f;
+    const float outerSphere = ((float)GRID / 2.0f + K) * ap->radius.crust;
+    const float innerSphere = (float)GRID / 2.0f * ap->radius.crust;
+
+    return (distance <= outerSphere) && (distance > innerSphere);
 }

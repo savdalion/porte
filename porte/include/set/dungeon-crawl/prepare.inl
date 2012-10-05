@@ -28,6 +28,10 @@ inline void DungeonCrawl::prepare() {
     prepareDrainage();
 #endif
 
+#ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
+    prepareLandscape();
+#endif
+
 #ifdef BIOME_DUNGEONCRAWL_PORTE
     prepareBiome();
 #endif
@@ -153,6 +157,31 @@ inline void DungeonCrawl::prepareDrainage() {
 
     static const size_t grid = pd::DRAINAGE_GRID;
 
+    compileCLKernel< grid >( kernelKeys, includeHCL );
+}
+#endif
+
+
+
+
+
+#ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
+inline void DungeonCrawl::prepareLandscape() {
+
+    namespace pd = portulan::planet::set::dungeoncrawl;
+
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "scale/landscape/top/clear" )
+        ( "scale/landscape/top/initA" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/landscape.hcl" )
+        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+    ;
+
+    static const size_t grid = pd::LANDSCAPE_GRID;
+    
     compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif

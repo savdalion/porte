@@ -582,25 +582,28 @@ int main( int argc, char** argv ) {
 
     // Сделаем снимок топологии
     pio::SnapshotVTK  snapshot( &planet );
-#ifdef COMPONENT_SNAPSHOT_VISUALTEST
+#if defined COMPONENT_SNAPSHOT_VISUALTEST && defined COMPONENT_DUNGEONCRAWL_PORTE
     snapshot.component();
 #endif
-#ifdef TEMPERATURE_SNAPSHOT_VISUALTEST
+#if defined TEMPERATURE_SNAPSHOT_VISUALTEST && defined TEMPERATURE_DUNGEONCRAWL_PORTE
     snapshot.temperature();
 #endif
-#ifdef SURFACE_TEMPERATURE_SNAPSHOT_VISUALTEST
+#if defined SURFACE_TEMPERATURE_SNAPSHOT_VISUALTEST && defined SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
     snapshot.surfaceTemperature();
 #endif
-#ifdef RAINFALL_SNAPSHOT_VISUALTEST
+#if defined RAINFALL_SNAPSHOT_VISUALTEST && defined RAINFALL_DUNGEONCRAWL_PORTE
     snapshot.rainfall();
 #endif
-#ifdef DRAINAGE_SNAPSHOT_VISUALTEST
+#if defined DRAINAGE_SNAPSHOT_VISUALTEST && defined DRAINAGE_DUNGEONCRAWL_PORTE
     snapshot.drainage();
 #endif
-#ifdef BIOME_SNAPSHOT_VISUALTEST
+#if defined LANDSCAPE_SNAPSHOT_VISUALTEST && defined LANDSCAPE_DUNGEONCRAWL_PORTE
+    snapshot.landscape();
+#endif
+#if defined BIOME_SNAPSHOT_VISUALTEST && defined BIOME_DUNGEONCRAWL_PORTE
     snapshot.biome();
 #endif
-#ifdef LIVING_SNAPSHOT_VISUALTEST
+#if defined LIVING_SNAPSHOT_VISUALTEST && defined LIVING_DUNGEONCRAWL_PORTE
     snapshot.living();
 #endif
 

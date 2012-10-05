@@ -62,21 +62,18 @@ __kernel void init(
     const uint i = icDenorm( dnc );
 
 
-    // –аботаем с реальными размерами.
-    
-    const float distance = distanceNC( nc ) * (float)SCALE;
-    const float halfSize = ap->size / 2.0f;
-    const float distanceByHalfSize = distance / halfSize;
+    // –аботаем с размерами сетки.
+    const float distance = distanceNC( nc );
 
     // работаем только с поверхностью планеты
     // # ѕланета разогреваетс€ и температура всегда распределена между
     //   двум€ зонами: поверхностью и прилегающей к ней зоне.
     //   ѕричина: т.о. будет проще и быстрее определить реальную температуру в
     //   конкретной €чейке портулана при сравнении с данными в "temperature".
-    if ( exteriorCrustZone( ap, distanceByHalfSize ) ) {
+    if ( exteriorCrustZone( ap, distance, nc ) ) {
         exteriorCrustTemperature( stc[i], ap, nc );
 
-    } else if ( interiorAtmosphereZone( ap, distanceByHalfSize ) ) {
+    } else if ( interiorAtmosphereZone( ap, distance, nc ) ) {
         interiorAtmosphereTemperature( stc[i], ap, nc );
 
     } else {
