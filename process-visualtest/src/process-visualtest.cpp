@@ -25,9 +25,9 @@ int main( int argc, char** argv ) {
     using namespace portulan::planet;
 
     //namespace co = portulan::command::planet;
-    namespace ps  = portulan::planet::set;
+    namespace ps = portulan::planet::set;
     namespace pd = portulan::planet::set::dungeoncrawl;
-    namespace tc  = typelib::constant::physics;
+    namespace tc = typelib::constant::physics;
 
 
     // Приоритет определяет размер лог-файла
@@ -124,21 +124,21 @@ int main( int argc, char** argv ) {
         // temperature: center, surface
         {
             // space
-            {    1.0f,              1.0f },
+            { tc::CK + 1.0f,  tc::CK + 1.0f },
             // atmosphere
-            {   20.0f - tc::CK,     2.0f },
+            {   20.0f,  tc::CK + 2.0f },
             // crust
-            { 1000.0f - tc::CK,    20.0f - tc::CK },
+            { 1000.0f,    20.0f },
             // mantle
-            { 4000.0f - tc::CK,  1000.0f - tc::CK },
+            { 4000.0f,  1000.0f },
             // core
-            { 6000.0f - tc::CK,  4000.0f - tc::CK }
+            { 6000.0f,  4000.0f }
         },
 
         // surfaceTemperature: pole, equator
         {
             // crust
-            { -20.0f - tc::CK,  50.0f - tc::CK }
+            { -20.0f,  50.0f }
         },
 
         // rainfall: min, max
