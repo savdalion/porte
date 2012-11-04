@@ -53,6 +53,18 @@ inline void DungeonCrawl::initComponent() {
     std::cout << "Определяем состав планеты ..";
 #endif
 
+    cl_mem componentCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeComponent,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().component.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+
     static const size_t grid = pd::COMPONENT_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
@@ -94,6 +106,9 @@ inline void DungeonCrawl::initComponent() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( componentCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -112,6 +127,18 @@ inline void DungeonCrawl::initTemperature() {
 #ifdef _DEBUG
     std::cout << "Разогреваем планету ..";
 #endif
+
+    cl_mem temperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().temperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
     static const size_t grid = pd::TEMPERATURE_GRID;
 
@@ -181,6 +208,9 @@ inline void DungeonCrawl::initTemperature() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( temperatureCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -199,6 +229,17 @@ inline void DungeonCrawl::initSurfaceTemperature() {
 #ifdef _DEBUG
     std::cout << "Рассчитываем температуру поверхности ..";
 #endif
+
+    cl_mem surfaceTemperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeSurfaceTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().surfaceTemperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
 
@@ -241,6 +282,9 @@ inline void DungeonCrawl::initSurfaceTemperature() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( surfaceTemperatureCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -259,6 +303,18 @@ inline void DungeonCrawl::initRainfall() {
 #ifdef _DEBUG
     std::cout << "Оцениваем атмосферные осадки ..";
 #endif
+
+    cl_mem rainfallCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeRainfall,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().rainfall.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
     static const size_t grid = pd::RAINFALL_GRID;
 
@@ -305,6 +361,9 @@ inline void DungeonCrawl::initRainfall() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( rainfallCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -323,6 +382,18 @@ inline void DungeonCrawl::initDrainage() {
 #ifdef _DEBUG
     std::cout << "Генерируем дренаж ..";
 #endif
+
+    cl_mem drainageCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeDrainage,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().drainage.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
     static const size_t grid = pd::DRAINAGE_GRID;
 
@@ -370,6 +441,9 @@ inline void DungeonCrawl::initDrainage() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( drainageCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -388,6 +462,73 @@ inline void DungeonCrawl::initLandscape() {
 #ifdef _DEBUG
     std::cout << "Задаём ландшафты ..";
 #endif
+
+    cl_mem landscapeCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeLandscape,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().landscape.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem componentCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeComponent,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().component.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem temperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().temperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem surfaceTemperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeSurfaceTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().surfaceTemperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem rainfallCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeRainfall,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().rainfall.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem drainageCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeDrainage,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().drainage.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
     static const size_t grid = pd::LANDSCAPE_GRID;
 
@@ -415,6 +556,7 @@ inline void DungeonCrawl::initLandscape() {
     // синхронизация
     errorCL = clFinish( commandQueueCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
 #ifdef _DEBUG
     std::cout << ".";
@@ -477,6 +619,14 @@ inline void DungeonCrawl::initLandscape() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( landscapeCL );
+    clReleaseMemObject( componentCL );
+    clReleaseMemObject( temperatureCL );
+    clReleaseMemObject( surfaceTemperatureCL );
+    clReleaseMemObject( rainfallCL );
+    clReleaseMemObject( drainageCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -494,6 +644,73 @@ inline void DungeonCrawl::initBiome() {
 #ifdef _DEBUG
     std::cout << "Распознаём биомы ..";
 #endif
+
+    cl_mem biomeCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeBiome,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().biome.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem temperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().temperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem surfaceTemperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeSurfaceTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().surfaceTemperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem rainfallCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeRainfall,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().rainfall.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem drainageCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeDrainage,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().drainage.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem landscapeCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeLandscape,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().landscape.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
     static const size_t grid = pd::BIOME_GRID;
 
@@ -557,6 +774,14 @@ inline void DungeonCrawl::initBiome() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
+
+    clReleaseMemObject( biomeCL );
+    clReleaseMemObject( temperatureCL );
+    clReleaseMemObject( surfaceTemperatureCL );
+    clReleaseMemObject( rainfallCL );
+    clReleaseMemObject( drainageCL );
+    clReleaseMemObject( landscapeCL );
+
 #ifdef _DEBUG
     std::cout << " ОК" << std::endl;
 #endif
@@ -576,6 +801,40 @@ inline void DungeonCrawl::initLiving() {
 #ifdef _DEBUG
     std::cout << "Населяем планету ..";
 #endif
+
+    cl_mem livingCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeLiving,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().living.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem componentCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeComponent,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().component.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    cl_mem temperatureCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeTemperature,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().temperature.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
 
     static const size_t grid = pd::LIVING_GRID;
 
@@ -852,6 +1111,11 @@ inline void DungeonCrawl::initLiving() {
         }
 #endif
     } // for ( ; ; )
+
+
+    clReleaseMemObject( livingCL );
+    clReleaseMemObject( componentCL );
+    clReleaseMemObject( temperatureCL );
 
 #ifdef _DEBUG
     std::cout << " ОК          " << std::endl;

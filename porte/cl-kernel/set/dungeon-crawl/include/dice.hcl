@@ -47,6 +47,15 @@ inline float floatDiapasonRandom( uint2* rstate, float2 range ) {
 
 
 
+/**
+* @return Значение в диапазоне [ center * (1.0 - deviation);  center * (1.0 + deviation) ].
+*/
+inline float floatDeviationRandom( uint2* rstate, float center, float deviation ) {
+    return floatDiapasonRandom( rstate,  (float2)( center * (1.0 - deviation),  center * (1.0 + deviation) ) );
+}
+
+
+
 
 /**
 * Бросок кости "nDm".

@@ -8,6 +8,7 @@
 
 inline void exteriorCrustLandscape(
     __global landscapeCell_t                 lc,
+    __global const landscapePlanet_t*        lp,
     __global const componentCell_t           cc,
     __global const temperatureCell_t         tc,
     __global const surfaceTemperatureCell_t  stc,
@@ -18,16 +19,16 @@ inline void exteriorCrustLandscape(
     // задаЄм кол-во элементов ландшафта в этой €чейке
     // # ќдна €чейка содержит не более LANDSCAPE_CELL приближЄнных ландшафтов.
     const uint count = dice( rstate, 1, LANDSCAPE_CELL ) - 1;
-
+/*
     uint k = 0;
     for ( ; k < count; ++k) {
 
-        // @test
-        landscape( &lc[k], cc, tc, stc, rc, dc, rstate );
+        // @see landscape.hcl
+        ? landscape( &lc[k], lp, cc, tc, stc, rc, dc, rstate );
 
     } // for (uint k
 
-
+?
     // дозаполн€ем пустотой
     for ( ; k < LANDSCAPE_CELL; ++k) {
         lc[k].code  = CEL_NONE;
@@ -37,6 +38,7 @@ inline void exteriorCrustLandscape(
         lc[k].count = 0.0f;
         lc[k].scattering = 0.0f;
     }
+*/
 }
 
 
@@ -74,7 +76,7 @@ __kernel void initA(
     // # Ћандшафт (элементы ландшафта), распределЄн не только по поверхности
     //   планеты, но и внутри неЄ.
     if ( exteriorCrustZone( ap, distance, nc ) ) {
-        exteriorCrustLandscape( lc[i], cc[i], tc[i], stc[i], rc[i], dc[i], &rstate );
+        exteriorCrustLandscape( lc[i], &ap->landscape, cc[i], tc[i], stc[i], rc[i], dc[i], &rstate );
 
     } else if ( true ) {
         // @todo ƒобавить ландшафт внутри планеты (пещеры).

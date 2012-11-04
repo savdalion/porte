@@ -187,28 +187,13 @@ private:
     cl_mem aboutPlanetCL;
     const size_t memsizeAboutPlanet;
 
-    cl_mem componentCL;
     const size_t memsizeComponent;
-
-    cl_mem temperatureCL;
     const size_t memsizeTemperature;
-
-    cl_mem surfaceTemperatureCL;
     const size_t memsizeSurfaceTemperature;
-
-    cl_mem rainfallCL;
     const size_t memsizeRainfall;
-
-    cl_mem drainageCL;
     const size_t memsizeDrainage;
-
-    cl_mem landscapeCL;
     const size_t memsizeLandscape;
-
-    cl_mem biomeCL;
     const size_t memsizeBiome;
-
-    cl_mem livingCL;
     const size_t memsizeLiving;
 
 

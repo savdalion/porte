@@ -9,7 +9,7 @@ inline DungeonCrawl::DungeonCrawl(
     aboutPlanetCL( nullptr ),
     memsizeAboutPlanet( sizeof( portulan::planet::set::dungeoncrawl::aboutPlanet_t ) ),
 
-    componentCL( nullptr ),
+    //componentCL( nullptr ),
     // #! Если память выделена динамически, работаем с содержанием структуры.
     memsizeComponent( sizeof( portulan::planet::set::dungeoncrawl::componentCell_t ) *
         portulan::planet::set::dungeoncrawl::COMPONENT_GRID *
@@ -17,49 +17,42 @@ inline DungeonCrawl::DungeonCrawl(
         portulan::planet::set::dungeoncrawl::COMPONENT_GRID
     ),
 
-    temperatureCL( nullptr ),
     memsizeTemperature( sizeof( portulan::planet::set::dungeoncrawl::temperatureCell_t ) *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID
     ),
 
-    surfaceTemperatureCL( nullptr ),
     memsizeSurfaceTemperature( sizeof( portulan::planet::set::dungeoncrawl::surfaceTemperatureCell_t ) *
         portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID *
         portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID
     ),
 
-    rainfallCL( nullptr ),
     memsizeRainfall( sizeof( portulan::planet::set::dungeoncrawl::rainfallCell_t ) *
         portulan::planet::set::dungeoncrawl::RAINFALL_GRID *
         portulan::planet::set::dungeoncrawl::RAINFALL_GRID *
         portulan::planet::set::dungeoncrawl::RAINFALL_GRID
     ),
 
-    drainageCL( nullptr ),
     memsizeDrainage( sizeof( portulan::planet::set::dungeoncrawl::drainageCell_t ) *
         portulan::planet::set::dungeoncrawl::DRAINAGE_GRID *
         portulan::planet::set::dungeoncrawl::DRAINAGE_GRID *
         portulan::planet::set::dungeoncrawl::DRAINAGE_GRID
     ),
 
-    landscapeCL( nullptr ),
     memsizeLandscape( sizeof( portulan::planet::set::dungeoncrawl::landscapeCell_t ) *
         portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID *
         portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID *
         portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID
     ),
 
-    biomeCL( nullptr ),
     memsizeBiome( sizeof( portulan::planet::set::dungeoncrawl::biomeCell_t ) *
         portulan::planet::set::dungeoncrawl::BIOME_GRID *
         portulan::planet::set::dungeoncrawl::BIOME_GRID *
         portulan::planet::set::dungeoncrawl::BIOME_GRID
     ),
 
-    livingCL( nullptr ),
     memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
         portulan::planet::set::dungeoncrawl::LIVING_GRID *
         portulan::planet::set::dungeoncrawl::LIVING_GRID *
@@ -105,103 +98,6 @@ inline DungeonCrawl::DungeonCrawl(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // component
-    componentCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeComponent,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().component.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // temperature
-    temperatureCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeTemperature,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().temperature.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // surfaceTemperature
-    surfaceTemperatureCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeSurfaceTemperature,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().surfaceTemperature.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // rainfall
-    rainfallCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeRainfall,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().rainfall.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // drainage
-    drainageCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeDrainage,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().drainage.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // landscape
-    const size_t t = sizeof( pd::aboutElementLandscape_t );
-    landscapeCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeLandscape,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().landscape.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // biome
-    biomeCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeBiome,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().biome.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // living
-    livingCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeLiving,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().living.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
 
     // Подготавливаем ядра OpenCL (ядра требуют компиляции)
     prepare();
@@ -216,15 +112,8 @@ inline DungeonCrawl::DungeonCrawl(
 
 
 inline DungeonCrawl::~DungeonCrawl() {
-    /* - Нет: отдаём для OpenCL ссылки на созданные извне структуры...
-    // освобождаем структуры для обмена данными с OpenCL
+    // освобождаем общие структуры для обмена данными с OpenCL
     clReleaseMemObject( aboutPlanetCL );
-    ...
-    */
-    // ...но временные структуры - исключение
-    //clReleaseMemObject( workComponentCL );
-    //clReleaseMemObject( workTemperatureCL );
-    //...
 
     // удаляем собранные ядра
     for (auto itr = kernelCL.begin(); itr != kernelCL.end(); ++itr) {
@@ -369,7 +258,7 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-set.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
         // все h-файлы выше включены, т.к. они принимают участие
-        // в строении planet.h, который используется во всех ядрах
+        // в строении planet.h (используется во всех ядрах)
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
     ;
     hcl.insert( hcl.end(), includeHCL.cbegin(), includeHCL.cend() );

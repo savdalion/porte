@@ -153,6 +153,33 @@ int main( int argc, char** argv ) {
             { 5.0f,  5000.0f }
         },
 
+        // landscape
+        {
+            // mountainLandscape_t
+            { 10000.0f,  20.0f },
+            0.5f,
+
+            // basinLandscape_t
+            { 5000.0f,  20.0f },
+            0.5f,
+
+            // rangeLandscape_t
+            { 3000.0f,  20000.0f },
+            0.5f,
+
+            // ravineLandscape_t
+            { 300.0f,  10000.0f },
+            0.5f,
+
+            // lakeLandscape_t
+            { 500.0f,  pd::CC_WATER },
+            0.5f,
+
+            // riverLandscape_t
+            { 100.0f,  pd::CC_WATER,  1.0f,  pd::D_NONE },
+            0.5f
+        },
+
         // living
         {
             // space
@@ -195,6 +222,7 @@ int main( int argc, char** argv ) {
     const auto& testST = topology.aboutPlanet.surfaceTemperature;
     const auto& testR  = topology.aboutPlanet.rainfall;
     const auto& testD  = topology.aboutPlanet.drainage;
+    const auto& testA  = topology.aboutPlanet.landscape;
     const auto& testL  = topology.aboutPlanet.living;
 
     /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
