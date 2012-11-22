@@ -7,6 +7,33 @@
 
 
 
+inline void exteriorCrustBiome(
+    __global       biomeCell_t               bc,
+    __global const surfaceTemperatureCell_t  stc,
+    __global const rainfallCell_t            rc,
+    __global const drainageCell_t            dc,
+    __global const landscapeCell_t           lc,
+    uint2*                                   rstate
+) {
+    /* @test
+    bc[ 0 ].code = CB_TAIGA;
+    bc[ 1 ].code = CB_TROPICAL_MOIST_BROADLEAF_FOREST;
+    bc[ 2 ].code = CB_NONE;
+    */
+
+    // не можем задать фиксированное кол-во биомов, т.к. б. формируются на
+    // основе заданной местности
+    // # Тем не менее, одна ячейка содержит не более BIOME_CELL биомов.
+
+    // @see biome.hcl
+    biome( bc, stc, rc, dc, lc, rstate );
+
+}
+
+
+
+
+
 __kernel void init(
     __global const aboutPlanet_t*             ap,    // 0
     __global biomeCell_t*                     bc,    // 1
@@ -28,14 +55,16 @@ __kernel void init(
     const uint i = icDenorm( dnc );
 
 
+    // инициализируем генератор случ. чисел для этой ячейки
+    uint2 rstate = (uint2)( seed, i );
+
     // Работаем с размерами сетки.
     const float distance = distanceNC( nc );
 
     // работаем только с поверхностью планеты
     // @todo Определять биомы и в других зонах планетарной области.
     if ( exteriorCrustZone( ap, distance, nc ) ) {
-        // @define include/biome.hcl
-        biome( bc[i], tc[i], stc[i], rc[i], dc[i], lc[i], seed );
+        exteriorCrustBiome( bc[i], stc[i], rc[i], dc[i], lc[i], &rstate );
 
     } else {
         // остальные ячейки делаем нулевыми

@@ -7,7 +7,7 @@
 
 
 inline void exteriorCrustLandscape(
-    __global landscapeCell_t                 lc,
+    __global       landscapeCell_t           lc,
     __global const landscapePlanet_t*        lp,
     __global const componentCell_t           cc,
     __global const temperatureCell_t         tc,
@@ -18,27 +18,24 @@ inline void exteriorCrustLandscape(
 ) {
     // задаём кол-во элементов ландшафта в этой ячейке
     // # Одна ячейка содержит не более LANDSCAPE_CELL приближённых ландшафтов.
-    const uint count = dice( rstate, 1, LANDSCAPE_CELL ) - 1;
-/*
+    const uint count = dice( rstate, 1, LANDSCAPE_CELL + 1 ) - 1;
+
     uint k = 0;
     for ( ; k < count; ++k) {
-
         // @see landscape.hcl
-        ? landscape( &lc[k], lp, cc, tc, stc, rc, dc, rstate );
+        landscape( &lc[k], lp, cc, tc, stc, rc, dc, rstate );
+    }
 
-    } // for (uint k
-
-?
     // дозаполняем пустотой
     for ( ; k < LANDSCAPE_CELL; ++k) {
         lc[k].code  = CEL_NONE;
-        // @todo optimize Остальные поля можно не инициализировать.
+        // @todo optimize Поля ниже можно не инициализировать.
         const aboutElementLandscape_t about = {};
         lc[k].about = about;
         lc[k].count = 0.0f;
         lc[k].scattering = 0.0f;
     }
-*/
+
 }
 
 
@@ -76,7 +73,16 @@ __kernel void initA(
     // # Ландшафт (элементы ландшафта), распределён не только по поверхности
     //   планеты, но и внутри неё.
     if ( exteriorCrustZone( ap, distance, nc ) ) {
-        exteriorCrustLandscape( lc[i], &ap->landscape, cc[i], tc[i], stc[i], rc[i], dc[i], &rstate );
+        exteriorCrustLandscape(
+            lc[i],
+            &ap->landscape,
+            cc[i],
+            tc[i],
+            stc[i],
+            rc[i],
+            dc[i],
+            &rstate
+        );
 
     } else if ( true ) {
         // @todo Добавить ландшафт внутри планеты (пещеры).

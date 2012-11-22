@@ -199,6 +199,7 @@ inline void DungeonCrawl::prepareBiome() {
         ( "scale/biome/top/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-utils.h" )
         ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
         ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
         ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )

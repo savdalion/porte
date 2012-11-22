@@ -53,7 +53,7 @@ inline void DungeonCrawl::initComponent() {
     std::cout << "Определяем состав планеты ..";
 #endif
 
-    cl_mem componentCL = clCreateBuffer(
+    const cl_mem componentCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -73,10 +73,10 @@ inline void DungeonCrawl::initComponent() {
     // Инициализируем сетку
     const cl_kernel kernel = kernelCL[ "scale/component/top/init" ];
 
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &componentCL );
+    errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &componentCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
@@ -128,7 +128,7 @@ inline void DungeonCrawl::initTemperature() {
     std::cout << "Разогреваем планету ..";
 #endif
 
-    cl_mem temperatureCL = clCreateBuffer(
+    const cl_mem temperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -151,7 +151,7 @@ inline void DungeonCrawl::initTemperature() {
     /* @test
     pd::test_t test;
     const size_t memsizeTest = sizeof( pd::test_t );
-    cl_mem testCL = clCreateBuffer(
+    const cl_mem testCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -160,7 +160,7 @@ inline void DungeonCrawl::initTemperature() {
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &testCL );
+    errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &testCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     errorCL = clEnqueueNDRangeKernel(
         commandQueueCL,
@@ -175,10 +175,10 @@ inline void DungeonCrawl::initTemperature() {
     */
 
 
-    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &temperatureCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
@@ -230,7 +230,7 @@ inline void DungeonCrawl::initSurfaceTemperature() {
     std::cout << "Рассчитываем температуру поверхности ..";
 #endif
 
-    cl_mem surfaceTemperatureCL = clCreateBuffer(
+    const cl_mem surfaceTemperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -249,10 +249,10 @@ inline void DungeonCrawl::initSurfaceTemperature() {
     // Задаём температуру на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/surface-temperature/top/init" ];
 
-    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &surfaceTemperatureCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &surfaceTemperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
@@ -304,7 +304,7 @@ inline void DungeonCrawl::initRainfall() {
     std::cout << "Оцениваем атмосферные осадки ..";
 #endif
 
-    cl_mem rainfallCL = clCreateBuffer(
+    const cl_mem rainfallCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -324,10 +324,10 @@ inline void DungeonCrawl::initRainfall() {
     // Задаём атм. осадки на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/rainfall/top/init" ];
 
-    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &rainfallCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &rainfallCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     const cl_uint rseed = randomGenerator();
@@ -383,7 +383,7 @@ inline void DungeonCrawl::initDrainage() {
     std::cout << "Генерируем дренаж ..";
 #endif
 
-    cl_mem drainageCL = clCreateBuffer(
+    const cl_mem drainageCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -404,10 +404,10 @@ inline void DungeonCrawl::initDrainage() {
     // Задаём дренаж на поверхности планеты
     const cl_kernel kernelInit = kernelCL[ "scale/drainage/top/init" ];
 
-    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &drainageCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &drainageCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     const cl_uint rseed = randomGenerator();
@@ -463,7 +463,7 @@ inline void DungeonCrawl::initLandscape() {
     std::cout << "Задаём ландшафты ..";
 #endif
 
-    cl_mem landscapeCL = clCreateBuffer(
+    const cl_mem landscapeCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -474,10 +474,10 @@ inline void DungeonCrawl::initLandscape() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem componentCL = clCreateBuffer(
+    const cl_mem componentCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeComponent,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().component.content,
@@ -485,10 +485,10 @@ inline void DungeonCrawl::initLandscape() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem temperatureCL = clCreateBuffer(
+    const cl_mem temperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().temperature.content,
@@ -496,10 +496,10 @@ inline void DungeonCrawl::initLandscape() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem surfaceTemperatureCL = clCreateBuffer(
+    const cl_mem surfaceTemperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeSurfaceTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().surfaceTemperature.content,
@@ -507,10 +507,10 @@ inline void DungeonCrawl::initLandscape() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem rainfallCL = clCreateBuffer(
+    const cl_mem rainfallCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeRainfall,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().rainfall.content,
@@ -518,10 +518,10 @@ inline void DungeonCrawl::initLandscape() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem drainageCL = clCreateBuffer(
+    const cl_mem drainageCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().drainage.content,
@@ -539,7 +539,7 @@ inline void DungeonCrawl::initLandscape() {
     // Очищаем матрицу
     cl_kernel kernelClear = kernelCL[ "scale/landscape/top/clear" ];
 
-    errorCL = clSetKernelArg( kernelClear, 0, sizeof( cl_mem ), &landscapeCL );
+    errorCL = clSetKernelArg( kernelClear, 0, sizeof( const cl_mem ), &landscapeCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
@@ -564,28 +564,29 @@ inline void DungeonCrawl::initLandscape() {
 
 
     // Проход A
-    // # Все составляющие ландшафтов должны быть предварительно очищены.
+    // # Все составляющие ландшафтов должны быть предварительно очищены -
+    //   см. kernel clear().
     const cl_kernel kernelInitA = kernelCL[ "scale/landscape/top/initA" ];
 
-    errorCL = clSetKernelArg( kernelInitA, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInitA, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInitA, 1, sizeof( cl_mem ), &landscapeCL );
+    errorCL = clSetKernelArg( kernelInitA, 1, sizeof( const cl_mem ), &landscapeCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInitA, 2, sizeof( cl_mem ), &componentCL );
+    errorCL = clSetKernelArg( kernelInitA, 2, sizeof( const cl_mem ), &componentCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInitA, 3, sizeof( cl_mem ), &temperatureCL );
+    errorCL = clSetKernelArg( kernelInitA, 3, sizeof( const cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInitA, 4, sizeof( cl_mem ), &surfaceTemperatureCL );
+    errorCL = clSetKernelArg( kernelInitA, 4, sizeof( const cl_mem ), &surfaceTemperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInitA, 5, sizeof( cl_mem ), &rainfallCL );
+    errorCL = clSetKernelArg( kernelInitA, 5, sizeof( const cl_mem ), &rainfallCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInitA, 6, sizeof( cl_mem ), &drainageCL );
+    errorCL = clSetKernelArg( kernelInitA, 6, sizeof( const cl_mem ), &drainageCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     const cl_uint rseed = randomGenerator();
@@ -620,6 +621,10 @@ inline void DungeonCrawl::initLandscape() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
+    // Проход B
+    // @todo ...
+
+
     clReleaseMemObject( landscapeCL );
     clReleaseMemObject( componentCL );
     clReleaseMemObject( temperatureCL );
@@ -645,7 +650,7 @@ inline void DungeonCrawl::initBiome() {
     std::cout << "Распознаём биомы ..";
 #endif
 
-    cl_mem biomeCL = clCreateBuffer(
+    const cl_mem biomeCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -656,10 +661,10 @@ inline void DungeonCrawl::initBiome() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem temperatureCL = clCreateBuffer(
+    const cl_mem temperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().temperature.content,
@@ -667,10 +672,10 @@ inline void DungeonCrawl::initBiome() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem surfaceTemperatureCL = clCreateBuffer(
+    const cl_mem surfaceTemperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeSurfaceTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().surfaceTemperature.content,
@@ -678,10 +683,10 @@ inline void DungeonCrawl::initBiome() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem rainfallCL = clCreateBuffer(
+    const cl_mem rainfallCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeRainfall,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().rainfall.content,
@@ -689,10 +694,10 @@ inline void DungeonCrawl::initBiome() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem drainageCL = clCreateBuffer(
+    const cl_mem drainageCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().drainage.content,
@@ -700,10 +705,10 @@ inline void DungeonCrawl::initBiome() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem landscapeCL = clCreateBuffer(
+    const cl_mem landscapeCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeLandscape,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().landscape.content,
@@ -722,25 +727,25 @@ inline void DungeonCrawl::initBiome() {
     // # Все составляющие биомов должны быть предварительно инициализированы.
     const cl_kernel kernelInit = kernelCL[ "scale/biome/top/init" ];
 
-    errorCL = clSetKernelArg( kernelInit, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 1, sizeof( cl_mem ), &biomeCL );
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &biomeCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 2, sizeof( cl_mem ), &temperatureCL );
+    errorCL = clSetKernelArg( kernelInit, 2, sizeof( const cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 3, sizeof( cl_mem ), &surfaceTemperatureCL );
+    errorCL = clSetKernelArg( kernelInit, 3, sizeof( const cl_mem ), &surfaceTemperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 4, sizeof( cl_mem ), &rainfallCL );
+    errorCL = clSetKernelArg( kernelInit, 4, sizeof( const cl_mem ), &rainfallCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 5, sizeof( cl_mem ), &drainageCL );
+    errorCL = clSetKernelArg( kernelInit, 5, sizeof( const cl_mem ), &drainageCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelInit, 6, sizeof( cl_mem ), &landscapeCL );
+    errorCL = clSetKernelArg( kernelInit, 6, sizeof( const cl_mem ), &landscapeCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     const cl_uint rseed = randomGenerator();
@@ -802,7 +807,7 @@ inline void DungeonCrawl::initLiving() {
     std::cout << "Населяем планету ..";
 #endif
 
-    cl_mem livingCL = clCreateBuffer(
+    const cl_mem livingCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
@@ -813,10 +818,10 @@ inline void DungeonCrawl::initLiving() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem componentCL = clCreateBuffer(
+    const cl_mem componentCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeComponent,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().component.content,
@@ -824,10 +829,10 @@ inline void DungeonCrawl::initLiving() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    cl_mem temperatureCL = clCreateBuffer(
+    const cl_mem temperatureCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
         mPortulan->topology().topology().temperature.content,
@@ -848,7 +853,7 @@ inline void DungeonCrawl::initLiving() {
     // очищаем матрицу количеств
     cl_kernel kernel = kernelCL[ "scale/living/top/clear" ];
 
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &livingCL );
+    errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &livingCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clEnqueueNDRangeKernel(
@@ -878,10 +883,10 @@ inline void DungeonCrawl::initLiving() {
     // не будет близко к желаемому
     kernel = kernelCL[ "scale/living/top/init" ];
 
-    errorCL = clSetKernelArg( kernel, 0, sizeof( cl_mem ), &aboutPlanetCL );
+    errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernel, 1, sizeof( cl_mem ), &livingCL );
+    errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &livingCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // На сколько мы приблизились к расселению заданного кол-ва особей.
@@ -890,7 +895,7 @@ inline void DungeonCrawl::initLiving() {
     static const size_t memsizeZoneCountComplete =
         sizeof( pd::zoneOneLivingCountComplete_t ) *
         pd::LIVING_COUNT * pd::LIFE_CYCLE_COUNT;
-    cl_mem zoneCountCompleteCL = clCreateBuffer(
+    const cl_mem zoneCountCompleteCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
@@ -900,7 +905,7 @@ inline void DungeonCrawl::initLiving() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernel, 2, sizeof( cl_mem ), &zoneCountCompleteCL );
+    errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &zoneCountCompleteCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // # Заселять мир будем исключительно взрослыми особями.
@@ -908,10 +913,10 @@ inline void DungeonCrawl::initLiving() {
     errorCL = clSetKernelArg( kernel, 3, sizeof( pd::LIFE_CYCLE ), &lifeCycle );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernel, 4, sizeof( cl_mem ), &componentCL );
+    errorCL = clSetKernelArg( kernel, 4, sizeof( const cl_mem ), &componentCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernel, 5, sizeof( cl_mem ), &temperatureCL );
+    errorCL = clSetKernelArg( kernel, 5, sizeof( const cl_mem ), &temperatureCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // Нет смысла добавлять другое значение при каждом вызове ядра, чтобы
@@ -1041,7 +1046,7 @@ inline void DungeonCrawl::initLiving() {
             }
         }
 
-        // кол-во особей должно быть близко к желаемому
+        // кол-во особей должно быть *близко* к желаемому
         std::memset( zoneCountComplete, false, memsizeZoneCountComplete );
         bool allComplete = true;
         for (size_t code = 0; code < pd::LIVING_COUNT; ++code) {
@@ -1066,7 +1071,7 @@ inline void DungeonCrawl::initLiving() {
         } // for (size_t code
 
         if ( allComplete ) {
-            // планета заселена, количества особей соотв. желаемым
+            // планета заселена, количества особей *приближено* к желаемому
             break;
         }
 

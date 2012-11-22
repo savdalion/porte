@@ -257,8 +257,8 @@ inline void DungeonCrawl::compileCLKernel(
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-set.h" )
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
-        // все h-файлы выше включены, т.к. они принимают участие
-        // в строении planet.h (используется во всех ядрах)
+        // все h-файлы выше включены, т.к. они включены в
+        // planet.h (используется во всех ядрах)
         ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
     ;
     hcl.insert( hcl.end(), includeHCL.cbegin(), includeHCL.cend() );

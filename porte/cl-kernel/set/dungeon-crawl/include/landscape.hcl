@@ -10,8 +10,8 @@
 
 
 /**
-* Заполняет структуру "lc", определяя случайный эл. ландшафта по заданным
-* параметрам.
+* Заполняет структуру "el" (один эл. ландшафта!), определяя случайный
+* эл. ландшафта по заданным параметрам.
 */
 inline void landscape(
     __global       elementLandscape_t*       el,
@@ -23,49 +23,56 @@ inline void landscape(
     __global const drainageCell_t            dc,
     uint2*                                   rstate
 ) {
-    /* @test
-    el->code = CEL_FLAT;
-    el->count = 1.0f;
-    el->scattering = 2.0f;
-    */
-
-    const enum CODE_ELEMENT_LANDSCAPE code =
-        (enum CODE_ELEMENT_LANDSCAPE)intDiapasonRandom( rstate,  (int2)( 1, CEL_last - 1 ) );
+    el->code = (enum CODE_ELEMENT_LANDSCAPE)intDiapasonRandom(
+        rstate,  (int2)( 1, CEL_last - 1 )
+    );
 
     // @todo optimize Без инициализации.
     aboutElementLandscape_t about = {};
+    // @todo Добавить частичное размещение элемента ландшафта в ячейке.
+    about.partially = D_NONE;
 
-    switch ( code ) {
+    // @see portulan / landscape.h
+    switch ( el->code ) {
         case CEL_FLAT:
             // нет параметров
             break;
 
         case CEL_MOUNTAIN:
-            about.mountain.height =
-                floatDeviationRandom( rstate, lp->mountain.height, lp->deviationMountain );
-            about.mountain.slope =
-                floatDeviationRandom( rstate, lp->mountain.slope,  lp->deviationMountain );
+            about.mountain.height = floatDeviationRandom(
+                rstate, lp->mountain.height, lp->deviationMountain
+            );
+            about.mountain.slope = floatDeviationRandom(
+                rstate, lp->mountain.slope,  lp->deviationMountain
+            );
             break;
 
         case CEL_BASIN:
+            // @todo ...
             break;
 
         case CEL_RANGE:
+            // @todo ...
             break;
 
         case CEL_RAVINE:
+            // @todo ...
             break;
 
         case CEL_LAKE:
+            // @todo ...
             break;
 
         case CEL_RIVER:
+            // @todo ...
             break;
 
         case CEL_CASCADE:
+            // @todo ...
             break;
 
         case CEL_ROAD:
+            // @todo ...
             break;
 
         case CEL_CAVE:
@@ -76,10 +83,8 @@ inline void landscape(
             break;
     }
 
-    el->code = code;
     el->about = about;
     el->count = dice( rstate, 1, 100 );
     el->scattering = floatDice( rstate, 1, 1.0f );
-    // @todo Добавить частичное размещение элемента ландшафта в ячейке.
-    el->partially = D_NONE;
+
 }
