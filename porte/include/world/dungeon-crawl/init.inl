@@ -47,7 +47,7 @@ inline void DungeonCrawl::init() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initComponent() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Определяем состав планеты ..";
@@ -71,7 +71,7 @@ inline void DungeonCrawl::initComponent() {
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
 
     // Инициализируем сетку
-    const cl_kernel kernel = kernelCL[ "scale/component/top/init" ];
+    const cl_kernel kernel = kernelCL[ "set/component/init" ];
 
     errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -122,7 +122,7 @@ inline void DungeonCrawl::initComponent() {
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initTemperature() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Разогреваем планету ..";
@@ -146,7 +146,7 @@ inline void DungeonCrawl::initTemperature() {
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
 
     // Задаём температуру планетной области
-    const cl_kernel kernelInit = kernelCL[ "scale/temperature/top/init" ];
+    const cl_kernel kernelInit = kernelCL[ "set/temperature/init" ];
 
     /* @test
     pd::test_t test;
@@ -224,7 +224,7 @@ inline void DungeonCrawl::initTemperature() {
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initSurfaceTemperature() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Рассчитываем температуру поверхности ..";
@@ -247,7 +247,7 @@ inline void DungeonCrawl::initSurfaceTemperature() {
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
 
     // Задаём температуру на поверхности планеты
-    const cl_kernel kernelInit = kernelCL[ "scale/surface-temperature/top/init" ];
+    const cl_kernel kernelInit = kernelCL[ "set/surface-temperature/init" ];
 
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -298,7 +298,7 @@ inline void DungeonCrawl::initSurfaceTemperature() {
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initRainfall() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Оцениваем атмосферные осадки ..";
@@ -322,7 +322,7 @@ inline void DungeonCrawl::initRainfall() {
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
 
     // Задаём атм. осадки на поверхности планеты
-    const cl_kernel kernelInit = kernelCL[ "scale/rainfall/top/init" ];
+    const cl_kernel kernelInit = kernelCL[ "set/rainfall/init" ];
 
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -377,7 +377,7 @@ inline void DungeonCrawl::initRainfall() {
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initDrainage() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Генерируем дренаж ..";
@@ -402,7 +402,7 @@ inline void DungeonCrawl::initDrainage() {
 
 
     // Задаём дренаж на поверхности планеты
-    const cl_kernel kernelInit = kernelCL[ "scale/drainage/top/init" ];
+    const cl_kernel kernelInit = kernelCL[ "set/drainage/init" ];
 
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -457,7 +457,7 @@ inline void DungeonCrawl::initDrainage() {
 #ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initLandscape() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Задаём ландшафты ..";
@@ -537,7 +537,7 @@ inline void DungeonCrawl::initLandscape() {
 
 
     // Очищаем матрицу
-    cl_kernel kernelClear = kernelCL[ "scale/landscape/top/clear" ];
+    cl_kernel kernelClear = kernelCL[ "set/landscape/clear" ];
 
     errorCL = clSetKernelArg( kernelClear, 0, sizeof( const cl_mem ), &landscapeCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -566,7 +566,7 @@ inline void DungeonCrawl::initLandscape() {
     // Проход A
     // # Все составляющие ландшафтов должны быть предварительно очищены -
     //   см. kernel clear().
-    const cl_kernel kernelInitA = kernelCL[ "scale/landscape/top/initA" ];
+    const cl_kernel kernelInitA = kernelCL[ "set/landscape/initA" ];
 
     errorCL = clSetKernelArg( kernelInitA, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -644,7 +644,7 @@ inline void DungeonCrawl::initLandscape() {
 #ifdef BIOME_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::initBiome() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Распознаём биомы ..";
@@ -725,7 +725,7 @@ inline void DungeonCrawl::initBiome() {
 
     // Распознаём биомы
     // # Все составляющие биомов должны быть предварительно инициализированы.
-    const cl_kernel kernelInit = kernelCL[ "scale/biome/top/init" ];
+    const cl_kernel kernelInit = kernelCL[ "set/biome/init" ];
 
     errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -801,7 +801,7 @@ inline void DungeonCrawl::initBiome() {
 inline void DungeonCrawl::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponent().
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Населяем планету ..";
@@ -851,7 +851,7 @@ inline void DungeonCrawl::initLiving() {
     // Инициализируем сетку
 
     // очищаем матрицу количеств
-    cl_kernel kernel = kernelCL[ "scale/living/top/clear" ];
+    cl_kernel kernel = kernelCL[ "set/living/clear" ];
 
     errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &livingCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -881,7 +881,7 @@ inline void DungeonCrawl::initLiving() {
 
     // вызываем init() до тех пор, пока кол-во особей на планете
     // не будет близко к желаемому
-    kernel = kernelCL[ "scale/living/top/init" ];
+    kernel = kernelCL[ "set/living/init" ];
 
     errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutPlanetCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );

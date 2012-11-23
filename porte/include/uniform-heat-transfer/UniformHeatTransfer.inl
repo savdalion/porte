@@ -411,7 +411,8 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepare() {
         ( "calcUniformHeatTransfer" )
         ( "fixResult" )
     ;
-    const std::string searchPath = PATH_CL + "/uniform-heat-transfer";
+    const std::string searchPath =
+        PATH_CL_PORTE + "/uniform-heat-transfer";
     for (auto itr = std::begin( kernelNames ); itr != std::end( kernelNames ); ++itr) {
         const std::string kernelName = *itr;
         // Program Setup

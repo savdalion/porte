@@ -7,5 +7,5 @@
 #include "include/porte/PortulanBooster.h"
 
 #include "include/chemistry/Chemistry.h"
-#include "include/set/dungeon-crawl/DungeonCrawl.h"
+#include "include/world/dungeon-crawl/DungeonCrawl.h"
 #include "include/uniform-heat-transfer/UniformHeatTransfer.h"

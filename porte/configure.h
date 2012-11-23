@@ -6,12 +6,15 @@
 namespace porte {
 
 
-static const std::string PATH_CL =
+static const std::string PATH_CL_PORTE =
     "D:/Projects/workspace/porte/porte/cl-kernel";
-static const std::string PATH_CL_DUNGEONCRAWL =
-    PATH_CL + "/set/dungeon-crawl";
-static const std::string PATH_STRUCTURE_CL_DUNGEONCRAWL =
-    "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl";
+static const std::string L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE =
+    PATH_CL_PORTE + "/world/dungeon-crawl/planet/0";
+
+static const std::string PATH_CL_PORTULAN =
+    "D:/Projects/workspace/portulan/portulan/include";
+static const std::string L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN =
+    PATH_CL_PORTULAN + "/world/dangeon-crawl/planet/0";
 
 
 

@@ -22,11 +22,8 @@ int main( int argc, char** argv ) {
 
     using namespace porte;
     using namespace porte::visualtest;
-    using namespace portulan::planet;
 
-    //namespace co = portulan::command::planet;
-    namespace ps = portulan::planet::set;
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
     namespace tc = typelib::constant::physics;
 
 
@@ -49,9 +46,9 @@ int main( int argc, char** argv ) {
     setlocale( LC_NUMERIC, "C" );
 
 
-    typedef Portulan  planet_t;
+    typedef pd::Portulan  planet_t;
     planet_t planet;
-    ps::topology_t& topology = planet.topology().topology();
+    pd::topology_t& topology = planet.topology().topology();
 
 
     // общая информация об области планеты
@@ -598,7 +595,7 @@ int main( int argc, char** argv ) {
 
 
     // Покажем результат
-    namespace pio = portulan::io::planet::set::dungeoncrawl;
+    namespace pio = portulan::io::world::dungeoncrawl::planet::l0;
     pio::TextVisual::option_t  o;
 #if 0
     o[ "only" ] = ".aboutPlanet";

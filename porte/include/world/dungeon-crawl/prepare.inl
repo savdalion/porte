@@ -48,17 +48,17 @@ inline void DungeonCrawl::prepare() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareComponent() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     // # Контекст и очередь команд инициализированы в конструкторе.
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/component/top/init" )
+        ( "set/component/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     // Подготавливаем ядерные опции
@@ -76,14 +76,14 @@ inline void DungeonCrawl::prepareComponent() {
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareTemperature() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/temperature/top/init" )
+        ( "set/temperature/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::TEMPERATURE_GRID;
@@ -99,14 +99,14 @@ inline void DungeonCrawl::prepareTemperature() {
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareSurfaceTemperature() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/surface-temperature/top/init" )
+        ( "set/surface-temperature/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
@@ -122,14 +122,14 @@ inline void DungeonCrawl::prepareSurfaceTemperature() {
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareRainfall() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/rainfall/top/init" )
+        ( "set/rainfall/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::RAINFALL_GRID;
@@ -145,14 +145,14 @@ inline void DungeonCrawl::prepareRainfall() {
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareDrainage() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/drainage/top/init" )
+        ( "set/drainage/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::DRAINAGE_GRID;
@@ -168,16 +168,16 @@ inline void DungeonCrawl::prepareDrainage() {
 #ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareLandscape() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/landscape/top/clear" )
-        ( "scale/landscape/top/initA" )
+        ( "set/landscape/clear" )
+        ( "set/landscape/initA" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/landscape.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/landscape.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::LANDSCAPE_GRID;
@@ -193,16 +193,16 @@ inline void DungeonCrawl::prepareLandscape() {
 #ifdef BIOME_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareBiome() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/biome/top/init" )
+        ( "set/biome/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-utils.h" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/biome-utils.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/biome.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::BIOME_GRID;
@@ -218,16 +218,16 @@ inline void DungeonCrawl::prepareBiome() {
 #ifdef LIVING_DUNGEONCRAWL_PORTE
 inline void DungeonCrawl::prepareLiving() {
 
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "scale/living/top/clear" )
-        ( "scale/living/top/init" )
+        ( "set/living/clear" )
+        ( "set/living/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/dice.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/biome.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/zone.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/dice.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/biome.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/zone.hcl" )
     ;
 
     static const size_t grid = pd::LIVING_GRID;

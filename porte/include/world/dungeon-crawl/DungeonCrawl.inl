@@ -7,56 +7,56 @@ inline DungeonCrawl::DungeonCrawl(
     EngineWithoutBooster( p ),
 
     aboutPlanetCL( nullptr ),
-    memsizeAboutPlanet( sizeof( portulan::planet::set::dungeoncrawl::aboutPlanet_t ) ),
+    memsizeAboutPlanet( sizeof( portulan::world::dungeoncrawl::planet::l0::aboutPlanet_t ) ),
 
     //componentCL( nullptr ),
     // #! Если память выделена динамически, работаем с содержанием структуры.
-    memsizeComponent( sizeof( portulan::planet::set::dungeoncrawl::componentCell_t ) *
-        portulan::planet::set::dungeoncrawl::COMPONENT_GRID *
-        portulan::planet::set::dungeoncrawl::COMPONENT_GRID *
-        portulan::planet::set::dungeoncrawl::COMPONENT_GRID
+    memsizeComponent( sizeof( portulan::world::dungeoncrawl::planet::l0::componentCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::COMPONENT_GRID *
+        portulan::world::dungeoncrawl::planet::l0::COMPONENT_GRID *
+        portulan::world::dungeoncrawl::planet::l0::COMPONENT_GRID
     ),
 
-    memsizeTemperature( sizeof( portulan::planet::set::dungeoncrawl::temperatureCell_t ) *
-        portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
-        portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID *
-        portulan::planet::set::dungeoncrawl::TEMPERATURE_GRID
+    memsizeTemperature( sizeof( portulan::world::dungeoncrawl::planet::l0::temperatureCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::TEMPERATURE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::TEMPERATURE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::TEMPERATURE_GRID
     ),
 
-    memsizeSurfaceTemperature( sizeof( portulan::planet::set::dungeoncrawl::surfaceTemperatureCell_t ) *
-        portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID *
-        portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID *
-        portulan::planet::set::dungeoncrawl::SURFACE_TEMPERATURE_GRID
+    memsizeSurfaceTemperature( sizeof( portulan::world::dungeoncrawl::planet::l0::surfaceTemperatureCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::SURFACE_TEMPERATURE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::SURFACE_TEMPERATURE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::SURFACE_TEMPERATURE_GRID
     ),
 
-    memsizeRainfall( sizeof( portulan::planet::set::dungeoncrawl::rainfallCell_t ) *
-        portulan::planet::set::dungeoncrawl::RAINFALL_GRID *
-        portulan::planet::set::dungeoncrawl::RAINFALL_GRID *
-        portulan::planet::set::dungeoncrawl::RAINFALL_GRID
+    memsizeRainfall( sizeof( portulan::world::dungeoncrawl::planet::l0::rainfallCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::RAINFALL_GRID *
+        portulan::world::dungeoncrawl::planet::l0::RAINFALL_GRID *
+        portulan::world::dungeoncrawl::planet::l0::RAINFALL_GRID
     ),
 
-    memsizeDrainage( sizeof( portulan::planet::set::dungeoncrawl::drainageCell_t ) *
-        portulan::planet::set::dungeoncrawl::DRAINAGE_GRID *
-        portulan::planet::set::dungeoncrawl::DRAINAGE_GRID *
-        portulan::planet::set::dungeoncrawl::DRAINAGE_GRID
+    memsizeDrainage( sizeof( portulan::world::dungeoncrawl::planet::l0::drainageCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::DRAINAGE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::DRAINAGE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::DRAINAGE_GRID
     ),
 
-    memsizeLandscape( sizeof( portulan::planet::set::dungeoncrawl::landscapeCell_t ) *
-        portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID *
-        portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID *
-        portulan::planet::set::dungeoncrawl::LANDSCAPE_GRID
+    memsizeLandscape( sizeof( portulan::world::dungeoncrawl::planet::l0::landscapeCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::LANDSCAPE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::LANDSCAPE_GRID *
+        portulan::world::dungeoncrawl::planet::l0::LANDSCAPE_GRID
     ),
 
-    memsizeBiome( sizeof( portulan::planet::set::dungeoncrawl::biomeCell_t ) *
-        portulan::planet::set::dungeoncrawl::BIOME_GRID *
-        portulan::planet::set::dungeoncrawl::BIOME_GRID *
-        portulan::planet::set::dungeoncrawl::BIOME_GRID
+    memsizeBiome( sizeof( portulan::world::dungeoncrawl::planet::l0::biomeCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::BIOME_GRID *
+        portulan::world::dungeoncrawl::planet::l0::BIOME_GRID *
+        portulan::world::dungeoncrawl::planet::l0::BIOME_GRID
     ),
 
-    memsizeLiving( sizeof( portulan::planet::set::dungeoncrawl::livingCell_t ) *
-        portulan::planet::set::dungeoncrawl::LIVING_GRID *
-        portulan::planet::set::dungeoncrawl::LIVING_GRID *
-        portulan::planet::set::dungeoncrawl::LIVING_GRID
+    memsizeLiving( sizeof( portulan::world::dungeoncrawl::planet::l0::livingCell_t ) *
+        portulan::world::dungeoncrawl::planet::l0::LIVING_GRID *
+        portulan::world::dungeoncrawl::planet::l0::LIVING_GRID *
+        portulan::world::dungeoncrawl::planet::l0::LIVING_GRID
     ),
 
     // проинициализируем генератор случ. чисел
@@ -73,7 +73,7 @@ inline DungeonCrawl::DungeonCrawl(
     gpuContextCL( nullptr ),
     commandQueueCL( nullptr )
 {
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     // Подготавливаем контекст и очередь команд для работы с OpenCL
     prepareCLContext();
@@ -244,22 +244,22 @@ inline void DungeonCrawl::compileCLKernel(
     // (используются всеми ядрами движка)
     // #! Важен порядок подключения.
     std::vector< std::string > hcl = boost::assign::list_of
-        ( PATH_CL_DUNGEONCRAWL + "/include/pragma.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/restruct.hcl" )
-        ( PATH_CL_DUNGEONCRAWL + "/include/helper.hcl" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/structure.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/component.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/temperature.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/surface-temperature.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/rainfall.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/drainage.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/landscape.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/biome-set.h" )
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/living.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/pragma.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/restruct.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/helper.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/structure.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/component.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/temperature.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/surface-temperature.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/rainfall.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/drainage.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/landscape.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/biome.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/biome-set.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/living.h" )
         // все h-файлы выше включены, т.к. они включены в
         // planet.h (используется во всех ядрах)
-        ( PATH_STRUCTURE_CL_DUNGEONCRAWL + "/planet.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/planet.h" )
     ;
     hcl.insert( hcl.end(), includeHCL.cbegin(), includeHCL.cend() );
     for (auto itr = hcl.cbegin(); itr != hcl.cend(); ++itr) {
@@ -285,8 +285,6 @@ inline void DungeonCrawl::compileCLKernel(
 
 
     // компилируем ядро
-    // @todo Искать по папкам в "scale". Сейчас - фиксированный путь в
-    //       kernelKeys, плохо.
     for (auto itr = std::begin( kernelKeys ); itr != std::end( kernelKeys ); ++itr) {
         //   # Последнее за "/" название является именем ядра.
         const std::string kernelKey = *itr;
@@ -295,7 +293,7 @@ inline void DungeonCrawl::compileCLKernel(
         // Program Setup
         const std::string fileKernel = kernelKey + ".cl";
         const std::string pathAndName =
-            PATH_CL_DUNGEONCRAWL + "/" + fileKernel;
+            L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/" + fileKernel;
 #ifdef _DEBUG
         std::cout << "Собираем \"" << fileKernel << "\" ..";
 #endif
@@ -367,7 +365,7 @@ inline void DungeonCrawl::compileCLKernel(
 
 
 inline std::string DungeonCrawl::commonConstantCLKernel() {
-    namespace pd = portulan::planet::set::dungeoncrawl;
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     // структуры для вычисления минимаксов координат для сеток
     typedef typelib::CubeSMC3D< pd::COMPONENT_GRID >    componentSMC_t;

@@ -42,7 +42,7 @@ public:
     /**
     * Тип объекта, с которым работает движок.
     */
-    typedef portulan::planet::Portulan  portulan_t;
+    typedef portulan::world::dungeoncrawl::planet::l0::Portulan  portulan_t;
 
 
 
