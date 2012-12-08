@@ -16,7 +16,11 @@
     <ClInclude Include="include\porte\EngineWithoutBooster.h" />
     <ClInclude Include="include\porte\Booster.h" />
     <ClInclude Include="include\porte\PortulanBooster.h" />
-    <ClInclude Include="include\world\dungeon-crawl\DungeonCrawl.h" />
+    <ClInclude Include="include\world\dungeon-crawl\planet\0\Engine.h" />
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\Engine.h" />
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.h" />
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineCPU.h" />
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineND.h" />
     <ClInclude Include="porte.h" />
     <ClInclude Include="porte\include\Engine.h" />
     <ClInclude Include="heat-transfer\include\HeatTransfer.h" />
@@ -26,9 +30,13 @@
   <ItemGroup>
     <None Include="include\chemistry\Chemistry.inl" />
     <None Include="include\porte\PortulanBooster.inl" />
-    <None Include="include\world\dungeon-crawl\init.inl" />
-    <None Include="include\world\dungeon-crawl\DungeonCrawl.inl" />
-    <None Include="include\world\dungeon-crawl\prepare.inl" />
+    <None Include="include\world\dungeon-crawl\planet\0\init.inl" />
+    <None Include="include\world\dungeon-crawl\planet\0\Engine.inl" />
+    <None Include="include\world\dungeon-crawl\planet\0\prepare.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineCPU.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\prepareOpenCL.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineND.inl" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl" />

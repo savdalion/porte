@@ -1,12 +1,11 @@
 #pragma once
 
-#include "..\..\..\configure.h"
-#include "../../porte/EngineWithoutBooster.h"
+#include "../../../../../configure.h"
+#include "../../../../porte/EngineWithoutBooster.h"
 #include <numeric>
 #include <boost/assign.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/random.hpp>
- #include <boost/math/special_functions/pow.hpp> 
 #include <ctime>
 
 
@@ -27,36 +26,33 @@
 
 
 namespace porte {
-
-class DungeonCrawl;
-
-}
-
-
-
-
-namespace porte {
+    namespace world {
+        namespace dungeoncrawl {
+            namespace planet {
+                namespace l0 {
 
 
 /**
-* Движок для моделирования планеты, населённой созданиями из DungeonCrawl.
+* Движок для моделирования планеты, населённой созданиями из Engine.
 *
 * @template См. Engine.
 */
-class DungeonCrawl : public EngineWithoutBooster {
+class Engine :
+    public EngineWithoutBooster< portulan::world::dungeoncrawl::planet::l0::Portulan >
+{
 public:
     /**
     * Ссылки.
     */
-    typedef std::shared_ptr< DungeonCrawl >  Ptr;
-    typedef std::unique_ptr< DungeonCrawl >  UPtr;
+    typedef std::shared_ptr< Engine >  Ptr;
+    typedef std::unique_ptr< Engine >  UPtr;
 
 
 
 public:
-    DungeonCrawl( portulan_t* );
+    Engine( portulan_t* );
 
-    virtual ~DungeonCrawl();
+    virtual ~Engine();
 
 
 
@@ -227,12 +223,6 @@ private:
 
 
 
-} // porte
-
-
-
-
-
 
 void __stdcall pfn_notify_cl(
     const char* errinfo, const void* private_info,
@@ -247,12 +237,19 @@ void __stdcall pfn_notify_program_cl(
 */
 
 
+                } // l0
+            } // planet
+        } // dungeoncrawl
+    } // world
+} // porte
+
+
 
 
 
 
 
 // разбито на неск. файлов для удобства
-#include "DungeonCrawl.inl"
+#include "Engine.inl"
 #include "prepare.inl"
 #include "init.inl"

@@ -12,15 +12,6 @@
 
 namespace porte {
 
-class EngineWithoutBooster;
-
-}
-
-
-
-
-namespace porte {
-
 
 /**
 * Общий класс для создания движков для "оживления" портуланов (3D-карт)
@@ -30,6 +21,7 @@ namespace porte {
 *
 * @see Проект "portulan" > https://github.com/savdalion/portulan
 */
+template< class P >
 class EngineWithoutBooster {
 public:
     /**
@@ -42,7 +34,7 @@ public:
     /**
     * Тип объекта, с которым работает движок.
     */
-    typedef portulan::world::dungeoncrawl::planet::l0::Portulan  portulan_t;
+    typedef P  portulan_t;
 
 
 
@@ -53,6 +45,19 @@ public:
     {
         assert( p && "Карта не указана (портулан не указан)." );
     }
+
+
+
+
+    inline portulan_t const*  portulan() const {
+        return mPortulan;
+    }
+
+
+    inline portulan_t*  portulan() {
+        return mPortulan;
+    }
+
 
 
 

@@ -7,14 +7,18 @@ namespace porte {
 
 
 static const std::string PATH_CL_PORTE =
-    "D:/Projects/workspace/porte/porte/cl-kernel";
+    "D:/Projects/workspace/porte/porte/include";
 static const std::string L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE =
     PATH_CL_PORTE + "/world/dungeon-crawl/planet/0";
+static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTE =
+    PATH_CL_PORTE + "/world/dungeon-crawl/star-system/0";
 
 static const std::string PATH_CL_PORTULAN =
     "D:/Projects/workspace/portulan/portulan/include";
 static const std::string L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN =
     PATH_CL_PORTULAN + "/world/dangeon-crawl/planet/0";
+static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
+    PATH_CL_PORTULAN + "/world/dangeon-crawl/star-system/0";
 
 
 
@@ -31,6 +35,18 @@ static const std::string L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN =
 #define LANDSCAPE_DUNGEONCRAWL_PORTE
 #define BIOME_DUNGEONCRAWL_PORTE
 #define LIVING_DUNGEONCRAWL_PORTE
+
+
+
+/**
+* Включает движок звёздной системы на работу через OpenCL. Иначе,
+* подключается движок расчётов на CPU.
+*
+* #! OpenCL не работает с double на NVIDIA GeForce 8800GTS.
+*//* - Подключается в main-проектах. См. 'process-visualtest'.
+//#define OPENCL_STARSYSTEM_L0_ENGINE_PORTE
+#define ND_STARSYSTEM_L0_ENGINE_PORTE
+*/
 
 
 } // porte

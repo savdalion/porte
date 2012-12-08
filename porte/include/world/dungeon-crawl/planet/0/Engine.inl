@@ -1,7 +1,11 @@
 namespace porte {
+    namespace world {
+        namespace dungeoncrawl {
+            namespace planet {
+                namespace l0 {
 
 
-inline DungeonCrawl::DungeonCrawl(
+inline Engine::Engine(
     portulan_t* p
 ) :
     EngineWithoutBooster( p ),
@@ -111,7 +115,7 @@ inline DungeonCrawl::DungeonCrawl(
 
 
 
-inline DungeonCrawl::~DungeonCrawl() {
+inline Engine::~Engine() {
     // освобождаем общие структуры для обмена данными с OpenCL
     clReleaseMemObject( aboutPlanetCL );
 
@@ -133,7 +137,7 @@ inline DungeonCrawl::~DungeonCrawl() {
 
 
 
-inline void DungeonCrawl::pulse( int n ) {
+inline void Engine::pulse( int n ) {
     assert( false && "Не реализовано." );
 }
 
@@ -142,7 +146,7 @@ inline void DungeonCrawl::pulse( int n ) {
 
 
 
-inline void DungeonCrawl::prepareCLContext() {
+inline void Engine::prepareCLContext() {
 
     // @source http://nvidia.com/content/cuda/cuda-downloads.html / oclMarchingCubes.cpp
 
@@ -185,7 +189,7 @@ inline void DungeonCrawl::prepareCLContext() {
 
 
 
-inline void DungeonCrawl::prepareCLCommandQueue() {
+inline void Engine::prepareCLCommandQueue() {
     assert( gpuContextCL
         && "Контекст OpenCL требуется инициализировать до выполнения этого метода." );
 
@@ -199,7 +203,7 @@ inline void DungeonCrawl::prepareCLCommandQueue() {
 
 
 template< size_t G >
-inline void DungeonCrawl::compileCLKernel(
+inline void Engine::compileCLKernel(
     const std::vector< std::string >&  kernelKeys,
     const std::vector< std::string >&  includeHCL,
     const std::string& options
@@ -244,9 +248,9 @@ inline void DungeonCrawl::compileCLKernel(
     // (используются всеми ядрами движка)
     // #! Важен порядок подключения.
     std::vector< std::string > hcl = boost::assign::list_of
-        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/pragma.hcl" )
-        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/restruct.hcl" )
-        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/helper.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/set/pragma.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/set/restruct.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/set/helper.hcl" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/structure.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/component.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/temperature.h" )
@@ -364,7 +368,7 @@ inline void DungeonCrawl::compileCLKernel(
 
 
 
-inline std::string DungeonCrawl::commonConstantCLKernel() {
+inline std::string Engine::commonConstantCLKernel() {
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
     // структуры для вычисления минимаксов координат для сеток
@@ -467,7 +471,7 @@ inline std::string DungeonCrawl::commonConstantCLKernel() {
 
 
 
-inline std::string DungeonCrawl::commonOptionCLKernel() {
+inline std::string Engine::commonOptionCLKernel() {
     std::ostringstream options;
     options
         // лечим точность для float
@@ -485,7 +489,7 @@ inline std::string DungeonCrawl::commonOptionCLKernel() {
 #endif
 #if 0
         // внимательная отладка
-        // (i) Включать следует только при вылавливании блох: более чем
+        // (i) Включать только при вылавливании блох: более чем
         //     20-кратное замедление.
         << " -cl-opt-disable"
 #endif
@@ -499,7 +503,7 @@ inline std::string DungeonCrawl::commonOptionCLKernel() {
 
 
 
-inline void DungeonCrawl::fnErrorCL( int exitCode ) {
+inline void Engine::fnErrorCL( int exitCode ) {
     std::cerr << "Код ошибки OpenCL: " << exitCode << std::endl;
 
     // @todo fine Выбрасывать исключение.
@@ -508,8 +512,6 @@ inline void DungeonCrawl::fnErrorCL( int exitCode ) {
 }
 
 
-
-} // porte
 
 
 
@@ -532,3 +534,10 @@ inline void __stdcall pfn_notify_program_cl(
     fprintf( stderr, "\n(!) OpenCL error via pfn_notify_program_cl().\n" );
 };
 */
+
+
+                } // l0
+            } // planet
+        } // dungeoncrawl
+    } // world
+} // porte

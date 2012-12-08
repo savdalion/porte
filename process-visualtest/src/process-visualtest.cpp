@@ -23,7 +23,6 @@ int main( int argc, char** argv ) {
     using namespace porte;
     using namespace porte::visualtest;
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
     namespace tc = typelib::constant::physics;
 
 
@@ -45,6 +44,14 @@ int main( int argc, char** argv ) {
     // Для разделителя '.' вместо ','
     setlocale( LC_NUMERIC, "C" );
 
+
+
+
+// Планета
+#if 0
+{
+    namespace pd = portulan::world::dungeoncrawl::planet::l0;
+    namespace pe = porte::world::dungeoncrawl::planet::l0;
 
     typedef pd::Portulan  planet_t;
     planet_t planet;
@@ -231,8 +238,7 @@ int main( int argc, char** argv ) {
     topology.living = living;
     */
 
-    typedef DungeonCrawl  dungeonCrawl_t;
-    dungeonCrawl_t  dungeonCrawl( &planet );
+    pe::Engine  engine( &planet );
 
 
 #if 0
@@ -589,9 +595,9 @@ int main( int argc, char** argv ) {
 
 
 
-    // Инициализируем область планеты
+    // Инициализируем движок планеты
     std::cout << std::endl;
-    dungeonCrawl.init();
+    engine.init();
 
 
     // Покажем результат
@@ -632,8 +638,8 @@ int main( int argc, char** argv ) {
     snapshot.living();
 #endif
 
-
     // @todo std::cout << std::endl << "Нажимаем 'Enter' для изменения планеты..." << std::endl << std::endl;
+
 
     const int PULSE = 1;
     int age = 0;
@@ -646,9 +652,9 @@ int main( int argc, char** argv ) {
 
         // одинаково работают оба варианта
 #if 1
-        dungeonCrawl << PULSE;
+        engine << PULSE;
 #else
-        dungeonCrawl( PULSE );
+        engine( PULSE );
 #endif
 
         age += PULSE;
@@ -657,6 +663,290 @@ int main( int argc, char** argv ) {
 
     } // while
 
+
+} // Планета
+#endif
+
+
+
+
+
+// Звёздная система
+// @todo fine В звёздной системе работать с двойной точностью.
+//       NVIDIA 8800GTS работает только с float.
+#if 1
+{
+    namespace pd = portulan::world::dungeoncrawl::starsystem::l0;
+    namespace pe = porte::world::dungeoncrawl::starsystem::l0;
+
+    typedef pd::Portulan  starSystem_t;
+    starSystem_t starSystem;
+    pd::topology_t& topology = starSystem.topology().topology();
+
+    static const pd::aboutStarSystem_t aboutStarSystem = {
+        // size
+        // ~ Размер ~ 10000 а.е. ~ 1.5e12 км
+        { 1.5e15, 1.5e15, 1.5e15 }
+    };
+
+    topology.aboutStarSystem = aboutStarSystem;
+
+
+    pd::bodyContent_t bodyContent = {};
+    size_t n = 0;
+
+#if 1
+    // Звезда I
+    // @source http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
+    {
+        static const pd::aboutStar_t star = {
+            // mass
+            1.9891e30,
+            // radius
+            6.9551e8,
+            // temperature,
+            1.5e6,
+            // coord
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 0, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_STAR;
+        b.content.star = star;
+        ++n;
+    }
+#endif
+
+#if 0
+    // Звезда II
+    {
+        static const pd::aboutStar_t star = {
+            // mass
+            1.9891e30,
+            // radius
+            6.9551e8,
+            // temperature,
+            1.5e6,
+            // coord
+            { -6.9551e8 * 20, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 50000, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_STAR;
+        b.content.star = star;
+        ++n;
+    }
+#endif
+
+#if 0
+    // Звезда III
+    {
+        static const pd::aboutStar_t star = {
+            // mass
+            1.9891e30,
+            // radius
+            6.9551e8,
+            // temperature,
+            1.5e6,
+            // coord
+            { 6.9551e8 * 20, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, -50000, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_STAR;
+        b.content.star = star;
+        ++n;
+    }
+#endif
+
+
+    // Меркурий
+    // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%80%D0%BA%D1%83%D1%80%D0%B8%D0%B9_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+    {
+        static const pd::aboutPlanet_t planet = {
+            // mass
+            3.33022e23,
+            // radius
+            2.4397e6,
+            // coord
+            { 0.4600121e11, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 47870, 0 }
+            //{ 0, 0, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_PLANET;
+        b.content.planet = planet;
+        ++n;
+    }
+
+    // Венера
+    // @source http://ru.wikipedia.org/wiki/%D0%92%D0%B5%D0%BD%D0%B5%D1%80%D0%B0_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+    {
+        static const pd::aboutPlanet_t planet = {
+            // mass
+            4.8685e24,
+            // radius
+            6.0518e6,
+            // coord
+            { 1.07476259e11, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 35020, 0 }
+            //{ 0, 0, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_PLANET;
+        b.content.planet = planet;
+        ++n;
+    }
+
+    // Земля
+    // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BB%D1%8F
+    {
+        static const pd::aboutPlanet_t planet = {
+            // mass
+            5.9736e24,
+            // radius
+            6.3568e6,
+            // coord
+            { 1.49598261e11, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 29783, 0 }
+            //{ 0, 0, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_PLANET;
+        b.content.planet = planet;
+        ++n;
+    }
+
+    // Марс
+    // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D1%81_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+    {
+        static const pd::aboutPlanet_t planet = {
+            // mass
+            0.64185e24,
+            // radius
+            3.3895e6,
+            // coord
+            { 2.06655e11, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 24130, 0 }
+            //{ 0, 0, 0 }
+        };
+        auto& b = bodyContent[ n ];
+        b.group = pd::GE_PLANET;
+        b.content.planet = planet;
+        ++n;
+    }
+
+    // копируем заполненную выше структуру
+    std::copy_n( bodyContent, pd::BODY_COUNT, topology.body.content );
+
+
+    // @test
+    std::cout << "bodyContent" <<
+        "  " << pd::BODY_COUNT << "u" <<
+        "  ~ " << sizeof( pd::bodyContent_t ) / 1024 << "Кб" <<
+    std::endl << std::endl;
+
+
+    // протяжённость мира - удвоенная самая далёкая координата (звезда -
+    // центр координат)
+    static double EXTENT = 2.06655e11 * 2.0;
+
+
+    // Инициализируем движок звёздной системы
+    static const double MINUTE    = 60.0;
+    static const double HOUR      = MINUTE * 60.0;
+    static const double EARTH_DAY = HOUR * 24.0;
+    static const double timestep = HOUR;
+    pe::Engine  engine( &starSystem, EXTENT, timestep );
+
+
+    // Покажем результат
+    namespace pio = portulan::io::world::dungeoncrawl::starsystem::l0;
+
+    pio::VolumeVTKVisual::option_t  o;
+    o[ "extent" ] = EXTENT;
+    o[ "planet-size-point" ] = 3;
+    o[ "star-size-point" ] = 10;
+    o[ "auto-scale-camera" ] = false;
+    o[ "without-clear" ] = false;
+
+    pio::VolumeVTKVisual  visual( o );
+    visual << starSystem;
+    
+
+    static const int PULSE = 1;
+
+/* - Заменено. См. ниже.
+    int age = 0;
+    while ( true ) {
+        //std::cout << "Возраст " << age << std::endl;
+
+#if 0
+{
+        size_t n = 1;
+        const auto& bc = starSystem.topology().topology().body.content[ 1 ];
+        const auto& pc = bc.content.planet;
+        std::cout << "  body " << n <<
+            "  g " << bc.group <<
+            "  " << typelib::vector_t( bc.content.planet.coord ) <<
+#if 1
+            "  " << pc.test[0] <<
+             " " << pc.test[1] <<
+             " " << pc.test[2] <<
+             " " << pc.test[3] <<
+             " " << pc.test[4] <<
+#endif
+        std::endl;
+}
+#endif
+
+        // одинаково работают оба варианта
+#if 1
+        engine << PULSE;
+#else
+        engine( PULSE );
+#endif
+
+        age += PULSE;
+
+        visual << starSystem;
+
+        // @test
+        if (age > PULSE * 100) {
+            //break;
+        }
+
+    } // while
+*/
+
+
+
+    visual.wait( &engine, PULSE );
+
+
+} // Звёздная система
+#endif
 
 
 

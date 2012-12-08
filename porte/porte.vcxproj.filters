@@ -45,7 +45,19 @@
     <ClInclude Include="include\porte\EngineWithoutBooster.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\DungeonCrawl.h">
+    <ClInclude Include="include\world\dungeon-crawl\planet\0\Engine.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\Engine.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineCPU.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineND.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,13 +77,25 @@
     <None Include="include\porte\PortulanBooster.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
-    <None Include="include\world\dungeon-crawl\DungeonCrawl.inl">
+    <None Include="include\world\dungeon-crawl\planet\0\prepare.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
-    <None Include="include\world\dungeon-crawl\init.inl">
+    <None Include="include\world\dungeon-crawl\planet\0\Engine.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
-    <None Include="include\world\dungeon-crawl\prepare.inl">
+    <None Include="include\world\dungeon-crawl\planet\0\init.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineCPU.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\prepareOpenCL.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineND.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
   </ItemGroup>

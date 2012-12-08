@@ -12,7 +12,17 @@
 
 // Декларируем типы OpenCL чтобы подключаемые структуры на C++
 // не уродовать if-def'ами.
-typedef float   cl_float;
+
+// @see pragma.hcl
+// Увы, не все видеокарты поддерживают 'double' для OpenCL.
+// #! Типы данных должны быть согласованы с OpenCL HOST.
+// # double4 поддерживается не всеми устройствами OpenCL. Не используем.
+#ifdef PERMIT_DOUBLE_ENGINE_PORTE
+typedef double  real_t;
+#else
+typedef float   real_t;
+#endif
+
 typedef int     cl_int;
 typedef uint    cl_uint;
 typedef ulong   cl_ulong;
@@ -30,11 +40,4 @@ typedef ushort  cl_ushort;
 // @see Соглашения в helper.hcl.
 
 
-/* - Подключаем в коде C++ при сборке ядра.
-#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/structure.h"
-#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/component.h"
-#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/living.h"
-#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/temperature.h"
-#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/planet.h"
-//#include "D:/Projects/workspace/portulan/portulan/include/planet/set/dangeon-crawl/topology.h"
-*/
+// # Include-файлы подключаем в коде C++ при сборке ядра.

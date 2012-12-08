@@ -96,6 +96,7 @@ inline void UniformHeatTransfer< SX, SY, SZ >::pulse( int n ) {
         // отправляем...
 
         // 1. Посчитаем среднюю температуру, запишем во временный объём.
+        // @todo optimize Аргументы ядрам можно передать один раз перед цикла.
         const cl_kernel kernelCalcUniformHeatTransfer = kernelCL[ "calcUniformHeatTransfer" ];
 
         errorCL = clSetKernelArg( kernelCalcUniformHeatTransfer, 0, sizeof( cl_mem ), &boosterCL );
@@ -412,7 +413,7 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepare() {
         ( "fixResult" )
     ;
     const std::string searchPath =
-        PATH_CL_PORTE + "/uniform-heat-transfer";
+        PATH_CL_PORTE + "/uniform-heat-transfer/set/calc";
     for (auto itr = std::begin( kernelNames ); itr != std::end( kernelNames ); ++itr) {
         const std::string kernelName = *itr;
         // Program Setup

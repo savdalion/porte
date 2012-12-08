@@ -1,6 +1,6 @@
-#include "include/pragma.hcl"
-#include "include/struct.hcl"
-#include "include/helper.hcl"
+#include "../pragma.hcl"
+#include "../struct.hcl"
+#include "../helper.hcl"
 
 
 /**

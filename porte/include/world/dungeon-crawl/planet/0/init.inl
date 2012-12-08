@@ -1,12 +1,15 @@
 namespace porte {
-
+    namespace world {
+        namespace dungeoncrawl {
+            namespace planet {
+                namespace l0 {
 
 /**
-* Часть методов класса DungeonCrawl.
+* Часть методов класса Engine.
 */
 
 
-inline void DungeonCrawl::init() {
+inline void Engine::init() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
     initComponent();
 #endif
@@ -45,7 +48,7 @@ inline void DungeonCrawl::init() {
 
 
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initComponent() {
+inline void Engine::initComponent() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -120,7 +123,7 @@ inline void DungeonCrawl::initComponent() {
 
 
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initTemperature() {
+inline void Engine::initTemperature() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -222,7 +225,7 @@ inline void DungeonCrawl::initTemperature() {
 
 
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initSurfaceTemperature() {
+inline void Engine::initSurfaceTemperature() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -296,7 +299,7 @@ inline void DungeonCrawl::initSurfaceTemperature() {
 
 
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initRainfall() {
+inline void Engine::initRainfall() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -375,7 +378,7 @@ inline void DungeonCrawl::initRainfall() {
 
 
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initDrainage() {
+inline void Engine::initDrainage() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -455,7 +458,7 @@ inline void DungeonCrawl::initDrainage() {
 
 
 #ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initLandscape() {
+inline void Engine::initLandscape() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -642,7 +645,7 @@ inline void DungeonCrawl::initLandscape() {
 
 
 #ifdef BIOME_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initBiome() {
+inline void Engine::initBiome() {
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
@@ -798,7 +801,7 @@ inline void DungeonCrawl::initBiome() {
 
 
 #ifdef LIVING_DUNGEONCRAWL_PORTE
-inline void DungeonCrawl::initLiving() {
+inline void Engine::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponent().
 
     namespace pd = portulan::world::dungeoncrawl::planet::l0;
@@ -1129,4 +1132,8 @@ inline void DungeonCrawl::initLiving() {
 #endif
 
 
+                } // l0
+            } // planet
+        } // dungeoncrawl
+    } // world
 } // porte

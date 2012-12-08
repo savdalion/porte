@@ -21,5 +21,36 @@ namespace porte {
 #define LIVING_SNAPSHOT_VISUALTEST
 
 
+/**
+* Варианты движков для моделирования звёздной системы.
+*
+* # Допустимо выбрать только один движок.
+*
+* #! OpenCL не работает с double на NVIDIA GeForce 8800GTS.
+*/
+// Движок на OpenCL.
+#define OPENCL_STARSYSTEM_L0_ENGINE_PORTE
+// Для движка на OpenCL: указание использовать CPU.
+#define ONLY_CPU_OPENCL_STARSYSTEM_L0_ENGINE_PORTE
+
+// Движок на линейном CPU.
+//#define CPU_STARSYSTEM_L0_ENGINE_PORTE
+
+// Движок на NewtonDynamics.
+// #! Выяснено: Использовать для огромных систем не практично.
+//#define ND_STARSYSTEM_L0_ENGINE_PORTE
+
+
+/**
+* Разрешает использовать тип 'double' в движках PORTE.
+* Без этой директивы движки стараются поместиться в 'float'.
+* 
+* #! Не все видеокарты поддерживают 'double' для OpenCL.
+*
+* @see typedef real_t
+*/
+#define PERMIT_DOUBLE_ENGINE_PORTE
+
+
     } // visualtest
 } // porte
