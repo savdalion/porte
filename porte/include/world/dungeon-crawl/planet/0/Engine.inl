@@ -5,62 +5,65 @@ namespace porte {
                 namespace l0 {
 
 
+namespace pnp = portulan::world::dungeoncrawl::planet::l0;
+
+
 inline Engine::Engine(
-    portulan_t* p
+    real_t timestep
 ) :
-    EngineWithoutBooster( p ),
+    EngineWithoutBooster( timestep ),
 
     aboutPlanetCL( nullptr ),
-    memsizeAboutPlanet( sizeof( portulan::world::dungeoncrawl::planet::l0::aboutPlanet_t ) ),
+    memsizeAboutPlanet( sizeof( pnp::aboutPlanet_t ) ),
 
     //componentCL( nullptr ),
     // #! Если память выделена динамически, работаем с содержанием структуры.
-    memsizeComponent( sizeof( portulan::world::dungeoncrawl::planet::l0::componentCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::COMPONENT_GRID *
-        portulan::world::dungeoncrawl::planet::l0::COMPONENT_GRID *
-        portulan::world::dungeoncrawl::planet::l0::COMPONENT_GRID
+    memsizeComponent( sizeof( pnp::componentCell_t ) *
+        pnp::COMPONENT_GRID *
+        pnp::COMPONENT_GRID *
+        pnp::COMPONENT_GRID
     ),
 
-    memsizeTemperature( sizeof( portulan::world::dungeoncrawl::planet::l0::temperatureCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::TEMPERATURE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::TEMPERATURE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::TEMPERATURE_GRID
+    memsizeTemperature( sizeof( pnp::temperatureCell_t ) *
+        pnp::TEMPERATURE_GRID *
+        pnp::TEMPERATURE_GRID *
+        pnp::TEMPERATURE_GRID
     ),
 
-    memsizeSurfaceTemperature( sizeof( portulan::world::dungeoncrawl::planet::l0::surfaceTemperatureCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::SURFACE_TEMPERATURE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::SURFACE_TEMPERATURE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::SURFACE_TEMPERATURE_GRID
+    memsizeSurfaceTemperature( sizeof( pnp::surfaceTemperatureCell_t ) *
+        pnp::SURFACE_TEMPERATURE_GRID *
+        pnp::SURFACE_TEMPERATURE_GRID *
+        pnp::SURFACE_TEMPERATURE_GRID
     ),
 
-    memsizeRainfall( sizeof( portulan::world::dungeoncrawl::planet::l0::rainfallCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::RAINFALL_GRID *
-        portulan::world::dungeoncrawl::planet::l0::RAINFALL_GRID *
-        portulan::world::dungeoncrawl::planet::l0::RAINFALL_GRID
+    memsizeRainfall( sizeof( pnp::rainfallCell_t ) *
+        pnp::RAINFALL_GRID *
+        pnp::RAINFALL_GRID *
+        pnp::RAINFALL_GRID
     ),
 
-    memsizeDrainage( sizeof( portulan::world::dungeoncrawl::planet::l0::drainageCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::DRAINAGE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::DRAINAGE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::DRAINAGE_GRID
+    memsizeDrainage( sizeof( pnp::drainageCell_t ) *
+        pnp::DRAINAGE_GRID *
+        pnp::DRAINAGE_GRID *
+        pnp::DRAINAGE_GRID
     ),
 
-    memsizeLandscape( sizeof( portulan::world::dungeoncrawl::planet::l0::landscapeCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::LANDSCAPE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::LANDSCAPE_GRID *
-        portulan::world::dungeoncrawl::planet::l0::LANDSCAPE_GRID
+    memsizeLandscape( sizeof( pnp::landscapeCell_t ) *
+        pnp::LANDSCAPE_GRID *
+        pnp::LANDSCAPE_GRID *
+        pnp::LANDSCAPE_GRID
     ),
 
-    memsizeBiome( sizeof( portulan::world::dungeoncrawl::planet::l0::biomeCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::BIOME_GRID *
-        portulan::world::dungeoncrawl::planet::l0::BIOME_GRID *
-        portulan::world::dungeoncrawl::planet::l0::BIOME_GRID
+    memsizeBiome( sizeof( pnp::biomeCell_t ) *
+        pnp::BIOME_GRID *
+        pnp::BIOME_GRID *
+        pnp::BIOME_GRID
     ),
 
-    memsizeLiving( sizeof( portulan::world::dungeoncrawl::planet::l0::livingCell_t ) *
-        portulan::world::dungeoncrawl::planet::l0::LIVING_GRID *
-        portulan::world::dungeoncrawl::planet::l0::LIVING_GRID *
-        portulan::world::dungeoncrawl::planet::l0::LIVING_GRID
+    memsizeLiving( sizeof( pnp::livingCell_t ) *
+        pnp::LIVING_GRID *
+        pnp::LIVING_GRID *
+        pnp::LIVING_GRID
     ),
 
     // проинициализируем генератор случ. чисел
@@ -77,8 +80,6 @@ inline Engine::Engine(
     gpuContextCL( nullptr ),
     commandQueueCL( nullptr )
 {
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
     // Подготавливаем контекст и очередь команд для работы с OpenCL
     prepareCLContext();
     prepareCLCommandQueue();
@@ -87,25 +88,6 @@ inline Engine::Engine(
         && "Контекст OpenCL не инициализирован." );
     assert( commandQueueCL
         && "Очередь команд OpenCL не инициализирована." );
-
-
-    // Подготавливаем стат. структуры для ядер OpenCL
-
-    // aboutPlanet
-    aboutPlanetCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
-        memsizeAboutPlanet,
-        &mPortulan->topology().topology().aboutPlanet,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-
-    // Подготавливаем ядра OpenCL (ядра требуют компиляции)
-    prepare();
-
 
     // Установим зерно для генератора случ. чисел
     randomCore.seed( randomSeed );
@@ -137,8 +119,55 @@ inline Engine::~Engine() {
 
 
 
+inline void Engine::incarnate( portulan_t* p, real_t extentPortulan ) {
+    EngineWithoutBooster::incarnate( p, extentPortulan );
+
+    // этот движок требует дополнительной подготовки
+
+    // Подготавливаем стат. структуры для ядер OpenCL
+    // aboutPlanet
+    aboutPlanetCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
+        memsizeAboutPlanet,
+        &mPortulan->topology().topology().aboutPlanet,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+
+    // Подготавливаем ядра OpenCL (ядра требуют компиляции)
+    prepare();
+
+}
+
+
+
+
+inline Engine::real_t Engine::extent() {
+    // метод может использоваться часто - результат кешируем
+    if (mExtent > 0.0) {
+        return mExtent;
+    }
+
+    // протяжённость здесь зависит от радиуса атмосферы планеты
+    auto& topology = mPortulan->topology().topology();
+    mExtent = topology.aboutPlanet.radius.atmosphere * 2.0f;
+
+    return mExtent;
+}
+
+
+
+
+
 inline void Engine::pulse( int n ) {
     assert( false && "Не реализовано." );
+
+    // @todo fine Создать отдельный класс Pulse.
+    mPulse += n;
+    mTimelive += mTimestep * n;
 }
 
 
@@ -369,17 +398,15 @@ inline void Engine::compileCLKernel(
 
 
 inline std::string Engine::commonConstantCLKernel() {
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
     // структуры для вычисления минимаксов координат для сеток
-    typedef typelib::CubeSMC3D< pd::COMPONENT_GRID >    componentSMC_t;
-    typedef typelib::CubeSMC3D< pd::TEMPERATURE_GRID >  temperatureSMC_t;
-    typedef typelib::CubeSMC3D< pd::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
-    typedef typelib::CubeSMC3D< pd::RAINFALL_GRID >     rainfallSMC_t;
-    typedef typelib::CubeSMC3D< pd::DRAINAGE_GRID >     drainageSMC_t;
-    typedef typelib::CubeSMC3D< pd::LANDSCAPE_GRID >    landscapeSMC_t;
-    typedef typelib::CubeSMC3D< pd::BIOME_GRID >        biomeSMC_t;
-    typedef typelib::CubeSMC3D< pd::LIVING_GRID >       livingSMC_t;
+    typedef typelib::CubeSMC3D< pnp::COMPONENT_GRID >    componentSMC_t;
+    typedef typelib::CubeSMC3D< pnp::TEMPERATURE_GRID >  temperatureSMC_t;
+    typedef typelib::CubeSMC3D< pnp::SURFACE_TEMPERATURE_GRID >  surfaceTemperatureSMC_t;
+    typedef typelib::CubeSMC3D< pnp::RAINFALL_GRID >     rainfallSMC_t;
+    typedef typelib::CubeSMC3D< pnp::DRAINAGE_GRID >     drainageSMC_t;
+    typedef typelib::CubeSMC3D< pnp::LANDSCAPE_GRID >    landscapeSMC_t;
+    typedef typelib::CubeSMC3D< pnp::BIOME_GRID >        biomeSMC_t;
+    typedef typelib::CubeSMC3D< pnp::LIVING_GRID >       livingSMC_t;
 
     std::ostringstream options;
     options
@@ -387,71 +414,71 @@ inline std::string Engine::commonConstantCLKernel() {
         << std::fixed
 
         // component
-        << " -D COMPONENT_GRID=" << pd::COMPONENT_GRID
+        << " -D COMPONENT_GRID=" << pnp::COMPONENT_GRID
         << " -D MIN_COORD_COMPONENT_GRID=" << componentSMC_t::minCoord().x
         << " -D MAX_COORD_COMPONENT_GRID=" << componentSMC_t::maxCoord().x
-        << " -D COMPONENT_COUNT=" << pd::COMPONENT_COUNT
-        << " -D COMPONENT_CELL=" << pd::COMPONENT_CELL
+        << " -D COMPONENT_COUNT=" << pnp::COMPONENT_COUNT
+        << " -D COMPONENT_CELL=" << pnp::COMPONENT_CELL
 
         // temperature
-        << " -D TEMPERATURE_GRID=" << pd::TEMPERATURE_GRID
+        << " -D TEMPERATURE_GRID=" << pnp::TEMPERATURE_GRID
         << " -D MIN_COORD_TEMPERATURE_GRID=" << temperatureSMC_t::minCoord().x
         << " -D MAX_COORD_TEMPERATURE_GRID=" << temperatureSMC_t::maxCoord().x
 
         // surfaceTemperature
-        << " -D SURFACE_TEMPERATURE_GRID=" << pd::SURFACE_TEMPERATURE_GRID
+        << " -D SURFACE_TEMPERATURE_GRID=" << pnp::SURFACE_TEMPERATURE_GRID
         << " -D MIN_COORD_SURFACE_TEMPERATURE_GRID=" << surfaceTemperatureSMC_t::minCoord().x
         << " -D MAX_COORD_SURFACE_TEMPERATURE_GRID=" << surfaceTemperatureSMC_t::maxCoord().x
 
         // rainfall
-        << " -D RAINFALL_GRID=" << pd::RAINFALL_GRID
+        << " -D RAINFALL_GRID=" << pnp::RAINFALL_GRID
         << " -D MIN_COORD_RAINFALL_GRID=" << rainfallSMC_t::minCoord().x
         << " -D MAX_COORD_RAINFALL_GRID=" << rainfallSMC_t::maxCoord().x
 
         // drainage
-        << " -D DRAINAGE_GRID=" << pd::DRAINAGE_GRID
+        << " -D DRAINAGE_GRID=" << pnp::DRAINAGE_GRID
         << " -D MIN_COORD_DRAINAGE_GRID=" << drainageSMC_t::minCoord().x
         << " -D MAX_COORD_DRAINAGE_GRID=" << drainageSMC_t::maxCoord().x
 
         // landscape
-        << " -D LANDSCAPE_GRID=" << pd::LANDSCAPE_GRID
+        << " -D LANDSCAPE_GRID=" << pnp::LANDSCAPE_GRID
         << " -D MIN_COORD_LANDSCAPE_GRID=" << landscapeSMC_t::minCoord().x
         << " -D MAX_COORD_LANDSCAPE_GRID=" << landscapeSMC_t::maxCoord().x
-        << " -D LANDSCAPE_CELL=" << pd::LANDSCAPE_CELL
+        << " -D LANDSCAPE_CELL=" << pnp::LANDSCAPE_CELL
 
         // biome
-        << " -D BIOME_GRID=" << pd::BIOME_GRID
+        << " -D BIOME_GRID=" << pnp::BIOME_GRID
         << " -D MIN_COORD_BIOME_GRID=" << biomeSMC_t::minCoord().x
         << " -D MAX_COORD_BIOME_GRID=" << biomeSMC_t::maxCoord().x
-        << " -D BIOME_COUNT=" << pd::BIOME_COUNT
-        << " -D BIOME_CELL=" << pd::BIOME_CELL
-        << " -D LANDSCAPE_BIOME_COUNT=" << pd::LANDSCAPE_BIOME_COUNT
+        << " -D BIOME_COUNT=" << pnp::BIOME_COUNT
+        << " -D BIOME_CELL=" << pnp::BIOME_CELL
+        << " -D LANDSCAPE_BIOME_COUNT=" << pnp::LANDSCAPE_BIOME_COUNT
 
         // living
-        << " -D LIVING_GRID=" << pd::LIVING_GRID
+        << " -D LIVING_GRID=" << pnp::LIVING_GRID
         << " -D MIN_COORD_LIVING_GRID=" << livingSMC_t::minCoord().x
         << " -D MAX_COORD_LIVING_GRID=" << livingSMC_t::maxCoord().x
-        << " -D LIVING_COUNT=" << pd::LIVING_COUNT
-        << " -D LIVING_CELL=" << pd::LIVING_CELL
-        << " -D LIFE_CYCLE_COUNT=" << pd::LIFE_CYCLE_COUNT
-        << " -D PART_LIVING=" << pd::PART_LIVING
-        << " -D ATTACK_PART_LIVING=" << pd::ATTACK_PART_LIVING
-        << " -D RESIST_PART_LIVING=" << pd::RESIST_PART_LIVING
-        << " -D COMPONENT_COMPOSITION_LIVING=" << pd::COMPONENT_COMPOSITION_LIVING
-        << " -D COMPONENT_NEED_LIVING=" << pd::COMPONENT_NEED_LIVING
-        << " -D COMPONENT_WASTE_LIVING=" << pd::COMPONENT_WASTE_LIVING
-        << " -D ENERGY_NEED_LIVING=" << pd::ENERGY_NEED_LIVING
-        << " -D ENERGY_WASTE_LIVING=" << pd::ENERGY_WASTE_LIVING
-        << " -D HABITAT_SURVIVOR_LIVING=" << pd::HABITAT_SURVIVOR_LIVING
-        << " -D BIOME_COMFORT_SURVIVOR_LIVING=" << pd::BIOME_COMFORT_SURVIVOR_LIVING
+        << " -D LIVING_COUNT=" << pnp::LIVING_COUNT
+        << " -D LIVING_CELL=" << pnp::LIVING_CELL
+        << " -D LIFE_CYCLE_COUNT=" << pnp::LIFE_CYCLE_COUNT
+        << " -D PART_LIVING=" << pnp::PART_LIVING
+        << " -D ATTACK_PART_LIVING=" << pnp::ATTACK_PART_LIVING
+        << " -D RESIST_PART_LIVING=" << pnp::RESIST_PART_LIVING
+        << " -D COMPONENT_COMPOSITION_LIVING=" << pnp::COMPONENT_COMPOSITION_LIVING
+        << " -D COMPONENT_NEED_LIVING=" << pnp::COMPONENT_NEED_LIVING
+        << " -D COMPONENT_WASTE_LIVING=" << pnp::COMPONENT_WASTE_LIVING
+        << " -D ENERGY_NEED_LIVING=" << pnp::ENERGY_NEED_LIVING
+        << " -D ENERGY_WASTE_LIVING=" << pnp::ENERGY_WASTE_LIVING
+        << " -D HABITAT_SURVIVOR_LIVING=" << pnp::HABITAT_SURVIVOR_LIVING
+        << " -D BIOME_COMFORT_SURVIVOR_LIVING=" << pnp::BIOME_COMFORT_SURVIVOR_LIVING
 
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION
 
         // константы для числовых значений
-        << " -D IMMUNE=" << pd::IMMUNE
-        << " -D INFINITYf=" << pd::INFINITYf
-        << " -D ANYf=" << pd::ANYf
+        << " -D IMMUNE=" << pnp::IMMUNE
+        << " -D INFINITYf=" << pnp::INFINITYf
+        << " -D ANYf=" << pnp::ANYf
 
         // физические константы
         // перевод из Кельвина в Цельсий

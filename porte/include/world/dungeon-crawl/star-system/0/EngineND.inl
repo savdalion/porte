@@ -5,13 +5,13 @@ namespace porte {
                 namespace l0 {
 
 
-namespace pd = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
 inline EngineND::EngineND(
     portulan_t* p,
-    pd::real_t extent,
-    pd::real_t timestep
+    pns::real_t extent,
+    pns::real_t timestep
 ) :
     EngineWithoutBooster( p ),
     mExtent( extent ),
@@ -25,7 +25,7 @@ inline EngineND::EngineND(
 	NewtonSetSolverModel( mPhysicsWorld, 0 );
     //NewtonSetMinimumFrameRate( mPhysicsWorld, 100.0f );
 
-    const pd::real_t halfExtent = extent / 2.0;
+    const pns::real_t halfExtent = extent / 2.0;
 	const dgVector minSize( -halfExtent, -halfExtent, -halfExtent, 1.0f );
 	const dgVector maxSize(  halfExtent,  halfExtent,  halfExtent, 1.0f );
 	NewtonSetWorldSize( mPhysicsWorld, &minSize[0], &maxSize[0] );
@@ -40,8 +40,8 @@ inline EngineND::EngineND(
     */
 
     // наполняем мир ND телами
-    for (size_t i = 0; i < pd::BODY_COUNT; ++i) {
-        pd::aboutBody_t* b =
+    for (size_t i = 0; i < pns::BODY_COUNT; ++i) {
+        pns::aboutBody_t* b =
             &mPortulan->topology().topology().body.content[ i ];
         incarnateBody( b );
     }
@@ -96,21 +96,21 @@ inline void EngineND::pulse() {
 
 
 
-inline void EngineND::incarnateBody( pd::aboutBody_t* b ) {
+inline void EngineND::incarnateBody( pns::aboutBody_t* b ) {
     assert( mPhysicsWorld && "Физ. движок. не инициализирован." );
 
     // # Поля для физ. тел. могут располагаться в любом порядке.
     // @todo bad optimize Утверждённый порядок = возможность оптимизации.
-    pd::aboutPlanet_t* contentPlanet = nullptr;
-    pd::aboutStar_t*   contentStar = nullptr;
-    pd::real_t mass = 0.0;
-    pd::real_t radius = 0.0;
-    pd::real_t coord[ 3 ] = {};
-    pd::real_t rotation[ 3 ] = {};
-    pd::real_t* tm = nullptr;
+    pns::aboutPlanet_t* contentPlanet = nullptr;
+    pns::aboutStar_t*   contentStar = nullptr;
+    pns::real_t mass = 0.0;
+    pns::real_t radius = 0.0;
+    pns::real_t coord[ 3 ] = {};
+    pns::real_t rotation[ 3 ] = {};
+    pns::real_t* tm = nullptr;
     NewtonCollision* collision = nullptr;
     switch ( b->group ) {
-        case pd::GE_PLANET:
+        case pns::GE_PLANET:
             contentPlanet = &b->content.planet;
             mass = contentPlanet->mass;
             radius = contentPlanet->radius;
@@ -125,7 +125,7 @@ inline void EngineND::incarnateBody( pd::aboutBody_t* b ) {
             tm = contentPlanet->tm;
             break;
 
-        case pd::GE_STAR:
+        case pns::GE_STAR:
             contentStar = &b->content.star;
             mass = contentStar->mass;
             radius = contentStar->radius;
@@ -150,7 +150,7 @@ inline void EngineND::incarnateBody( pd::aboutBody_t* b ) {
 
     // каждая форма обладает своим моментом инерции
     // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D0%BC%D0%B5%D0%BD%D1%82_%D0%B8%D0%BD%D0%B5%D1%80%D1%86%D0%B8%D0%B8
-    const pd::real_t momentXYZ =
+    const pns::real_t momentXYZ =
         2.0 * mass * radius * radius / 5.0f;
     NewtonBodySetMassMatrix(
         body, mass,  momentXYZ, momentXYZ, momentXYZ
@@ -178,13 +178,13 @@ inline void EngineND::incarnateBody( pd::aboutBody_t* b ) {
 * Инициирует матрицу.
 */
 void EngineND::init(
-    pd::real_t tm[ 16 ],
-    const pd::real_t coord[ 3 ],
-    const pd::real_t rotation[ 3 ]
+    pns::real_t tm[ 16 ],
+    const pns::real_t coord[ 3 ],
+    const pns::real_t rotation[ 3 ]
 ) {
     // пространственное положение элемента
-    static const pd::real_t PI_DIV_180 =
-        static_cast< pd::real_t >( M_PI / 180.0 );
+    static const pns::real_t PI_DIV_180 =
+        static_cast< pns::real_t >( M_PI / 180.0 );
 	const dgMatrix m(
         dgRollMatrix(  rotation[ 0 ] * PI_DIV_180 ) *
         dgYawMatrix(   rotation[ 1 ] * PI_DIV_180 ) *
@@ -206,7 +206,7 @@ void EngineND::init(
 
 inline void EngineND::applyForceAndTorque(
     const NewtonBody* b,
-    pd::real_t timestep,
+    pns::real_t timestep,
     int threadIndex
 ) {
     auto pw = NewtonBodyGetWorld( b );
@@ -214,7 +214,7 @@ inline void EngineND::applyForceAndTorque(
     while ( body ) {
         if (b != body) {
             const auto ud =
-                static_cast< pd::aboutBody_t* >( NewtonBodyGetUserData( body ) );
+                static_cast< pns::aboutBody_t* >( NewtonBodyGetUserData( body ) );
 
             // @todo ...
 
@@ -230,10 +230,10 @@ inline void EngineND::applyForceAndTorque(
 
 inline void EngineND::setTransform(
     const NewtonBody* b,
-    const pd::real_t* matrix,
+    const pns::real_t* matrix,
     int threadIndex
 ) {
-    auto body = static_cast< pd::aboutBody_t* >( NewtonBodyGetUserData( b ) );
+    auto body = static_cast< pns::aboutBody_t* >( NewtonBodyGetUserData( b ) );
     assert( body && "Тело не найдено." );
 #if 1
     const dgMatrix& m = *( ( const dgMatrix* )( matrix ) );
@@ -254,7 +254,7 @@ inline void EngineND::setTransform(
 
 
 inline void EngineND::autoDestruction( const NewtonBody* b ) {
-    //auto body = static_cast< pd::aboutBody_t* >( NewtonBodyGetUserData( b ) );
+    //auto body = static_cast< pns::aboutBody_t* >( NewtonBodyGetUserData( b ) );
     //assert( body && "Тело не найдено." );
     // предотвращаем бесконечную рекурсию, удаляем физ. тело
     NewtonBodySetDestructorCallback( b, nullptr );

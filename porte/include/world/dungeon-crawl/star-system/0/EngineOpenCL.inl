@@ -5,19 +5,21 @@ namespace porte {
                 namespace l0 {
 
 
-namespace pd = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
 inline EngineOpenCL::EngineOpenCL(
     portulan_t* p,
-    pd::real_t timestep
+    pns::real_t timestep
 ) :
     EngineWithoutBooster( p ),
     mTimestep( timestep ),
 
     // #! ≈сли пам€ть выделена динамически, работаем с содержанием структуры.
-    memsizeBody( sizeof( pd::aboutBody_t ) * pd::BODY_COUNT ),
-    memsizeStarSystem( sizeof( pd::aboutStarSystem_t ) ),
+    memsizeAsteroid( sizeof( pns::aboutAsteroid_t ) * pns::ASTEROID_COUNT ),
+    memsizePlanet( sizeof( pns::aboutPlanet_t ) * pns::PLANET_COUNT ),
+    memsizeStar( sizeof( pns::aboutStar_t ) * pns::STAR_COUNT ),
+    memsizeStarSystem( sizeof( pns::aboutStarSystem_t ) * 1 ),
 
     errorCL( CL_SUCCESS ),
     devicesCL( nullptr ),
@@ -112,7 +114,7 @@ inline void EngineOpenCL::pulse( int n ) {
     errorCL = clSetKernelArg( kernelPulseA, 2, sizeof( const cl_mem ), &workBodyCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    errorCL = clSetKernelArg( kernelPulseA, 3, sizeof( float ), &mTimestep );
+    errorCL = clSetKernelArg( kernelPulseA, 3, sizeof( pns::real_t ), &mTimestep );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
@@ -127,7 +129,7 @@ inline void EngineOpenCL::pulse( int n ) {
 
 
     static const size_t GRID_WORK_DIM = 1;
-    static const size_t GRID_GLOBAL_WORK_SIZE[] = { pd::BODY_COUNT };
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { pns::BODY_COUNT };
 
     // ¬ыполн€ем 'n' циклов
     for (int i = 0; i < n; ++i) {
@@ -411,8 +413,14 @@ inline std::string EngineOpenCL::commonConstantCLKernel() {
         // лечим точность дл€ float
         << std::fixed
 
+#ifdef PERMIT_DOUBLE_ENGINE_PORTE
+        // используем double вместо float
+        // @see pns::real_t
+        << " -D PERMIT_DOUBLE_ENGINE_PORTE"
+#endif
+
         // body
-        << " -D BODY_COUNT=" << pd::BODY_COUNT
+        << " -D BODY_COUNT=" << pns::BODY_COUNT
 
         // точность сравнени€ значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION

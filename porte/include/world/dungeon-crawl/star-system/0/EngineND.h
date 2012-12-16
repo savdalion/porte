@@ -21,14 +21,14 @@ namespace porte {
                 namespace l0 {
 
 
-namespace pd = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
 /**
 * Движок для моделирования звёздной системы.
 */
 class EngineND :
-    public EngineWithoutBooster< pd::Portulan >
+    public EngineWithoutBooster< pns::Portulan >
 {
 public:
     typedef std::shared_ptr< EngineND >  Ptr;
@@ -37,7 +37,7 @@ public:
 
 
 public:
-    EngineND( portulan_t*, pd::real_t extent, pd::real_t timestep );
+    EngineND( portulan_t*, pns::real_t extent, pns::real_t timestep );
 
     virtual ~EngineND();
 
@@ -63,23 +63,23 @@ private:
     /**
     * Создаёт физ. тело в мире Newton Dynamics.
     */
-    void incarnateBody( pd::aboutBody_t* b );
+    void incarnateBody( pns::aboutBody_t* b );
 
 
     /**
     * Инициирует матрицу.
     */
     static void init(
-        pd::real_t tm[ 16 ],
-        const pd::real_t coord[ 3 ],
-        const pd::real_t rotation[ 3 ]
+        pns::real_t tm[ 16 ],
+        const pns::real_t coord[ 3 ],
+        const pns::real_t rotation[ 3 ]
     );
 
 
 
     static void applyForceAndTorque(
         const NewtonBody* b,
-        pd::real_t timestep,
+        pns::real_t timestep,
         int threadIndex
     );
 
@@ -87,7 +87,7 @@ private:
 
     static void setTransform(
         const NewtonBody* b,
-        const pd::real_t* matrix,
+        const pns::real_t* matrix,
         int threadIndex
     );
 
@@ -100,12 +100,12 @@ private:
 
 
 private:
-    pd::real_t mTimestep;
+    pns::real_t mTimestep;
 
     /**
     * Протяжённость мира.
     */
-    const pd::real_t mExtent;
+    const pns::real_t mExtent;
 
     /**
     * Физический мир (внешний движок).

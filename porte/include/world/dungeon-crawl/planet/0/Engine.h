@@ -2,6 +2,8 @@
 
 #include "../../../../../configure.h"
 #include "../../../../porte/EngineWithoutBooster.h"
+#include "ListenerPlanet.h"
+
 #include <numeric>
 #include <boost/assign.hpp>
 #include <boost/algorithm/string.hpp>
@@ -32,13 +34,22 @@ namespace porte {
                 namespace l0 {
 
 
+namespace pnp = portulan::world::dungeoncrawl::planet::l0;
+namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pes = porte::world::dungeoncrawl::starsystem::l0;
+
+
 /**
 * Движок для моделирования планеты, населённой созданиями из Engine.
 *
 * @template См. Engine.
 */
 class Engine :
-    public EngineWithoutBooster< portulan::world::dungeoncrawl::planet::l0::Portulan >
+    public EngineWithoutBooster<
+        pnp::Portulan,
+        float
+    >,
+    public ListenerPlanet
 {
 public:
     /**
@@ -50,9 +61,26 @@ public:
 
 
 public:
-    Engine( portulan_t* );
+    Engine( real_t timestep );
 
     virtual ~Engine();
+
+
+
+
+    /**
+    * @virtual 
+    */
+    virtual void incarnate( portulan_t*, real_t extentPortulan = 0 );
+
+
+
+
+    /**
+    * @virtual 
+    */
+    virtual real_t extent();
+
 
 
 
@@ -179,18 +207,20 @@ private:
     * Структуры для OpenCL-вычислений.
     *   # Префикс "work" добавляется к структуре, которая используются ядрами для
     *     промежуточных вычислений.
+    *
+    * @see Engine::incarnate()
     */
     cl_mem aboutPlanetCL;
-    const size_t memsizeAboutPlanet;
+    size_t memsizeAboutPlanet;
 
-    const size_t memsizeComponent;
-    const size_t memsizeTemperature;
-    const size_t memsizeSurfaceTemperature;
-    const size_t memsizeRainfall;
-    const size_t memsizeDrainage;
-    const size_t memsizeLandscape;
-    const size_t memsizeBiome;
-    const size_t memsizeLiving;
+    size_t memsizeComponent;
+    size_t memsizeTemperature;
+    size_t memsizeSurfaceTemperature;
+    size_t memsizeRainfall;
+    size_t memsizeDrainage;
+    size_t memsizeLandscape;
+    size_t memsizeBiome;
+    size_t memsizeLiving;
 
 
     /**

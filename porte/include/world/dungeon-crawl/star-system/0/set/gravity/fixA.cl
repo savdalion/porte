@@ -14,4 +14,7 @@ __kernel void fixA(
     // # Все данные из 'wb' актуальны для 'b'. См. соглашение в pulseA.cl.
     b[ i ] = wb[ i ];
 
+    // @test
+    //b[ i ].content.planet.test[ 2 ] = 2e4;
+
 }

@@ -11,6 +11,7 @@ namespace porte {
 * Определения могут быть использованы для отключения сохранения данных
 * в файлах.
 */
+/*
 #define COMPONENT_SNAPSHOT_VISUALTEST
 #define TEMPERATURE_SNAPSHOT_VISUALTEST
 #define SURFACE_TEMPERATURE_SNAPSHOT_VISUALTEST
@@ -19,6 +20,7 @@ namespace porte {
 #define LANDSCAPE_SNAPSHOT_VISUALTEST
 #define BIOME_SNAPSHOT_VISUALTEST
 #define LIVING_SNAPSHOT_VISUALTEST
+*/
 
 
 /**
@@ -28,16 +30,17 @@ namespace porte {
 *
 * #! OpenCL не работает с double на NVIDIA GeForce 8800GTS.
 */
-// Движок на OpenCL.
-#define OPENCL_STARSYSTEM_L0_ENGINE_PORTE
+// Движок на параллельном OpenCL.
+//#define OPENCL_STARSYSTEM_L0_ENGINE_PORTE
 // Для движка на OpenCL: указание использовать CPU.
-#define ONLY_CPU_OPENCL_STARSYSTEM_L0_ENGINE_PORTE
+//#define ONLY_CPU_OPENCL_STARSYSTEM_L0_ENGINE_PORTE
 
 // Движок на линейном CPU.
-//#define CPU_STARSYSTEM_L0_ENGINE_PORTE
+#define CPU_STARSYSTEM_L0_ENGINE_PORTE
 
 // Движок на NewtonDynamics.
-// #! Выяснено: Использовать для огромных систем не практично.
+// #! Выяснено: Использовать для систем с огромными расстояниями...
+//    не практично.
 //#define ND_STARSYSTEM_L0_ENGINE_PORTE
 
 

@@ -10,153 +10,55 @@
 */
 
 
-/**
-* ƒействие тела B на тело A: как мен€етс€ сила на тело A.
-*/
-inline real4_t forceGravityBodyBodyInteraction(
-    const real4_t  coordA,
-    const real4_t  coordB,
-    const real_t   massA,
-    const real_t   massB,
-    const real_t   timestep
+inline void forceGravityBodyBodyInteraction(
+    real_t* fx,  real_t* fy,  real_t* fz,
+    __global const real_t* coordA,
+    __global const real_t* coordB,
+             const real_t  massA,
+             const real_t  massB,
+             const real_t  noForceDistance
 ) {
     // рассто€ние
-    const real4_t r = coordB - coordA;
-    //const real_t distanceSquared = r.x * r.x + r.y * r.y + r.z * r.z;
-    //const real_t invertDistance = rsqrt( distanceSquared );
-    //const real_t distance = length( r );
-    const real_t distance = sqrt( r.x * r.x + r.y * r.y + r.z * r.z );
-    if (distance < PRECISION) {
+    real_t rx = coordB[ 0 ] - coordA[ 0 ];
+    real_t ry = coordB[ 1 ] - coordA[ 1 ];
+    real_t rz = coordB[ 2 ] - coordA[ 2 ];
+    const real_t distance = sqrt( rx * rx + ry * ry + rz * rz );
+    if (distance <= noForceDistance) {
         // при столкновени€х отключаем силу
-        return (real4_t)( 0 );
+        return;
+    }
+    if (distance > 0.0) {
+        const real_t inv = 1.0 / distance;
+        rx *= inv;
+        ry *= inv;
+        rz *= inv;
     }
 
     // сила гравитации
-    // #! ѕри real_t-значени€х возможно переполнение.
-    const real_t f = massA / (distance * distance) * G * massB;
-    //const real4_t rn = r * invertDistance;
-    //const real4_t rn = normalize( r );
-    const real4_t rn = (real4_t)( r / distance );
-
-    return (real4_t)( rn.x * f,  rn.y * f,  rn.z * f,  0 );
+    const real_t f = G * massA * massB / (distance * distance);
+    *fx = rx * f;
+    *fy = ry * f;
+    *fz = rz * f;
 }
 
 
 
 
-/**
-* ƒействие планеты B на планету A.
-*//*
-inline void planetPlanetInteraction(
-    __global       aboutPlanet_t*  wa,
-    __global const aboutPlanet_t*  a,
-    __global const aboutPlanet_t*  b,
-             const real_t           timestep
-) {
-    // @todo optimize ћожно существенно оптимизировать. —м. проект
-    //       OpenCL / NBody от NVIDIA.
-
-    // рассто€ние
-    const real4_t r = (real4_t)(
-        a->coord[ 0 ] - b->coord[ 0 ],
-        a->coord[ 1 ] - b->coord[ 1 ],
-        a->coord[ 2 ] - b->coord[ 2 ],
-        0.0
-    );
-    const real_t distanceSquared = r.x * r.x + r.y * r.y + r.z * r.z;
-    const real_t distance = rsqrt( distanceSquared );
-
-    // сила гравитации
-    const real_t forceWithoutMassA = G * b->mass / distanceSquared;
-    const real_t force = forceWithoutMassA * a->mass;
-    const real4_t rn = r / distance;
-    wa->force[ 0 ] += rn.x * force;
-    wa->force[ 1 ] += rn.y * force;
-    wa->force[ 2 ] += rn.z * force;
-
-    // скорость
-    //const real_t acceleration = force / a->mass;
-    const real_t acceleration = forceWithoutMassA;
-    const real_t velocity = acceleration * timestep;
-    wa->velocity[ 0 ] += rn.x * velocity;
-    wa->velocity[ 1 ] += rn.y * velocity;
-    wa->velocity[ 2 ] += rn.z * velocity;
-}
-*/
-
-
-
-/**
-* @return —ила гравитации, действующа€ на планету A
-*         со стороны звезды B.
-*//*
-inline real_t forcePlanetStarInteraction(
-    __global const aboutPlanet_t*  a,
-    __global const aboutStar_t*    b,
-             const real_t           timestep
-) {
-    // @todo optimize ћожно существенно оптимизировать. —м. проект
-    //       OpenCL / NBody от NVIDIA.
-
-    real4_t force = 0;
-
-    real4_t velocity = (real4_t)( a->velocity[ 0 ], a->velocity[ 1 ], a->velocity[ 2 ], 0 );
-    bodyBodyGravityInteraction(
-        &force, &velocity,
-        (real4_t)( a->coord[ 0 ], a->coord[ 1 ], a->coord[ 2 ], 0 ),
-        (real4_t)( b->coord[ 0 ], b->coord[ 1 ], b->coord[ 2 ], 0 ),
-        a->mass, b->mass,
-        timestep
-    );
-    
-    wa->force[ 0 ] += force.x;
-    wa->force[ 1 ] += force.y;
-    wa->force[ 2 ] += force.z;
-    
-    wa->velocity[ 0 ] += velocity.x;
-    wa->velocity[ 1 ] += velocity.y;
-    wa->velocity[ 2 ] += velocity.z;
-
-    wa->coord[ 0 ] += velocity.x * timestep;
-    wa->coord[ 1 ] += velocity.y * timestep;
-    wa->coord[ 2 ] += velocity.z * timestep;
-
-    // @test
-    const real4_t r =
-        (real4_t)( a->coord[ 0 ], a->coord[ 1 ], a->coord[ 2 ], 0 ) -
-        (real4_t)( b->coord[ 0 ], b->coord[ 1 ], b->coord[ 2 ], 0 );
-    const real_t distance = length( r );
-    const real_t f = a->mass / (distance * distance) * G * b->mass;
-    const real4_t rn = normalize( r );
-    const real_t acceleration = f / a->mass;
-    const real_t v = acceleration * timestep;
-    wa->test[ 0 ] = f;
-    wa->test[ 1 ] = distance;
-    wa->test[ 2 ] = length( velocity );
-    //wa->test[ 3 ] = velocity.y;
-    //wa->test[ 4 ] = velocity.z;
-}
-*/
-
-
-
-
-/**
-* –ассчитывает взаимодействие планеты с телами звЄздной системы.
-*/
 inline void planetInteraction(
-    __global       aboutPlanet_t*      wap,
+    __global       aboutPlanet_t*      wp,
     __global const aboutPlanet_t*      p,
              const uint                i,
     __global const aboutStarSystem_t*  ass,
     __global const aboutBody_t*        ab,
-             const real_t               timestep
+             const real_t              timestep
 ) {
     // рассчитываем результирующую силу
-    real4_t force = (real4_t)( 0 );
+    real_t fx, fy, fz;
+    fx = fy = fz = 0.0;
 
     for (uint k = 0; k < BODY_COUNT; ++k) {
-        if (k == i) {
+        if (i == k) {
+            // сама на себ€ не действует
             continue;
         }
 
@@ -164,29 +66,25 @@ inline void planetInteraction(
         // тела с индексом 'k'
 
         const enum GROUP_ELEMENT group = ab[ k ].group;
-        const real4_t ca = (real4_t)( p->coord[ 0 ], p->coord[ 1 ], p->coord[ 2 ], 0 );
-        real4_t cb;
         switch ( group ) {
             case GE_PLANET:
-                //planetPlanetInteraction( wap, p, &ab[ k ].content.planet, timestep );
+                forceGravityBodyBodyInteraction(
+                    &fx, &fy, &fz,
+                    p->coord,  ab[ k ].content.planet.coord,
+                    p->mass,   ab[ k ].content.planet.mass,
+                    // на этом рассто€нии силы не действуют
+                    max( p->radius,  ab[ k ].content.planet.radius )
+                );
                 break;
 
             case GE_STAR:
-                cb = (real4_t)(
-                    ab[ k ].content.star.coord[ 0 ],
-                    ab[ k ].content.star.coord[ 1 ],
-                    ab[ k ].content.star.coord[ 2 ],
-                    0
+                forceGravityBodyBodyInteraction(
+                    &fx, &fy, &fz,
+                    p->coord,  ab[ k ].content.star.coord,
+                    p->mass,   ab[ k ].content.star.mass,
+                    // на этом рассто€нии силы не действуют
+                    max( p->radius,  ab[ k ].content.star.radius )
                 );
-                force += forceGravityBodyBodyInteraction(
-                    ca,       cb,
-                    p->mass,  ab[ k ].content.star.mass,
-                    timestep
-                );
-
-                // @test
-                //wap->test[ 0 ] = length( cb - ca );
-
                 break;
 
             default:
@@ -197,33 +95,123 @@ inline void planetInteraction(
     } // for (uint k = 0; k < BODY_COUNT; ++k)
 
 
-    //const real_t f = length( force );
-    const real_t f = sqrt( force.x * force.x + force.y * force.y + force.z * force.z );
-    //const real4_t fn = normalize( force );
-    const real4_t fn = (real4_t)( force / f );
-
     // запоминаем силу
-    wap->force[ 0 ] = force.x;
-    wap->force[ 1 ] = force.y;
-    wap->force[ 2 ] = force.z;
+    wp->force[ 0 ] = fx;
+    wp->force[ 1 ] = fy;
+    wp->force[ 2 ] = fz;
 
     // нова€ скорость
+    const real_t f = sqrt( fx * fx + fy * fy + fz * fz );
+    if (f > 0.0) {
+        const real_t inv = 1.0 / f;
+        fx *= inv;
+        fy *= inv;
+        fz *= inv;
+    }
     const real_t acceleration = f / p->mass;
     const real_t v = acceleration * timestep;
-    wap->velocity[ 0 ] += fn.x * v;
-    wap->velocity[ 1 ] += fn.y * v;
-    wap->velocity[ 2 ] += fn.z * v;
+    wp->velocity[ 0 ] += fx * v;
+    wp->velocity[ 1 ] += fy * v;
+    wp->velocity[ 2 ] += fz * v;
 
     // новые координаты
-    wap->coord[ 0 ] += wap->velocity[ 0 ] * timestep;
-    wap->coord[ 1 ] += wap->velocity[ 1 ] * timestep;
-    wap->coord[ 2 ] += wap->velocity[ 2 ] * timestep;
+    wp->coord[ 0 ] += p->velocity[ 0 ] * timestep;
+    wp->coord[ 1 ] += p->velocity[ 1 ] * timestep;
+    wp->coord[ 2 ] += p->velocity[ 2 ] * timestep;
     
-    // @test
-    wap->test[ 1 ] = f;
-    wap->test[ 2 ] = acceleration;
-    wap->test[ 3 ] = v;
+    /* @test*/
+    wp->test[ 1 ] = f;
+    wp->test[ 2 ] = acceleration;
+    wp->test[ 3 ] = v;
+    /**/
 }
+
+
+
+
+
+inline void starInteraction(
+    __global       aboutStar_t*        ws,
+    __global const aboutStar_t*        s,
+             const uint                i,
+    __global const aboutStarSystem_t*  ass,
+    __global const aboutBody_t*        ab,
+             const real_t              timestep
+) {
+    // рассчитываем результирующую силу
+    real_t fx, fy, fz;
+    fx = fy = fz = 0.0;
+
+    for (uint k = 0; k < BODY_COUNT; ++k) {
+        if (i == k) {
+            // сама на себ€ не действует
+            continue;
+        }
+
+        // силы гравитации, действующие на звезду со стороны
+        // тела с индексом 'k'
+
+        const enum GROUP_ELEMENT group = ab[ k ].group;
+        switch ( group ) {
+            case GE_PLANET:
+                forceGravityBodyBodyInteraction(
+                    &fx, &fy, &fz,
+                    s->coord,  ab[ k ].content.planet.coord,
+                    s->mass,   ab[ k ].content.planet.mass,
+                    // на этом рассто€нии силы не действуют
+                    max( s->radius,  ab[ k ].content.planet.radius )
+                );
+                break;
+
+            case GE_STAR:
+                forceGravityBodyBodyInteraction(
+                    &fx, &fy, &fz,
+                    s->coord,  ab[ k ].content.star.coord,
+                    s->mass,   ab[ k ].content.star.mass,
+                    // на этом рассто€нии силы не действуют
+                    max( s->radius,  ab[ k ].content.star.radius )
+                );
+                break;
+
+            default:
+                // другие тела не действуют на звезду
+                continue;
+        }
+
+    } // for (uint k = 0; k < BODY_COUNT; ++k)
+
+
+    // запоминаем силу
+    ws->force[ 0 ] = fx;
+    ws->force[ 1 ] = fy;
+    ws->force[ 2 ] = fz;
+
+    // нова€ скорость
+    const real_t f = sqrt( fx * fx + fy * fy + fz * fz );
+    if (f > 0.0) {
+        const real_t inv = 1.0 / f;
+        fx *= inv;
+        fy *= inv;
+        fz *= inv;
+    }
+    const real_t acceleration = f / s->mass;
+    const real_t v = acceleration * timestep;
+    ws->velocity[ 0 ] += fx * v;
+    ws->velocity[ 1 ] += fy * v;
+    ws->velocity[ 2 ] += fz * v;
+
+    // новые координаты
+    ws->coord[ 0 ] += s->velocity[ 0 ] * timestep;
+    ws->coord[ 1 ] += s->velocity[ 1 ] * timestep;
+    ws->coord[ 2 ] += s->velocity[ 2 ] * timestep;
+    
+    /* @test
+    ws->test[ 1 ] = f;
+    ws->test[ 2 ] = acceleration;
+    ws->test[ 3 ] = v;
+    */
+}
+
 
 
 
@@ -243,6 +231,11 @@ __kernel void pulseA(
     wab[ i ] = ab[ i ];
 
     const enum GROUP_ELEMENT group = ab[ i ].group;
+    
+    // @test
+    wab[ i ].content.planet.mass *= 2.0;
+    //wab[ i ].content.planet.test[ 1 ] += 1e4;
+    return;
 
     // # ѕол€ дл€ физ. тел. могут располагатьс€ в любом пор€дке.
     // @todo bad optimize ”тверждЄнный пор€док = возможность оптимизации.
@@ -253,10 +246,18 @@ __kernel void pulseA(
                 &ab[ i ].content.planet,
                 i, ass, ab, timestep
             );
+
+            // @test
+            //wab[ i ].content.planet.coord[ 1 ] += 1e4;
+
             break;
 
         case GE_STAR:
-            // ...
+            starInteraction(
+                &wab[ i ].content.star,
+                &ab[ i ].content.star,
+                i, ass, ab, timestep
+            );
             break;
 
         default:

@@ -13,6 +13,42 @@
 #undef CL_NONE
 
 
+namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pes = porte::world::dungeoncrawl::starsystem::l0;
+namespace pnios = portulan::io::world::dungeoncrawl::starsystem::l0;
+
+namespace pnp = portulan::world::dungeoncrawl::planet::l0;
+namespace pep = porte::world::dungeoncrawl::planet::l0;
+namespace pniop = portulan::io::world::dungeoncrawl::planet::l0;
+
+
+// # Соберём все движки в структуру, чтобы до завершения работы программы
+//   ни один из них не был уничтожен (спасибо, std::shared_ptr).
+typedef struct {
+    std::set< pep::Engine::Ptr >  planet;
+    std::set< pes::Engine::Ptr >  starSystem;
+} heapEngine_t;
+heapEngine_t heapEngine;
+
+
+
+static void wrapPlanet( heapEngine_t*, pes::Engine::Ptr, const pns::aboutPlanet_t& );
+
+
+/**
+* # Время - измерение, проходящее сквозь все портуланы. Указывается в секундах.
+*/
+static const double SECOND     = 1.0;
+static const double MINUTE     = SECOND * 60.0;
+static const double HOUR       = MINUTE * 60.0;
+static const double DAY        = HOUR   * 24.0;
+static const double HALF_DAY   = DAY    / 2.0;
+static const double WEEK       = DAY    * 7.0;
+static const double MONTH      = DAY    * 30.0;
+static const double HALF_MONTH = MONTH  / 2.0;
+static const double YEAR       = DAY    * 365.0;
+static const double HALF_YEAR  = YEAR   / 2.0;
+
 
 /**
 * Визуальное тестирование для проекта 'Porte'.
@@ -47,32 +83,459 @@ int main( int argc, char** argv ) {
 
 
 
-// Планета
+// звёздная система
+#if 1
+// @todo fine В звёздной системе работать с двойной точностью.
+//       NVIDIA 8800GTS работает только с real_t.
+
+    // Инициализируем движок звёздной системы
+    // # Инициализация происходит частичная, чтобы в процессе формирования
+    //   портулана звёзной системы можно было привязывать к элементам
+    //   другие движки, подписывая их на события друг друга. См. wrapPlanet().
+    // 'timestep' влияет на точность рассчётов (больше - ниже).
+    // Может быть задействована вместе с 'PULSE'.
+    static const double timestep = MINUTE;
+    // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
+    //   слушатель событий другим движкам.
+    pes::Engine::Ptr  engine( new pes::Engine( timestep ) );
+    heapEngine.starSystem.insert( engine );
+
+
+    typedef pns::Portulan  starSystem_t;
+    starSystem_t starSystem;
+    pns::topology_t& topology = starSystem.topology().topology();
+
+    static const pns::aboutStarSystem_t aboutStarSystem = {
+        // size
+        // ~ Размер ~ 10000 а.е. ~ 1.5e12 км
+        { 1.5e15, 1.5e15, 1.5e15 }
+    };
+
+    // где расположен пояс астероидов
+    // @source http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%8F%D1%81_%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4%D0%BE%D0%B2
+    //static const pns::real_t asteroidOrbit = 1.49598261e11 * 2.8;
+    static const pns::real_t asteroidOrbit = 1.49598261e11;
+
+    topology.aboutStarSystem = aboutStarSystem;
+
+
+
+    // звёзды
+    // # звезда - центр координат
+    pns::star_t star = {};
+    auto& tsc = topology.star.content;
+    size_t countStar = 0;
+
+#if 1
+    // Звезда I
+    // @source http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
+#if 1
+    {
+        static const pns::aboutStar_t star = {
+            // uid
+            countStar + 1,
+            // mass
+            1.9891e30,
+            // radius
+            6.9551e8,
+            // temperature,
+            1.5e6,
+            // coord
+            { 0, 0, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 0, 0 }
+        };
+        tsc[ countStar ] = star;
+        ++countStar;
+    }
+#endif
+
+    // Звезда II
 #if 0
-{
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-    namespace pe = porte::world::dungeoncrawl::planet::l0;
+    {
+        static const pns::aboutStar_t star = {
+            // uid
+            countStar + 1,
+            // mass
+            1.9891e30,
+            // radius
+            6.9551e8,
+            // temperature,
+            1.5e6,
+            // coord
+            { 0, asteroidOrbit * 1.5, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { -15000, 0, 0 }
+        };
+        tsc[ countStar ] = star;
+        ++countStar;
+    }
+#endif
 
-    typedef pd::Portulan  planet_t;
+    // Звезда III
+#if 0
+    {
+        static const pns::aboutStar_t star = {
+            // uid
+            countStar + 1,
+            // mass
+            1.9891e30,
+            // radius
+            6.9551e8,
+            // temperature,
+            1.5e6,
+            // coord
+            { 0, -asteroidOrbit * 1.5, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 15000, 0, 0 }
+        };
+        tsc[ countStar ] = star;
+        ++countStar;
+    }
+#endif
+
+#endif // звёзды
+
+
+
+    // планеты
+    pns::planet_t planet = {};
+    auto& tpc = topology.planet.content;
+    size_t countPlanet = 0;
+
+#if 1
+    // Меркурий
+    // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%80%D0%BA%D1%83%D1%80%D0%B8%D0%B9_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+#if 0
+    {
+        static const pns::uid_t uid = 1;
+        static const pns::aboutPlanet_t planet = {
+            // uid
+            uid,
+            // mass
+            3.33022e23,
+            // radius
+            2.4397e6,
+            // coord
+            { 0.4600121e11, 0, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 47870, 0 }
+        };
+        tpc[ countPlanet ] = planet;
+        ++countPlanet;
+    }
+#endif
+
+    // Венера
+    // @source http://ru.wikipedia.org/wiki/%D0%92%D0%B5%D0%BD%D0%B5%D1%80%D0%B0_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+#if 0
+    {
+        static const pns::uid_t uid = 2;
+        static const pns::aboutPlanet_t planet = {
+            // uid
+            uid,
+            // mass
+            4.8685e24,
+            // radius
+            6.0518e6,
+            // coord
+            { 1.07476259e11, 0, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 35020, 0 }
+        };
+        tpc[ countPlanet ] = planet;
+        ++countPlanet;
+    }
+#endif
+
+    // Земля
+    // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BB%D1%8F
+#if 1
+    {
+        static const pns::uid_t uid = 3;
+        static const pns::aboutPlanet_t planet = {
+            // uid
+            uid,
+            // mass
+            5.9736e24,
+            // radius
+            6.3568e6,
+            // coord
+            { 1.49598261e11, 0, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 29783, 0 }
+        };
+        tpc[ countPlanet ] = planet;
+        ++countPlanet;
+
+        // тут же оборачиваем планету в свой движок
+        wrapPlanet( &heapEngine, engine, planet );
+    }
+#endif
+
+
+    // Марс
+    // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D1%81_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+#if 0
+    {
+        static const pns::uid_t uid = 4;
+        static const pns::aboutPlanet_t planet = {
+            // uid
+            uid,
+            // mass
+            0.64185e24,
+            // radius
+            3.3895e6,
+            // coord
+            { 2.06655e11, 0, 0 },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            { 0, 24130, 0 }
+        };
+        tpc[ countPlanet ] = planet;
+        ++countPlanet;
+    }
+#endif
+
+#endif // планеты
+
+
+
+    // астероиды
+    // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
+    // @source http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%8F%D1%81_%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4%D0%BE%D0%B2
+    static const size_t N_ASTEROID = 100;
+    assert( (N_ASTEROID <= pns::ASTEROID_COUNT) &&
+        "Количество астероидов превышает зарезервированный для них объём." );
+    size_t countAsteroid = 0;
+
+#if 1
+    pns::asteroid_t asteroid = {};
+    auto& tac = topology.asteroid.content;
+    {
+        // не случайный генератор случ. чисел: полезно каждый
+        // раз видеть одинаковые (предсказуемые) результаты
+        static const size_t SEED = 12345;
+        typelib::Random< size_t >  seed( 0, 1000000000, SEED );
+
+        typelib::Random< pns::real_t >  averageRadius( 100, 300000, seed.next() );
+        typelib::Random< pns::real_t >  proportionRadius( 0.5, 1.5, seed.next() );
+        typelib::Random< pns::real_t >  density( 2000, 4000, seed.next() );
+
+        typelib::Random< pns::real_t >  distance(
+            asteroidOrbit * 0.9, asteroidOrbit * 1.1, seed.next()
+        );
+        typelib::Random< pns::real_t >  angle( 0.0, M_PI * 2.0, seed.next() );
+
+        static const pns::real_t velocityOrbit = 17500;
+        typelib::Random< pns::real_t >  velocity(
+            velocityOrbit * 0.95, velocityOrbit * 1.05, seed.next()
+        );
+
+        size_t i = 0;
+        for ( ; i < N_ASTEROID; ++i) {
+            // # Принимаем за эллипсоид.
+            const pns::real_t ar = averageRadius.next();
+            const pns::real_t rx = ar * proportionRadius.next();
+            const pns::real_t ry = ar * proportionRadius.next();
+            const pns::real_t rz = ar * proportionRadius.next();
+
+            const pns::real_t volume = 4.0 / 3.0 * M_PI * rx * ry * rz;
+            const pns::real_t _density = density.next();
+            const pns::real_t mass = volume * _density;
+
+            const pns::real_t d  = distance.next();
+            const pns::real_t da = angle.next();
+            const pns::real_t cx = d * std::sin( da );
+            const pns::real_t cy = d * std::cos( da );
+            const pns::real_t cz = 0;
+
+            // скорости - перпендикулярны силе от центра звёздной системы
+            const pns::real_t _velocity = velocity.next();
+            const pns::real_t vx = _velocity * std::sin( da - M_PI_2 ) * 0.0;
+            const pns::real_t vy = _velocity * std::cos( da - M_PI_2 ) * 0.0;
+            const pns::real_t vz = 0.0;
+
+            const pns::aboutAsteroid_t asteroid = {
+                // uid
+                i + 1,
+                // mass
+                mass,
+                // size
+                { rx, ry, rz },
+                // coord
+                { cx, cy, cz },
+                // rotation
+                { 0, 0, 0 },
+                // force
+                { 0, 0, 0 },
+                // velocity
+                { vx, vy, vz },
+                // memoryEvent
+                { 0, {} }
+            };
+            tac[ countAsteroid ] = asteroid;
+            ++countAsteroid;
+
+        } // for (size_t i = 0; i < N; ++i)
+
+        /* - Сделали выше.
+        // дозаполняем нулями
+        for ( ; i < pns::ASTEROID_COUNT; ++i) {
+            const pns::aboutAsteroid_t asteroid = {};
+            tac[ countAsteroid ] = asteroid;
+        }
+        */
+    }
+#endif // астероиды
+
+
+
+    // @test
+    std::cout << "asteroid" <<
+        "  " << countAsteroid << " / " << pns::ASTEROID_COUNT << "u" <<
+        "  ~ " << sizeof( pns::asteroid_t ) / 1024 << "Кб" <<
+        std::endl << "planet" <<
+        "  " << countPlanet << " / " << pns::PLANET_COUNT << "u" <<
+        "  ~ " << sizeof( pns::planet_t ) / 1024 << "Кб" <<
+        std::endl << "star" <<
+        "  " << countStar << " / " << pns::STAR_COUNT << "u" <<
+        "  ~ " << sizeof( pns::star_t ) / 1024 << "Кб" <<
+        std::endl <<
+    std::endl;
+
+#endif // звёздная система
+
+
+
+    // Воплощаем звёздную систему
+    engine->incarnate( &starSystem );
+
+
+
+    // Покажем результат для звёздной системы
+    pnios::VolumeVTKVisual::option_t  o;
+    o[ "extent" ] = engine->extent();
+    o[ "asteroid-size-point" ] = 2;
+    o[ "planet-size-point" ] = 5;
+    o[ "star-size-point" ] = 10;
+    o[ "auto-scale-camera" ] = false;
+    o[ "without-clear" ] = false;
+    o[ "size-window" ] = 950;
+
+    pnios::VolumeVTKVisual  visual( o );
+    visual << starSystem;
+    
+
+    // 'PULSE' влияет на кол-во отрисовок (больше пульс - меньше кадров).
+    // Может быть задействована вместе с 'timestep'.
+    // Движок честно считает 'PULSE' кадров с шагом 'timestep' и только
+    // после - показывает картинку. Др. словами, реадьное время отображаемых
+    // кадров = timestep * PULSE.
+    // @example timestep = HOUR,  PULSE = 365 * 24 - Земля будет оставаться
+    //          почти неподвижной, т.к. её период обращения ~ 365 дней.
+    static const int PULSE = 24 * 60;
+
+    // запускаем мир
+    visual.wait( engine.get(), PULSE, 1 );
+
+
+
+
+    EZLOGGERVLSTREAM( axter::log_always ) << "Porte / process-visualtest -> END" << std::endl;
+
+    std::cout << std::endl << "^" << std::endl;
+    //std::cin.ignore();
+
+    return 0;
+
+} // main()
+
+
+
+
+
+
+
+
+
+
+/**
+* Подключает к планете звёздной системы движок.
+*
+* # Возьмём данные о планете в формате звёздной системы и передадим их
+*   движку планеты.
+* # Подключим движок планеты как слушателя пульсов и событий движка
+*   звёздной системы.
+* # Подключим движок звёздной системы как слушателя событий планеты. Например,
+*   движок звёздной системы должен знать о разрушении / расколе планеты.
+*/
+void wrapPlanet(
+    heapEngine_t*              heapEngine,
+    pes::Engine::Ptr           ess,
+    const pns::aboutPlanet_t&  pss
+) {
+    assert( heapEngine );
+
+#if 1
+    // расширяем топологию планеты, опираясь на дынные 'planetStarSystem'
+    /* - Нет. Можем оживить любую планету.
+    static const std::string charUID = "earth";
+    assert( (strcmp(planetStarSystem.charUID, charUID.c_str()) == 0)
+        && "Ожидалось получить планету с другим UID" );
+    */
+
+    typedef pnp::Portulan  planet_t;
     planet_t planet;
-    pd::topology_t& topology = planet.topology().topology();
+    pnp::topology_t& topology = planet.topology().topology();
 
+    // # Мир не большой - работаем с 'float'. См. также структуры и
+    //   planet::Engine.
+    typedef float  real_t;
 
     // общая информация об области планеты
     // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BD%D0%B0%D1%8F_%D0%BA%D0%BE%D1%80%D0%B0
-    const float radiusCrust = 7000.0f * 1000.0f;
-    const float radiusAtmosphere = radiusCrust + 200.0f * 1000.0f;
-    const float halfSize = radiusAtmosphere;
-    const float radiusMantle = radiusCrust - 200.0f * 1000.0f;
-    const float radiusCore = 3000.0f * 1000.0f;
+    const real_t radiusCrust = pss.radius;
+    const real_t radiusAtmosphere = radiusCrust + 200.0f * 1000.0f;
+    const real_t halfSize = radiusAtmosphere;
+    const real_t radiusMantle = radiusCrust - 200.0f * 1000.0f;
+    const real_t radiusCore = radiusCrust * 0.4f;
 
-    const float massAtmosphere = static_cast< cl_float >( 5e18 );
-    const float massCrust = static_cast< cl_float >( 4e22 );
-    const float massMantle = static_cast< cl_float >( 4e24 );
-    const float massCore = static_cast< cl_float >( 3e24 );
+    // @todo = f( данные планеты из звёздной системы )
+    const real_t massAtmosphere = static_cast< real_t >( 5e18 );
+    const real_t massCrust = static_cast< real_t >( 4e22 );
+    const real_t massMantle = static_cast< real_t >( 4e24 );
+    const real_t massCore = static_cast< real_t >( 3e24 );
 
-    static const pd::aboutPlanet_t aboutPlanet = {
-#if 1
+    static const pnp::aboutPlanet_t aboutPlanet = {
+#if 0
         // size
         halfSize * 2.0f,
 
@@ -86,42 +549,42 @@ int main( int argc, char** argv ) {
         {
             // space
             {
-                { pd::CC_NONE, 0.0f },
+                { pnp::CC_NONE, 0.0f },
             },
             // atmosphere
             {
-                { pd::CC_AIR,        100.0f / 100.0f },
-                { pd::CC_NONE, 0.0f },
+                { pnp::CC_AIR,        100.0f / 100.0f },
+                { pnp::CC_NONE, 0.0f },
             },
             // crust
             {
-                { pd::CC_AIR,          3.0f / 100.0f },
-                { pd::CC_BARREN_SOIL, 14.0f / 100.0f },
-                { pd::CC_RICH_SOIL,    1.0f / 100.0f },
-                { pd::CC_SAND,        10.0f / 100.0f },
-                { pd::CC_ROCK,        20.0f / 100.0f },
-                { pd::CC_BOULDER,      4.0f / 100.0f },
-                { pd::CC_WATER,       47.0f / 100.0f },
-                { pd::CC_SPARSE,       0.5f / 100.0f },
-                { pd::CC_NONE, 0.0f },
+                { pnp::CC_AIR,          3.0f / 100.0f },
+                { pnp::CC_BARREN_SOIL, 14.0f / 100.0f },
+                { pnp::CC_RICH_SOIL,    1.0f / 100.0f },
+                { pnp::CC_SAND,        10.0f / 100.0f },
+                { pnp::CC_ROCK,        20.0f / 100.0f },
+                { pnp::CC_BOULDER,      4.0f / 100.0f },
+                { pnp::CC_WATER,       47.0f / 100.0f },
+                { pnp::CC_SPARSE,       0.5f / 100.0f },
+                { pnp::CC_NONE, 0.0f },
             },
             // mantle
             {
-                { pd::CC_AIR,          1.0f / 100.0f },
-                { pd::CC_BARREN_SOIL, 12.0f / 100.0f },
-                { pd::CC_SAND,        20.0f / 100.0f },
-                { pd::CC_ROCK,        60.0f / 100.0f },
-                { pd::CC_WATER,        2.0f / 100.0f },
-                { pd::CC_SPARSE,       5.0f / 100.0f },
-                { pd::CC_NONE, 0.0f },
+                { pnp::CC_AIR,          1.0f / 100.0f },
+                { pnp::CC_BARREN_SOIL, 12.0f / 100.0f },
+                { pnp::CC_SAND,        20.0f / 100.0f },
+                { pnp::CC_ROCK,        60.0f / 100.0f },
+                { pnp::CC_WATER,        2.0f / 100.0f },
+                { pnp::CC_SPARSE,       5.0f / 100.0f },
+                { pnp::CC_NONE, 0.0f },
             },
             // core
             {
-                { pd::CC_AIR,          0.1f / 100.0f },
-                { pd::CC_ROCK,        90.0f / 100.0f },
-                { pd::CC_WATER,        0.9f / 100.0f },
-                { pd::CC_SPARSE,       9.0f / 100.0f },
-                { pd::CC_NONE, 0.0f },
+                { pnp::CC_AIR,          0.1f / 100.0f },
+                { pnp::CC_ROCK,        90.0f / 100.0f },
+                { pnp::CC_WATER,        0.9f / 100.0f },
+                { pnp::CC_SPARSE,       9.0f / 100.0f },
+                { pnp::CC_NONE, 0.0f },
             }
         },
 
@@ -176,11 +639,11 @@ int main( int argc, char** argv ) {
             0.5f,
 
             // lakeLandscape_t
-            { 500.0f,  pd::CC_WATER },
+            { 500.0f,  pnp::CC_WATER },
             0.5f,
 
             // riverLandscape_t
-            { 100.0f,  pd::CC_WATER,  1.0f,  pd::D_NONE },
+            { 100.0f,  pnp::CC_WATER,  1.0f,  pnp::D_NONE },
             0.5f
         },
 
@@ -188,11 +651,11 @@ int main( int argc, char** argv ) {
         {
             // space
             {
-                { pd::CL_NONE, 0.0f },
+                { pnp::CL_NONE, 0.0f },
             },
             // atmosphere
             {
-                { pd::CL_NONE, 0.0f },
+                { pnp::CL_NONE, 0.0f },
             },
             // crust
             {
@@ -201,16 +664,16 @@ int main( int argc, char** argv ) {
                 // #i Общая площадь суши планеты Земля 149 млн кв. км.
                 // #i Размер муравья Dungeon Crawl ~70 см, что в ~70 раз
                 //    больше земного.
-                { pd::CL_WORKER_ANT,  static_cast< float >(2e9 * (150e6 / 10.0) / 70.0) },
-                { pd::CL_NONE, 0.0f },
+                { pnp::CL_WORKER_ANT,  static_cast< real_t >(2e9 * (150e6 / 10.0) / 70.0) },
+                { pnp::CL_NONE, 0.0f },
             },
             // mantle
             {
-                { pd::CL_NONE, 0.0f },
+                { pnp::CL_NONE, 0.0f },
             },
             // core
             {
-                { pd::CL_NONE, 0.0f },
+                { pnp::CL_NONE, 0.0f },
             }
         }
 #endif
@@ -220,25 +683,20 @@ int main( int argc, char** argv ) {
 
     topology.aboutPlanet = aboutPlanet;
 
-    // @test
-    const auto& testC  = topology.aboutPlanet.component;
-    const auto& testT  = topology.aboutPlanet.temperature;
-    const auto& testST = topology.aboutPlanet.surfaceTemperature;
-    const auto& testR  = topology.aboutPlanet.rainfall;
-    const auto& testD  = topology.aboutPlanet.drainage;
-    const auto& testA  = topology.aboutPlanet.landscape;
-    const auto& testL  = topology.aboutPlanet.living;
-
     /* - Память выделена в конструкторе. Инициализация пройдёт при вызове init().
     //topology.aboutComponent = aboutComponent;
-    std::memcpy( topology.aboutComponent,  pd::aboutComponent,  sizeof( pd::aboutComponent ) );
+    std::memcpy( topology.aboutComponent,  pnp::aboutComponent,  sizeof( pnp::aboutComponent ) );
     topology.component = component;    
     //topology.aboutLiving = aboutLiving;
-    std::memcpy( topology.aboutLiving,  pd::aboutLiving,  sizeof( pd::aboutLiving ) );
+    std::memcpy( topology.aboutLiving,  pnp::aboutLiving,  sizeof( pnp::aboutLiving ) );
     topology.living = living;
     */
 
-    pe::Engine  engine( &planet );
+    // будем считать и день, и ночь
+    // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
+    //   слушатель событий другим движкам.
+    pep::Engine::Ptr  enginePlanet( new pep::Engine( HALF_DAY ) );
+    heapEngine->planet.insert( enginePlanet );
 
 
 #if 0
@@ -255,9 +713,9 @@ int main( int argc, char** argv ) {
             //   - по ячейкам планеты
             //   - по ячейкам атмосферы
             // # Область планеты вне атмосферы содержит вакуум (CC_VACUUM)
-            const float scale =
-                aboutPlanet.sizeArea / static_cast< float >( portulan::GRID_SX );
-            const float d = c.distance< float >() * scale;
+            const real_t scale =
+                aboutPlanet.sizeArea / static_cast< real_t >( portulan::GRID_SX );
+            const real_t d = c.distance< real_t >() * scale;
 
             const auto fnFill = [ &cc ] ( const componentAll_t& ca ) -> void {
                 using namespace portulan::planet;
@@ -529,7 +987,7 @@ int main( int argc, char** argv ) {
                 t = -t;
             }
             */
-            const size_t dist = static_cast< size_t >( c.distance< float >() + 0.5f );
+            const size_t dist = static_cast< size_t >( c.distance< real_t >() + 0.5f );
             // табличная функция температуры в зависимости от расстояния до центра планеты,
             // градусы Цельсия
             static const size_t NC = 23;
@@ -595,24 +1053,33 @@ int main( int argc, char** argv ) {
 
 
 
-    // Инициализируем движок планеты
+    // инициализируем движок планеты
     std::cout << std::endl;
-    engine.init();
+    enginePlanet->incarnate( &planet );
+    enginePlanet->init();
 
 
-    // Покажем результат
-    namespace pio = portulan::io::world::dungeoncrawl::planet::l0;
-    pio::TextVisual::option_t  o;
+    // подписываем движок планеты на события от звёздной системы
+    ess->addListenerStarSystem( enginePlanet );
+
+
+    // подписываем движок звёздной системы на события от планеты
+    enginePlanet->addListenerPlanet( ess );
+
+
+
+    // покажем результат
+    pniop::TextVisual::option_t  o;
 #if 0
     o[ "only" ] = ".aboutPlanet";
 #endif
 
-    pio::TextVisual  visual( std::cout, o );
+    pniop::TextVisual  visual( std::cout, o );
     visual << "\n\n" << planet;
     
 
     // Сделаем снимок топологии
-    pio::SnapshotVTK  snapshot( &planet );
+    pniop::SnapshotVTK  snapshot( &planet );
 #if defined COMPONENT_SNAPSHOT_VISUALTEST && defined COMPONENT_DUNGEONCRAWL_PORTE
     snapshot.component();
 #endif
@@ -638,9 +1105,8 @@ int main( int argc, char** argv ) {
     snapshot.living();
 #endif
 
-    // @todo std::cout << std::endl << "Нажимаем 'Enter' для изменения планеты..." << std::endl << std::endl;
 
-
+#if 0
     const int PULSE = 1;
     int age = 0;
     while ( true ) {
@@ -652,9 +1118,9 @@ int main( int argc, char** argv ) {
 
         // одинаково работают оба варианта
 #if 1
-        engine << PULSE;
+        *engine << PULSE;
 #else
-        engine( PULSE );
+        *engine( PULSE );
 #endif
 
         age += PULSE;
@@ -662,299 +1128,8 @@ int main( int argc, char** argv ) {
         visual << planet;
 
     } // while
-
-
-} // Планета
 #endif
 
-
-
-
-
-// Звёздная система
-// @todo fine В звёздной системе работать с двойной точностью.
-//       NVIDIA 8800GTS работает только с float.
-#if 1
-{
-    namespace pd = portulan::world::dungeoncrawl::starsystem::l0;
-    namespace pe = porte::world::dungeoncrawl::starsystem::l0;
-
-    typedef pd::Portulan  starSystem_t;
-    starSystem_t starSystem;
-    pd::topology_t& topology = starSystem.topology().topology();
-
-    static const pd::aboutStarSystem_t aboutStarSystem = {
-        // size
-        // ~ Размер ~ 10000 а.е. ~ 1.5e12 км
-        { 1.5e15, 1.5e15, 1.5e15 }
-    };
-
-    topology.aboutStarSystem = aboutStarSystem;
-
-
-    pd::bodyContent_t bodyContent = {};
-    size_t n = 0;
-
-#if 1
-    // Звезда I
-    // @source http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-    {
-        static const pd::aboutStar_t star = {
-            // mass
-            1.9891e30,
-            // radius
-            6.9551e8,
-            // temperature,
-            1.5e6,
-            // coord
-            { 0, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 0, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_STAR;
-        b.content.star = star;
-        ++n;
-    }
 #endif
 
-#if 0
-    // Звезда II
-    {
-        static const pd::aboutStar_t star = {
-            // mass
-            1.9891e30,
-            // radius
-            6.9551e8,
-            // temperature,
-            1.5e6,
-            // coord
-            { -6.9551e8 * 20, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 50000, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_STAR;
-        b.content.star = star;
-        ++n;
-    }
-#endif
-
-#if 0
-    // Звезда III
-    {
-        static const pd::aboutStar_t star = {
-            // mass
-            1.9891e30,
-            // radius
-            6.9551e8,
-            // temperature,
-            1.5e6,
-            // coord
-            { 6.9551e8 * 20, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, -50000, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_STAR;
-        b.content.star = star;
-        ++n;
-    }
-#endif
-
-
-    // Меркурий
-    // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%80%D0%BA%D1%83%D1%80%D0%B8%D0%B9_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
-    {
-        static const pd::aboutPlanet_t planet = {
-            // mass
-            3.33022e23,
-            // radius
-            2.4397e6,
-            // coord
-            { 0.4600121e11, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 47870, 0 }
-            //{ 0, 0, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_PLANET;
-        b.content.planet = planet;
-        ++n;
-    }
-
-    // Венера
-    // @source http://ru.wikipedia.org/wiki/%D0%92%D0%B5%D0%BD%D0%B5%D1%80%D0%B0_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
-    {
-        static const pd::aboutPlanet_t planet = {
-            // mass
-            4.8685e24,
-            // radius
-            6.0518e6,
-            // coord
-            { 1.07476259e11, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 35020, 0 }
-            //{ 0, 0, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_PLANET;
-        b.content.planet = planet;
-        ++n;
-    }
-
-    // Земля
-    // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BB%D1%8F
-    {
-        static const pd::aboutPlanet_t planet = {
-            // mass
-            5.9736e24,
-            // radius
-            6.3568e6,
-            // coord
-            { 1.49598261e11, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 29783, 0 }
-            //{ 0, 0, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_PLANET;
-        b.content.planet = planet;
-        ++n;
-    }
-
-    // Марс
-    // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D1%81_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
-    {
-        static const pd::aboutPlanet_t planet = {
-            // mass
-            0.64185e24,
-            // radius
-            3.3895e6,
-            // coord
-            { 2.06655e11, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 24130, 0 }
-            //{ 0, 0, 0 }
-        };
-        auto& b = bodyContent[ n ];
-        b.group = pd::GE_PLANET;
-        b.content.planet = planet;
-        ++n;
-    }
-
-    // копируем заполненную выше структуру
-    std::copy_n( bodyContent, pd::BODY_COUNT, topology.body.content );
-
-
-    // @test
-    std::cout << "bodyContent" <<
-        "  " << pd::BODY_COUNT << "u" <<
-        "  ~ " << sizeof( pd::bodyContent_t ) / 1024 << "Кб" <<
-    std::endl << std::endl;
-
-
-    // протяжённость мира - удвоенная самая далёкая координата (звезда -
-    // центр координат)
-    static double EXTENT = 2.06655e11 * 2.0;
-
-
-    // Инициализируем движок звёздной системы
-    static const double MINUTE    = 60.0;
-    static const double HOUR      = MINUTE * 60.0;
-    static const double EARTH_DAY = HOUR * 24.0;
-    static const double timestep = HOUR;
-    pe::Engine  engine( &starSystem, EXTENT, timestep );
-
-
-    // Покажем результат
-    namespace pio = portulan::io::world::dungeoncrawl::starsystem::l0;
-
-    pio::VolumeVTKVisual::option_t  o;
-    o[ "extent" ] = EXTENT;
-    o[ "planet-size-point" ] = 3;
-    o[ "star-size-point" ] = 10;
-    o[ "auto-scale-camera" ] = false;
-    o[ "without-clear" ] = false;
-
-    pio::VolumeVTKVisual  visual( o );
-    visual << starSystem;
-    
-
-    static const int PULSE = 1;
-
-/* - Заменено. См. ниже.
-    int age = 0;
-    while ( true ) {
-        //std::cout << "Возраст " << age << std::endl;
-
-#if 0
-{
-        size_t n = 1;
-        const auto& bc = starSystem.topology().topology().body.content[ 1 ];
-        const auto& pc = bc.content.planet;
-        std::cout << "  body " << n <<
-            "  g " << bc.group <<
-            "  " << typelib::vector_t( bc.content.planet.coord ) <<
-#if 1
-            "  " << pc.test[0] <<
-             " " << pc.test[1] <<
-             " " << pc.test[2] <<
-             " " << pc.test[3] <<
-             " " << pc.test[4] <<
-#endif
-        std::endl;
 }
-#endif
-
-        // одинаково работают оба варианта
-#if 1
-        engine << PULSE;
-#else
-        engine( PULSE );
-#endif
-
-        age += PULSE;
-
-        visual << starSystem;
-
-        // @test
-        if (age > PULSE * 100) {
-            //break;
-        }
-
-    } // while
-*/
-
-
-
-    visual.wait( &engine, PULSE );
-
-
-} // Звёздная система
-#endif
-
-
-
-    EZLOGGERVLSTREAM( axter::log_always ) << "Porte / process-visualtest -> END" << std::endl;
-
-    std::cout << std::endl << "^" << std::endl;
-    //std::cin.ignore();
-
-    return 0;
-
-} // main()

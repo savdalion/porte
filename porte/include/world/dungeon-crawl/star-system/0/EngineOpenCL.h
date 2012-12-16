@@ -26,14 +26,14 @@ namespace porte {
                 namespace l0 {
 
 
-namespace pd = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
 /**
 * Движок для моделирования звёздной системы.
 */
 class EngineOpenCL :
-    public EngineWithoutBooster< pd::Portulan >
+    public EngineWithoutBooster< pns::Portulan >
 {
 public:
     typedef std::shared_ptr< EngineOpenCL >  Ptr;
@@ -42,7 +42,7 @@ public:
 
 
 public:
-    EngineOpenCL( portulan_t*, pd::real_t timestep );
+    EngineOpenCL( portulan_t*, pns::real_t timestep );
 
     virtual ~EngineOpenCL();
 
@@ -85,9 +85,11 @@ private:
 private:
     std::map< std::string, cl_kernel >  kernelCL;
 
-    pd::real_t mTimestep;
+    pns::real_t mTimestep;
 
-    const size_t memsizeBody;
+    const size_t memsizeAsteroid;
+    const size_t memsizePlanet;
+    const size_t memsizeStar;
     const size_t memsizeStarSystem;
 
 

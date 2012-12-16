@@ -50,8 +50,6 @@ inline void Engine::init() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
 inline void Engine::initComponent() {
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Определяем состав планеты ..";
 #endif
@@ -68,7 +66,7 @@ inline void Engine::initComponent() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::COMPONENT_GRID;
+    static const size_t grid = pnp::COMPONENT_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -125,8 +123,6 @@ inline void Engine::initComponent() {
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void Engine::initTemperature() {
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Разогреваем планету ..";
 #endif
@@ -143,7 +139,7 @@ inline void Engine::initTemperature() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::TEMPERATURE_GRID;
+    static const size_t grid = pnp::TEMPERATURE_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -152,8 +148,8 @@ inline void Engine::initTemperature() {
     const cl_kernel kernelInit = kernelCL[ "set/temperature/init" ];
 
     /* @test
-    pd::test_t test;
-    const size_t memsizeTest = sizeof( pd::test_t );
+    pnp::test_t test;
+    const size_t memsizeTest = sizeof( pnp::test_t );
     const cl_mem testCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
@@ -227,8 +223,6 @@ inline void Engine::initTemperature() {
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void Engine::initSurfaceTemperature() {
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Рассчитываем температуру поверхности ..";
 #endif
@@ -244,7 +238,7 @@ inline void Engine::initSurfaceTemperature() {
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    static const size_t grid = pd::SURFACE_TEMPERATURE_GRID;
+    static const size_t grid = pnp::SURFACE_TEMPERATURE_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -301,8 +295,6 @@ inline void Engine::initSurfaceTemperature() {
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
 inline void Engine::initRainfall() {
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Оцениваем атмосферные осадки ..";
 #endif
@@ -319,7 +311,7 @@ inline void Engine::initRainfall() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::RAINFALL_GRID;
+    static const size_t grid = pnp::RAINFALL_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -380,8 +372,6 @@ inline void Engine::initRainfall() {
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
 inline void Engine::initDrainage() {
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Генерируем дренаж ..";
 #endif
@@ -398,7 +388,7 @@ inline void Engine::initDrainage() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::DRAINAGE_GRID;
+    static const size_t grid = pnp::DRAINAGE_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -459,8 +449,6 @@ inline void Engine::initDrainage() {
 
 #ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
 inline void Engine::initLandscape() {
-
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
 
 #ifdef _DEBUG
     std::cout << "Задаём ландшафты ..";
@@ -533,7 +521,7 @@ inline void Engine::initLandscape() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::LANDSCAPE_GRID;
+    static const size_t grid = pnp::LANDSCAPE_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -647,8 +635,6 @@ inline void Engine::initLandscape() {
 #ifdef BIOME_DUNGEONCRAWL_PORTE
 inline void Engine::initBiome() {
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Распознаём биомы ..";
 #endif
@@ -720,7 +706,7 @@ inline void Engine::initBiome() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::BIOME_GRID;
+    static const size_t grid = pnp::BIOME_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -804,8 +790,6 @@ inline void Engine::initBiome() {
 inline void Engine::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponent().
 
-    namespace pd = portulan::world::dungeoncrawl::planet::l0;
-
 #ifdef _DEBUG
     std::cout << "Населяем планету ..";
 #endif
@@ -844,7 +828,7 @@ inline void Engine::initLiving() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 
-    static const size_t grid = pd::LIVING_GRID;
+    static const size_t grid = pnp::LIVING_GRID;
 
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
@@ -894,10 +878,10 @@ inline void Engine::initLiving() {
 
     // На сколько мы приблизились к расселению заданного кол-ва особей.
     // подготавливаем проверочный аргумент
-    pd::zoneLivingCountComplete_t zoneCountComplete;
+    pnp::zoneLivingCountComplete_t zoneCountComplete;
     static const size_t memsizeZoneCountComplete =
-        sizeof( pd::zoneOneLivingCountComplete_t ) *
-        pd::LIVING_COUNT * pd::LIFE_CYCLE_COUNT;
+        sizeof( pnp::zoneOneLivingCountComplete_t ) *
+        pnp::LIVING_COUNT * pnp::LIFE_CYCLE_COUNT;
     const cl_mem zoneCountCompleteCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
@@ -912,8 +896,8 @@ inline void Engine::initLiving() {
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     // # Заселять мир будем исключительно взрослыми особями.
-    const pd::LIFE_CYCLE lifeCycle = pd::LC_ADULT;
-    errorCL = clSetKernelArg( kernel, 3, sizeof( pd::LIFE_CYCLE ), &lifeCycle );
+    const pnp::LIFE_CYCLE lifeCycle = pnp::LC_ADULT;
+    errorCL = clSetKernelArg( kernel, 3, sizeof( pnp::LIFE_CYCLE ), &lifeCycle );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
     errorCL = clSetKernelArg( kernel, 4, sizeof( const cl_mem ), &componentCL );
@@ -933,26 +917,26 @@ inline void Engine::initLiving() {
 
     // желаемое кол-во особей
     float allZoneDesireCount = 0.0f;
-    pd::zoneLivingCount_t zoneDesireCount = {};
+    pnp::zoneLivingCount_t zoneDesireCount = {};
     /* - Проще копировать код. См. ниже.
     const auto fnDesireCount = [ &zoneDesireCount, lifeCycle ] (
         float& zolValue,
-        const pd::zoneLiving_t& zl
+        const pnp::zoneLiving_t& zl
     ) -> void {
-        const pd::CODE_LIVING code = zl.code;
-        if (code != pd::CL_NONE) {
+        const pnp::CODE_LIVING code = zl.code;
+        if (code != pnp::CL_NONE) {
             const float q = zl.count;
             zolValue += q;
             zoneDesireCount[ code ][ lifeCycle ].all += q;
         }
     };
     */
-    for (size_t k = 0; k < pd::LIVING_CELL; ++k) {
+    for (size_t k = 0; k < pnp::LIVING_CELL; ++k) {
         // space
         {
             const auto& zk = al.space[k];
-            const pd::CODE_LIVING code = zk.code;
-            if (code != pd::CL_NONE) {
+            const pnp::CODE_LIVING code = zk.code;
+            if (code != pnp::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].space += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -961,8 +945,8 @@ inline void Engine::initLiving() {
         // atmosphere
         {
             const auto& zk = al.atmosphere[k];
-            const pd::CODE_LIVING code = zk.code;
-            if (code != pd::CL_NONE) {
+            const pnp::CODE_LIVING code = zk.code;
+            if (code != pnp::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].atmosphere += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -971,8 +955,8 @@ inline void Engine::initLiving() {
         // crust
         {
             const auto& zk = al.crust[k];
-            const pd::CODE_LIVING code = zk.code;
-            if (code != pd::CL_NONE) {
+            const pnp::CODE_LIVING code = zk.code;
+            if (code != pnp::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].crust += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -981,8 +965,8 @@ inline void Engine::initLiving() {
         // mantle
         {
             const auto& zk = al.mantle[k];
-            const pd::CODE_LIVING code = zk.code;
-            if (code != pd::CL_NONE) {
+            const pnp::CODE_LIVING code = zk.code;
+            if (code != pnp::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].mantle += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -991,8 +975,8 @@ inline void Engine::initLiving() {
         // core
         {
             const auto& zk = al.core[k];
-            const pd::CODE_LIVING code = zk.code;
-            if (code != pd::CL_NONE) {
+            const pnp::CODE_LIVING code = zk.code;
+            if (code != pnp::CL_NONE) {
                 zoneDesireCount[ code ][ lifeCycle ].core += zk.count;
                 zoneDesireCount[ code ][ lifeCycle ].all += zk.count;
                 allZoneDesireCount += zk.count;
@@ -1028,19 +1012,19 @@ inline void Engine::initLiving() {
 
         // подсчитываем кол-ва
         float allZoneCount = 0.0f;
-        pd::zoneLivingCount_t zoneCount = {};
+        pnp::zoneLivingCount_t zoneCount = {};
         // пробежим по всем ячейкам
-        static const size_t LG = pd::LIVING_GRID * pd::LIVING_GRID * pd::LIVING_GRID;
+        static const size_t LG = pnp::LIVING_GRID * pnp::LIVING_GRID * pnp::LIVING_GRID;
         for (size_t i = 0; i < LG; ++i) {
             // в каждой ячейке содержится не более LIVING_CELL особей
-            for (size_t k = 0; k < pd::LIVING_CELL; ++k) {
+            for (size_t k = 0; k < pnp::LIVING_CELL; ++k) {
                 // информация об особях сгруппирована по LIFE_CYCLE
-                for (size_t l = static_cast< size_t >( pd::LC_EMBRYO);
-                     l < static_cast< size_t >( pd::LC_last );  ++l
+                for (size_t l = static_cast< size_t >( pnp::LC_EMBRYO);
+                     l < static_cast< size_t >( pnp::LC_last );  ++l
                 ) {
-                    const pd::portionLiving_t& p = tp.living.content[i][k][l];
-                    const pd::CODE_LIVING code = p.code;
-                    assert( ((code >= pd::CL_NONE) && (code < pd::CL_last))
+                    const pnp::portionLiving_t& p = tp.living.content[i][k][l];
+                    const pnp::CODE_LIVING code = p.code;
+                    assert( ((code >= pnp::CL_NONE) && (code < pnp::CL_last))
                         && "Код особи не распознан. Вероятно, ошибка при инициализации матрицы." );
                     // суммируем (инициализация была выше)
                     zoneCount[ code ][ l ].all += p.count;
@@ -1052,9 +1036,9 @@ inline void Engine::initLiving() {
         // кол-во особей должно быть *близко* к желаемому
         std::memset( zoneCountComplete, false, memsizeZoneCountComplete );
         bool allComplete = true;
-        for (size_t code = 0; code < pd::LIVING_COUNT; ++code) {
-            for (size_t l = static_cast< size_t >( pd::LC_EMBRYO);
-                 l < static_cast< size_t >( pd::LC_last );  ++l
+        for (size_t code = 0; code < pnp::LIVING_COUNT; ++code) {
+            for (size_t l = static_cast< size_t >( pnp::LC_EMBRYO);
+                 l < static_cast< size_t >( pnp::LC_last );  ++l
             ) {
                 const float desireCount = zoneDesireCount[ code ][ l ].all;
                 const float count       = zoneCount[ code ][ l ].all;

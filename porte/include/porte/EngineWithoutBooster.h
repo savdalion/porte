@@ -17,11 +17,12 @@ namespace porte {
 * Общий класс для создания движков для "оживления" портуланов (3D-карт)
 * без использования промежуточных booster-структур.
 *
-* @template SX, SY, SZ Размеры Portulan, с которым работает движок.
+* @template P  Портулан, с которым работает движок.
+* @template R  С какой точностью представлены числа.
 *
 * @see Проект "portulan" > https://github.com/savdalion/portulan
 */
-template< class P >
+template< class P, typename R >
 class EngineWithoutBooster {
 public:
     /**
@@ -31,21 +32,75 @@ public:
     typedef std::unique_ptr< EngineWithoutBooster >  UPtr;
 
 
-    /**
-    * Тип объекта, с которым работает движок.
-    */
     typedef P  portulan_t;
+    typedef R  real_t;
 
 
 
 
 public:
-    inline EngineWithoutBooster( portulan_t* p ) :
-        mPortulan( p )
+    /**
+    * 
+    */
+    inline EngineWithoutBooster( R timestep ) :
+        mPortulan( nullptr ),
+        mPulse( 0 ),
+        mTimestep( timestep ),
+        mTimelive( 0 )
     {
-        assert( p && "Карта не указана (портулан не указан)." );
+        assert( (mTimestep >= 1.0)
+            && "Шаг времени не может быть меньше секунды." );
     }
 
+
+
+    inline EngineWithoutBooster( P* p, R timestep ) :
+        mPortulan( p ),
+        mTimestep( timestep )
+    {
+        assert( p && "Карта не указана (портулан не указан)." );
+        assert( (mTimestep >= 1.0)
+            && "Шаг времени не может быть меньше секунды." );
+    }
+
+
+
+
+    /**
+    * Воплощает звёздную систему в движке.
+    * 
+    * @param extentPortulan Протяжённость портулана. Если не указана,
+    *        вычисляется с помощью extent().
+    */
+    inline void incarnate( portulan_t* p, real_t extentPortulan = 0 ) {
+        assert( p && "Портулан не указан." );
+        assert( (extentPortulan >= 0)
+            && "Протяжённость портулана не может быть меньше 0." );
+
+        mPortulan = p;
+        mExtent = typelib::empty( extentPortulan ) ? extent() : extentPortulan;
+    }
+
+
+
+    inline real_t timestep() const {
+        return mTimestep;
+    }
+
+
+
+    inline void timestep( real_t timestep ) {
+        mTimestep = timestep;
+    }
+
+
+
+    /**
+    * @return Протяжённость портулана.
+    *         Метод должен вычислить протяжённость, если она ещё
+    *         не указана в 'mExtent'.
+    */
+    virtual real_t extent() = 0;
 
 
 
@@ -101,12 +156,37 @@ protected:
 
 
 
+
 protected:
     /**
     * Портулан, с которым работает движок.
     */
     portulan_t* mPortulan;
 
+    /**
+    * Сколько пульсов прожила система.
+    */
+    long mPulse;
+
+    /**
+    * Время, которое проходит за 1 пульс.
+    * Указывается в секундах.
+    */
+    real_t mTimestep;
+
+    /**
+    * Сколько времени прожила система.
+    * Если шаг времени не меняется движком, время жизни =
+    * = шаг * количество прожитых пульсов.
+    */
+    real_t mTimelive;
+
+    /**
+    * Протяжённость портулана.
+    *
+    * @see extent()
+    */
+    real_t mExtent;
 };
 
 
