@@ -31,7 +31,7 @@ namespace pep = porte::world::dungeoncrawl::planet::l0;
 */
 class EngineCPU :
     public EngineWithoutBooster< pns::Portulan, pns::real_t >,
-    public ListenerStarSystem
+    public ListenerStarSystem< EngineCPU >
 {
 public:
     typedef std::shared_ptr< EngineCPU >  Ptr;

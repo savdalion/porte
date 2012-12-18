@@ -91,6 +91,10 @@ inline Engine::Engine(
 
     // Установим зерно для генератора случ. чисел
     randomCore.seed( randomSeed );
+
+
+    // # Отдаём ссылку на себя слушателю.
+    ListenerPlanet::engine = this;
 }
 
 
@@ -163,13 +167,30 @@ inline Engine::real_t Engine::extent() {
 
 
 inline void Engine::pulse( int n ) {
-    assert( false && "Не реализовано." );
-
-    // @todo fine Создать отдельный класс Pulse.
-    mPulse += n;
-    mTimelive += mTimestep * n;
+    // выполняем 'n' циклов
+    for (int i = 0; i < n; ++i) {
+        pulse();
+    }
 }
 
+
+
+
+
+
+inline void Engine::pulse() {
+
+    // @todo ...
+
+
+    // @todo fine Создать отдельный класс Pulse.
+    ++mPulselive;
+    mTimelive += mTimestep;
+
+
+    // пульс пройден
+    notifyAfterPulse();
+}
 
 
 
@@ -287,6 +308,7 @@ inline void Engine::compileCLKernel(
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/rainfall.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/drainage.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/landscape.h" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/illuminance.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/biome.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/biome-set.h" )
         ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/living.h" )
@@ -405,6 +427,7 @@ inline std::string Engine::commonConstantCLKernel() {
     typedef typelib::CubeSMC3D< pnp::RAINFALL_GRID >     rainfallSMC_t;
     typedef typelib::CubeSMC3D< pnp::DRAINAGE_GRID >     drainageSMC_t;
     typedef typelib::CubeSMC3D< pnp::LANDSCAPE_GRID >    landscapeSMC_t;
+    typedef typelib::CubeSMC3D< pnp::ILLUMINANCE_GRID >  illuminanceSMC_t;
     typedef typelib::CubeSMC3D< pnp::BIOME_GRID >        biomeSMC_t;
     typedef typelib::CubeSMC3D< pnp::LIVING_GRID >       livingSMC_t;
 
@@ -445,6 +468,12 @@ inline std::string Engine::commonConstantCLKernel() {
         << " -D MIN_COORD_LANDSCAPE_GRID=" << landscapeSMC_t::minCoord().x
         << " -D MAX_COORD_LANDSCAPE_GRID=" << landscapeSMC_t::maxCoord().x
         << " -D LANDSCAPE_CELL=" << pnp::LANDSCAPE_CELL
+
+        // illuminance
+        << " -D ILLUMINANCE_GRID=" << pnp::ILLUMINANCE_GRID
+        << " -D MIN_COORD_ILLUMINANCE_GRID=" << illuminanceSMC_t::minCoord().x
+        << " -D MAX_COORD_ILLUMINANCE_GRID=" << illuminanceSMC_t::maxCoord().x
+        << " -D ILLUMINANCE_STAR_COUNT=" << pnp::ILLUMINANCE_STAR_COUNT
 
         // biome
         << " -D BIOME_GRID=" << pnp::BIOME_GRID

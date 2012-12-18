@@ -1,13 +1,13 @@
 #pragma once
 
 #include "../../configure.h"
+#include "AEngine.h"
 #include <typelib/typelib.h>
 #include <portulan/portulan.h>
 #include <limits>
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
-
 
 
 namespace porte {
@@ -23,7 +23,7 @@ namespace porte {
 * @see Проект "portulan" > https://github.com/savdalion/portulan
 */
 template< class P, typename R >
-class EngineWithoutBooster {
+class EngineWithoutBooster : public AEngine {
 public:
     /**
     * Ссылки.
@@ -39,12 +39,9 @@ public:
 
 
 public:
-    /**
-    * 
-    */
     inline EngineWithoutBooster( R timestep ) :
         mPortulan( nullptr ),
-        mPulse( 0 ),
+        mPulselive( 0 ),
         mTimestep( timestep ),
         mTimelive( 0 )
     {
@@ -83,6 +80,12 @@ public:
 
 
 
+    inline long pulselive() const {
+        return mPulselive;
+    }
+
+
+
     inline real_t timestep() const {
         return mTimestep;
     }
@@ -91,6 +94,12 @@ public:
 
     inline void timestep( real_t timestep ) {
         mTimestep = timestep;
+    }
+
+
+
+    inline real_t timelive() const {
+        return mTimelive;
     }
 
 
@@ -166,7 +175,7 @@ protected:
     /**
     * Сколько пульсов прожила система.
     */
-    long mPulse;
+    long mPulselive;
 
     /**
     * Время, которое проходит за 1 пульс.

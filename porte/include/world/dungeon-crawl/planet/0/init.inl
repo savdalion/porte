@@ -34,6 +34,10 @@ inline void Engine::init() {
     initLandscape();
 #endif
 
+#ifdef ILLUMINANCE_DUNGEONCRAWL_PORTE
+    initIlluminance();
+#endif
+
 #ifdef BIOME_DUNGEONCRAWL_PORTE
     initBiome();
 #endif
@@ -628,6 +632,80 @@ inline void Engine::initLandscape() {
 #endif
 }
 #endif
+
+
+
+
+
+#ifdef ILLUMINANCE_DUNGEONCRAWL_PORTE
+inline void Engine::initIlluminance() {
+
+#ifdef _DEBUG
+    std::cout << "Освещаем планету ..";
+#endif
+
+    const cl_mem illuminanceCL = clCreateBuffer(
+        gpuContextCL,
+        // доп. память не выделяется
+        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+        memsizeIlluminance,
+        // #! Если память выделена динамически, обращаемся к содержанию.
+        mPortulan->topology().topology().illuminance.content,
+        &errorCL
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+
+    static const size_t grid = pnp::ILLUMINANCE_GRID;
+
+    static const size_t GRID_WORK_DIM = 3;
+    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
+
+    // Задаём освещённость планетной области
+    const cl_kernel kernelInit = kernelCL[ "set/illuminance/init" ];
+
+    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &illuminanceCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernelInit,
+        GRID_WORK_DIM,
+        nullptr,
+        GRID_GLOBAL_WORK_SIZE,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // синхронизация
+    errorCL = clFinish( commandQueueCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+    // результат
+    errorCL = clEnqueueReadBuffer(
+        commandQueueCL,
+        illuminanceCL,
+        CL_TRUE,
+        0,
+        memsizeIlluminance,
+        mPortulan->topology().topology().illuminance.content,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+
+    clReleaseMemObject( illuminanceCL );
+
+#ifdef _DEBUG
+    std::cout << " ОК" << std::endl;
+#endif
+}
+#endif
+
 
 
 

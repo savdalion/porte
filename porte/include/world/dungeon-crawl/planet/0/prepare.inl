@@ -34,6 +34,10 @@ inline void Engine::prepare() {
     prepareLandscape();
 #endif
 
+#ifdef ILLUMINANCE_DUNGEONCRAWL_PORTE
+    prepareIlluminance();
+#endif
+
 #ifdef BIOME_DUNGEONCRAWL_PORTE
     prepareBiome();
 #endif
@@ -172,6 +176,27 @@ inline void Engine::prepareLandscape() {
 
     static const size_t grid = pnp::LANDSCAPE_GRID;
     
+    compileCLKernel< grid >( kernelKeys, includeHCL );
+}
+#endif
+
+
+
+
+
+
+#ifdef ILLUMINANCE_DUNGEONCRAWL_PORTE
+inline void Engine::prepareIlluminance() {
+
+    static const std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "set/illuminance/init" )
+    ;
+    static const std::vector< std::string > includeHCL = boost::assign::list_of
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/utils/illuminance.hcl" )
+    ;
+
+    static const size_t grid = pnp::ILLUMINANCE_GRID;
+
     compileCLKernel< grid >( kernelKeys, includeHCL );
 }
 #endif

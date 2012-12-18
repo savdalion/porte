@@ -25,7 +25,13 @@ public:
     typedef std::shared_ptr< Listener >  Ptr;
 
 
-    // @todo Добавить события.
+public:
+    /**
+    * Завершился 1 пульс планеты.
+    */
+    virtual void afterPulse( AEngine::Ptr whose ) {}
+
+
 
     // @todo Добавить события на планете, которые могут отразиться на звёздной
     //       системе.

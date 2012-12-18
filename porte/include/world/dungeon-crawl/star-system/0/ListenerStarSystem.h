@@ -1,8 +1,8 @@
 #pragma once
 
-#include <portulan/portulan.h>
 #include "Listener.h"
 #include "../../planet/0/Listener.h"
+#include <portulan/portulan.h>
 
 
 namespace porte {
@@ -13,6 +13,7 @@ namespace porte {
 
 
 namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
+namespace pnp = portulan::world::dungeoncrawl::planet::l0;
 namespace pep = porte::world::dungeoncrawl::planet::l0;
 
 
@@ -22,17 +23,27 @@ namespace pep = porte::world::dungeoncrawl::planet::l0;
 *
 * @see #Соглашения в starsystem::Listener.
 */
+template< class E >
 class ListenerStarSystem :
     // слушаем звёздную систему
     public Listener,
     // слушаем планету
     public pep::Listener
 {
+protected:
+    inline ListenerStarSystem() :
+        engine( nullptr )
+    {
+    }
+
+
+
+
 public:
     /**
     * # Просто заботимся, чтобы слушатели получили это событие.
     */
-    virtual void afterPulse( pns::real_t timelive, const pns::topology_t& );
+    void notifyAfterPulse();
 
 
 
@@ -40,7 +51,7 @@ public:
     /**
     * # Звезда поглощает астероид.
     */
-    virtual void afterAsteroidCollisionStar(
+    void notifyAfterAsteroidCollisionStar(
         pns::asteroidContent_t,  size_t ia,
         pns::starContent_t,      size_t ib,
         pns::deltaElement_t&
@@ -55,6 +66,12 @@ public:
     virtual void afterChangeCountAsteroid(
         size_t current,  int delta
     );
+
+
+
+
+protected:
+    E* engine;
 };
 
 

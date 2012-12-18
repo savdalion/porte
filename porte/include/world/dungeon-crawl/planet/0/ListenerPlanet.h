@@ -1,8 +1,8 @@
 #pragma once
 
-#include <portulan/portulan.h>
 #include "Listener.h"
 #include "../../star-system/0/Listener.h"
+#include <portulan/portulan.h>
 
 
 namespace porte {
@@ -14,7 +14,7 @@ namespace porte {
 
 namespace pnp = portulan::world::dungeoncrawl::planet::l0;
 namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
-namespace pes = porte::world::dungeoncrawl::starsystem::l0;
+namespace pes = ::porte::world::dungeoncrawl::starsystem::l0;
 
 
 /**
@@ -23,18 +23,47 @@ namespace pes = porte::world::dungeoncrawl::starsystem::l0;
 *
 * @see #Соглашения в starsystem::Listener.
 */
+
+template< class E >
 class ListenerPlanet :
     // слушаем планету
     public Listener,
     // слушаем звёздную систему
     public pes::Listener
 {
+protected:
+    inline ListenerPlanet() :
+        engine( nullptr )
+    {
+    }
+
+
+
+
+public:
+    /**
+    * # Просто заботимся, чтобы слушатели получили это событие.
+    */
+    void notifyAfterPulse();
+
+
+
+
+    // События от звёздной системы //
+
+
     /**
     * @virtual pes::Listener
     *
     * # День сменяется ночью.
     */
-    virtual void afterPulse( pns::real_t timelive, const pns::topology_t& );
+    virtual void afterPulse( AEngine::Ptr whose );
+
+
+
+
+protected:
+    E* engine;
 };
 
 

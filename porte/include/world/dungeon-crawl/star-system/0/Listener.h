@@ -14,6 +14,7 @@ namespace porte {
 namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
+
 /**
 * Слушатель событий движка звёздной системы.
 * Научен хранить других слушателей.
@@ -45,10 +46,8 @@ public:
 public:
     /**
     * Завершился 1 пульс звёздной системы.
-    *
-    * @param Топология звёздной системы.
     */
-    virtual void afterPulse( pns::real_t timelive, const pns::topology_t& ) {}
+    virtual void afterPulse( AEngine::Ptr whose ) {}
 
 
 
@@ -59,9 +58,10 @@ public:
     * @param deltaCountAsteroid Счётчик изменения в кол-ве астероидов.
     */
     virtual void afterAsteroidCollisionStar(
+        AEngine::Ptr whose,
         pns::asteroidContent_t,  size_t ia,
         pns::starContent_t,      size_t ib,
-        pns::deltaElement_t&
+        const pns::deltaElement_t&
     ) {}
 
 

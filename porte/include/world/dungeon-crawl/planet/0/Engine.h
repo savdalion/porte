@@ -49,7 +49,7 @@ class Engine :
         pnp::Portulan,
         float
     >,
-    public ListenerPlanet
+    public ListenerPlanet< Engine >
 {
 public:
     /**
@@ -127,6 +127,12 @@ public:
 
 
     /**
+    * Инициализирует сетку освещённости в области планеты.
+    */
+    void initIlluminance();
+
+
+    /**
     * Инициализирует сетку биомов в области планеты.
     */
     void initBiome();
@@ -145,6 +151,7 @@ protected:
     * @virtual EngineWithoutBooster
     */
     virtual void pulse( int n );
+    void pulse();
 
 
 
@@ -161,6 +168,7 @@ private:
     void prepareRainfall();
     void prepareDrainage();
     void prepareLandscape();
+    void prepareIlluminance();
     void prepareBiome();
     void prepareLiving();
 
@@ -219,6 +227,7 @@ private:
     size_t memsizeRainfall;
     size_t memsizeDrainage;
     size_t memsizeLandscape;
+    size_t memsizeIlluminance;
     size_t memsizeBiome;
     size_t memsizeLiving;
 

@@ -8,6 +8,7 @@ namespace porte {
 namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
+
 inline EngineCPU::EngineCPU(
     real_t timestep
 ) :
@@ -26,6 +27,10 @@ inline EngineCPU::EngineCPU(
         }
     };
     mStatistics = S_EMPTY;
+
+
+    // # Отдаём ссылку на себя слушателю.
+    ListenerStarSystem::engine = this;
 }
 
 
@@ -107,12 +112,13 @@ inline void EngineCPU::pulse() {
 
 
     // @todo fine Создать отдельный класс Pulse.
-    ++mPulse;
+    ++mPulselive;
     mTimelive += mTimestep;
 
 
-    // событие - себе
-    afterPulse( mTimelive, topology );
+    // пульс пройден
+    notifyAfterPulse();
+
 
     // просматриваем события движка, информируем слушателей
     notify();
@@ -625,7 +631,7 @@ inline void EngineCPU::notify(
 
             // астероид столкнулся со звездой
             if (event.pi.ge == pns::GE_STAR) {
-                afterAsteroidCollisionStar(
+                notifyAfterAsteroidCollisionStar(
                     asteroid,  currentI,
                     star,      event.pi.ii,
                     delta
@@ -667,6 +673,7 @@ inline void EngineCPU::notify(
     size_t currentI
 ) {
 }
+
 
 
 

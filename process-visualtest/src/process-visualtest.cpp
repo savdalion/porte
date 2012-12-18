@@ -84,6 +84,8 @@ int main( int argc, char** argv ) {
 
 
 // звёздная система
+// @todo fine Заполнить данными из др. звёздных систем >
+//       http://ru.wikipedia.org/wiki/%D0%A1%D0%BF%D0%B8%D1%81%D0%BE%D0%BA_%D1%8D%D0%BA%D0%B7%D0%BE%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82_%D0%B2_%D0%BE%D0%B1%D0%B8%D1%82%D0%B0%D0%B5%D0%BC%D0%BE%D0%B9_%D0%B7%D0%BE%D0%BD%D0%B5
 #if 1
 // @todo fine В звёздной системе работать с двойной точностью.
 //       NVIDIA 8800GTS работает только с real_t.
@@ -140,6 +142,8 @@ int main( int argc, char** argv ) {
             6.9551e8,
             // temperature,
             1.5e6,
+            // luminousIntensity
+            3e27,
             // coord
             { 0, 0, 0 },
             // rotation
@@ -166,6 +170,8 @@ int main( int argc, char** argv ) {
             6.9551e8,
             // temperature,
             1.5e6,
+            // luminousIntensity
+            3e27,
             // coord
             { 0, asteroidOrbit * 1.5, 0 },
             // rotation
@@ -192,6 +198,8 @@ int main( int argc, char** argv ) {
             6.9551e8,
             // temperature,
             1.5e6,
+            // luminousIntensity
+            3e27,
             // coord
             { 0, -asteroidOrbit * 1.5, 0 },
             // rotation
@@ -287,7 +295,11 @@ int main( int argc, char** argv ) {
             // force
             { 0, 0, 0 },
             // velocity
-            { 0, 29783, 0 }
+            { 0, 29783, 0 },
+            // axilTilt
+            23.44,
+            // rotationPeriod
+            0.99726968 * 24 * 60 * 60
         };
         tpc[ countPlanet ] = planet;
         ++countPlanet;
@@ -1060,11 +1072,12 @@ void wrapPlanet(
 
 
     // подписываем движок планеты на события от звёздной системы
-    ess->addListenerStarSystem( enginePlanet );
+    // @todo fine Слишком многословно. Проще?
+    ess->addListenerStarSystem( enginePlanet, ess, enginePlanet );
 
 
     // подписываем движок звёздной системы на события от планеты
-    enginePlanet->addListenerPlanet( ess );
+    enginePlanet->addListenerPlanet( ess, enginePlanet, ess );
 
 
 
@@ -1097,6 +1110,9 @@ void wrapPlanet(
 #endif
 #if defined LANDSCAPE_SNAPSHOT_VISUALTEST && defined LANDSCAPE_DUNGEONCRAWL_PORTE
     snapshot.landscape();
+#endif
+#if defined ILLUMINANCE_SNAPSHOT_VISUALTEST && defined ILLUMINANCE_DUNGEONCRAWL_PORTE
+    snapshot.illuminance();
 #endif
 #if defined BIOME_SNAPSHOT_VISUALTEST && defined BIOME_DUNGEONCRAWL_PORTE
     snapshot.biome();

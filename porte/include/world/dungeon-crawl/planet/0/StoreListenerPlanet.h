@@ -23,8 +23,11 @@ class Listener;
 */
 class StoreListenerPlanet : public StoreListener< Listener > {
 public:
-    inline void addListenerPlanet( const std::shared_ptr< Listener >  lp ) {
-        addListener( lp );
+    inline void addListenerPlanet(
+        const std::shared_ptr< Listener >  lp,
+        AEngine::Ptr whose, AEngine::Ptr who
+    ) {
+        addListener( lp, whose, who );
     }
 
 

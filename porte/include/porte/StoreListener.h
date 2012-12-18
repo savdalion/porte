@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AEngine.h"
 #include <list>
 #include <memory>
 
@@ -18,7 +19,17 @@ class StoreListener {
 public:
     typedef std::shared_ptr< L >       ListenerPtr;
     typedef std::weak_ptr< L >         ListenerWPtr;
-    typedef std::list< ListenerWPtr >  listener_t;
+
+    /**
+    * Структура для хранения слушателей и связанных с ними движков.
+    */
+    typedef struct {
+        ListenerWPtr  listener;
+        AEngine::Ptr  whose;
+        AEngine::Ptr  who;
+    } store_t;
+
+    typedef std::list< store_t >  listener_t;
 
 
 public:
@@ -27,7 +38,13 @@ public:
     ~StoreListener();
 
 
-    void addListener( const std::shared_ptr< L > );
+    /**
+    * # Помимо слушателя, запоминаем участников (движки кто слушает и кого
+    *   слушают): это позволит получать доступ ко всем структурам мира и
+    *   возможностям движков без необходимости передавать их в каждом
+    *   событии.
+    */
+    void addListener( const std::shared_ptr< L >,  AEngine::Ptr whose,  AEngine::Ptr who );
 
     void removeListener( const std::shared_ptr< L > );
 
@@ -37,7 +54,7 @@ public:
     * @return Первый существующий слушатель.
     *         nullptr, если слушателей нет.
     */
-    ListenerPtr begin();
+    store_t* begin();
 
 
 
@@ -45,14 +62,24 @@ public:
     * @return Следующий существующий слушатель.
     *         nullptr, если слушателей нет.
     */
-    ListenerPtr next();
+    store_t* next();
+
+
+
+    /**
+    * @return Слушатель, на который указывает итератор.
+    *         nullptr, если итератор указывает на конец списка или
+    *         несуществующего слушателя.
+    *         Итератор не перемещается, список не меняется.
+    */
+    store_t* current() const;
 
 
 
 
 protected:
     listener_t  mListener;
-    mutable typename listener_t::iterator  itr;
+    typename listener_t::iterator  itr;
 };
 
 
