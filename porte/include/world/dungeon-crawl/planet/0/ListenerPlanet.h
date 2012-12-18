@@ -3,6 +3,7 @@
 #include "Listener.h"
 #include "../../star-system/0/Listener.h"
 #include <portulan/portulan.h>
+#include <portulan/include/world/dangeon-crawl/planet/0/set/illuminance.h>
 
 
 namespace porte {
@@ -45,6 +46,13 @@ public:
     * # ѕросто заботимс€, чтобы слушатели получили это событие.
     */
     void notifyAfterPulse();
+
+
+
+    /**
+    * ѕереносит неооторые характеристики звЄздной системы в область планеты.
+    */
+    void updatePlanetFromStarSystem( const pns::topology_t& );
 
 
 

@@ -54,6 +54,8 @@ inline void Engine::init() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
 inline void Engine::initComponent() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Определяем состав планеты ..";
 #endif
@@ -64,7 +66,7 @@ inline void Engine::initComponent() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeComponent,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().component.content,
+        topology.component.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -106,7 +108,7 @@ inline void Engine::initComponent() {
         CL_TRUE,
         0,
         memsizeComponent,
-        mPortulan->topology().topology().component.content,
+        topology.component.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -127,6 +129,8 @@ inline void Engine::initComponent() {
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void Engine::initTemperature() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Разогреваем планету ..";
 #endif
@@ -137,7 +141,7 @@ inline void Engine::initTemperature() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().temperature.content,
+        topology.temperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -206,7 +210,7 @@ inline void Engine::initTemperature() {
         CL_TRUE,
         0,
         memsizeTemperature,
-        mPortulan->topology().topology().temperature.content,
+        topology.temperature.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -227,6 +231,8 @@ inline void Engine::initTemperature() {
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void Engine::initSurfaceTemperature() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Рассчитываем температуру поверхности ..";
 #endif
@@ -237,7 +243,7 @@ inline void Engine::initSurfaceTemperature() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeSurfaceTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().surfaceTemperature.content,
+        topology.surfaceTemperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -278,7 +284,7 @@ inline void Engine::initSurfaceTemperature() {
         CL_TRUE,
         0,
         memsizeSurfaceTemperature,
-        mPortulan->topology().topology().surfaceTemperature.content,
+        topology.surfaceTemperature.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -299,6 +305,8 @@ inline void Engine::initSurfaceTemperature() {
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
 inline void Engine::initRainfall() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Оцениваем атмосферные осадки ..";
 #endif
@@ -309,7 +317,7 @@ inline void Engine::initRainfall() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeRainfall,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().rainfall.content,
+        topology.rainfall.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -355,7 +363,7 @@ inline void Engine::initRainfall() {
         CL_TRUE,
         0,
         memsizeRainfall,
-        mPortulan->topology().topology().rainfall.content,
+        topology.rainfall.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -376,6 +384,8 @@ inline void Engine::initRainfall() {
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
 inline void Engine::initDrainage() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Генерируем дренаж ..";
 #endif
@@ -386,7 +396,7 @@ inline void Engine::initDrainage() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().drainage.content,
+        topology.drainage.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -433,7 +443,7 @@ inline void Engine::initDrainage() {
         CL_TRUE,
         0,
         memsizeDrainage,
-        mPortulan->topology().topology().drainage.content,
+        topology.drainage.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -454,6 +464,8 @@ inline void Engine::initDrainage() {
 #ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
 inline void Engine::initLandscape() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Задаём ландшафты ..";
 #endif
@@ -464,7 +476,7 @@ inline void Engine::initLandscape() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeLandscape,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().landscape.content,
+        topology.landscape.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -475,7 +487,7 @@ inline void Engine::initLandscape() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeComponent,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().component.content,
+        topology.component.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -486,7 +498,7 @@ inline void Engine::initLandscape() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().temperature.content,
+        topology.temperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -497,7 +509,7 @@ inline void Engine::initLandscape() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeSurfaceTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().surfaceTemperature.content,
+        topology.surfaceTemperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -508,7 +520,7 @@ inline void Engine::initLandscape() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeRainfall,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().rainfall.content,
+        topology.rainfall.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -519,7 +531,7 @@ inline void Engine::initLandscape() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().drainage.content,
+        topology.drainage.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -610,7 +622,7 @@ inline void Engine::initLandscape() {
         CL_TRUE,
         0,
         memsizeLandscape,
-        mPortulan->topology().topology().landscape.content,
+        topology.landscape.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -640,68 +652,22 @@ inline void Engine::initLandscape() {
 #ifdef ILLUMINANCE_DUNGEONCRAWL_PORTE
 inline void Engine::initIlluminance() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Освещаем планету ..";
 #endif
 
-    const cl_mem illuminanceCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
-        memsizeIlluminance,
-        // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().illuminance.content,
-        &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    // # Делается на первом пульсе по сигналу от звёздной системы. Сейчас
+    //   погрузим планету в полную темноту.
+    // @see ListenerPlanet::notifyAfterPulse()
+    std::memset( topology.illuminance.content, 0, memsizeIlluminance );
+    static const pnp::aboutIlluminanceSource_t ais = {};
+    topology.aboutIlluminanceSource = ais;
 
-
-    static const size_t grid = pnp::ILLUMINANCE_GRID;
-
-    static const size_t GRID_WORK_DIM = 3;
-    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
-
-    // Задаём освещённость планетной области
-    const cl_kernel kernelInit = kernelCL[ "set/illuminance/init" ];
-
-    errorCL = clSetKernelArg( kernelInit, 0, sizeof( const cl_mem ), &aboutPlanetCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    errorCL = clSetKernelArg( kernelInit, 1, sizeof( const cl_mem ), &illuminanceCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    errorCL = clEnqueueNDRangeKernel(
-        commandQueueCL,
-        kernelInit,
-        GRID_WORK_DIM,
-        nullptr,
-        GRID_GLOBAL_WORK_SIZE,
-        nullptr,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // синхронизация
-    errorCL = clFinish( commandQueueCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // результат
-    errorCL = clEnqueueReadBuffer(
-        commandQueueCL,
-        illuminanceCL,
-        CL_TRUE,
-        0,
-        memsizeIlluminance,
-        mPortulan->topology().topology().illuminance.content,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-
-    clReleaseMemObject( illuminanceCL );
 
 #ifdef _DEBUG
-    std::cout << " ОК" << std::endl;
+    std::cout << " на первом пульсе" << std::endl;
 #endif
 }
 #endif
@@ -713,6 +679,8 @@ inline void Engine::initIlluminance() {
 #ifdef BIOME_DUNGEONCRAWL_PORTE
 inline void Engine::initBiome() {
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Распознаём биомы ..";
 #endif
@@ -723,7 +691,7 @@ inline void Engine::initBiome() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeBiome,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().biome.content,
+        topology.biome.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -734,7 +702,7 @@ inline void Engine::initBiome() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().temperature.content,
+        topology.temperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -745,7 +713,7 @@ inline void Engine::initBiome() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeSurfaceTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().surfaceTemperature.content,
+        topology.surfaceTemperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -756,7 +724,7 @@ inline void Engine::initBiome() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeRainfall,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().rainfall.content,
+        topology.rainfall.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -767,7 +735,7 @@ inline void Engine::initBiome() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeDrainage,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().drainage.content,
+        topology.drainage.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -778,7 +746,7 @@ inline void Engine::initBiome() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeLandscape,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().landscape.content,
+        topology.landscape.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -841,7 +809,7 @@ inline void Engine::initBiome() {
         CL_TRUE,
         0,
         memsizeBiome,
-        mPortulan->topology().topology().biome.content,
+        topology.biome.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -868,6 +836,8 @@ inline void Engine::initBiome() {
 inline void Engine::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponent().
 
+    auto& topology = mPortulan->topology().topology();
+
 #ifdef _DEBUG
     std::cout << "Населяем планету ..";
 #endif
@@ -878,7 +848,7 @@ inline void Engine::initLiving() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeLiving,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().living.content,
+        topology.living.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -889,7 +859,7 @@ inline void Engine::initLiving() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeComponent,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().component.content,
+        topology.component.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -900,7 +870,7 @@ inline void Engine::initLiving() {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeTemperature,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().temperature.content,
+        topology.temperature.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );

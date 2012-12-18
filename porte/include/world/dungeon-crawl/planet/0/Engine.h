@@ -219,17 +219,17 @@ private:
     * @see Engine::incarnate()
     */
     cl_mem aboutPlanetCL;
-    size_t memsizeAboutPlanet;
+    const size_t memsizeAboutPlanet;
 
-    size_t memsizeComponent;
-    size_t memsizeTemperature;
-    size_t memsizeSurfaceTemperature;
-    size_t memsizeRainfall;
-    size_t memsizeDrainage;
-    size_t memsizeLandscape;
-    size_t memsizeIlluminance;
-    size_t memsizeBiome;
-    size_t memsizeLiving;
+    const size_t memsizeComponent;
+    const size_t memsizeTemperature;
+    const size_t memsizeSurfaceTemperature;
+    const size_t memsizeRainfall;
+    const size_t memsizeDrainage;
+    const size_t memsizeLandscape;
+    const size_t memsizeIlluminance;
+    const size_t memsizeBiome;
+    const size_t memsizeLiving;
 
 
     /**

@@ -192,7 +192,7 @@ inline void Engine::prepareIlluminance() {
         ( "set/illuminance/init" )
     ;
     static const std::vector< std::string > includeHCL = boost::assign::list_of
-        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTE + "/utils/illuminance.hcl" )
+        ( L0_PLANET_DUNGEONCRAWL_PATH_CL_PORTULAN + "/set/illuminance-utils.h" )
     ;
 
     static const size_t grid = pnp::ILLUMINANCE_GRID;

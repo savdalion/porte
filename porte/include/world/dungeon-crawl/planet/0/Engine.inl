@@ -54,6 +54,12 @@ inline Engine::Engine(
         pnp::LANDSCAPE_GRID
     ),
 
+    memsizeIlluminance( sizeof( pnp::illuminanceCell_t ) *
+        pnp::ILLUMINANCE_GRID *
+        pnp::ILLUMINANCE_GRID *
+        pnp::ILLUMINANCE_GRID
+    ),
+
     memsizeBiome( sizeof( pnp::biomeCell_t ) *
         pnp::BIOME_GRID *
         pnp::BIOME_GRID *

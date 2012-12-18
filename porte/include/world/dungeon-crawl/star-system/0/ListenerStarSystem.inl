@@ -20,11 +20,9 @@ inline void ListenerStarSystem< E >::notifyAfterPulse() {
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) {
-        if ( etr ) {
-            etr->listener.lock()->afterPulse( etr->whose );
-        }
-    }
+    ) { if ( etr ) {
+        etr->listener.lock()->afterPulse( etr->whose );
+    } }
 }
 
 
@@ -35,7 +33,7 @@ template< class E >
 inline void ListenerStarSystem< E >::notifyAfterAsteroidCollisionStar(
     pns::asteroidContent_t a,  size_t ia,
     pns::starContent_t     b,  size_t ib,
-    pns::deltaElement_t& delta
+    pns::deltaElement_t&   delta
 ) {
     assert( engine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -57,13 +55,11 @@ inline void ListenerStarSystem< E >::notifyAfterAsteroidCollisionStar(
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) {
-        if ( etr ) {
-            etr->listener.lock()->afterAsteroidCollisionStar(
-                etr->whose,  a, ia,  b, ib,  delta
-            );
-        }
-    }
+    ) { if ( etr ) {
+        etr->listener.lock()->afterAsteroidCollisionStar(
+            etr->whose,  a, ia,  b, ib,  delta
+        );
+    } }
 }
 
 
@@ -79,6 +75,8 @@ inline void ListenerStarSystem< E >::afterChangeCountAsteroid(
         current << " asteroids (" << delta << ")" <<
     std::endl;
 #endif
+
+    // @todo Передать дальше.
 }
 
 

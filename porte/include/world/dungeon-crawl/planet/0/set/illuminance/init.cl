@@ -10,16 +10,15 @@
 
 // @define illuminance-utils.h
 // @todo fine –азобратьс€, почему нельз€ объ€вить метод только в illuminance-utils.h.
-void starIlluminance(
+void starIlluminancePlanet(
     __global illuminanceCell_t  u,
+    const int ix, const int iy, const int iz,
     // планета
-    const cl_float  radius,
-    const cl_float  coord[ 3 ],
-    const cl_float  omega[ 3 ]
+    const float  radius,
+    const float  coord[ 3 ],
+    const float  omega[ 3 ],
     // звезда
-    const cl_float  radiusStar,
-    const cl_float  coordStar[ 3 ],
-    const cl_float  luminousIntensityStar
+    const __global aboutIlluminanceStar_t*  ais
 );
 
 
@@ -31,11 +30,11 @@ void starIlluminance(
 * @param ai     »нформаци€ об источниках освещени€ планеты.
 */
 __kernel void init(
-    __global const aboutPlanet_t*       ap,       // 0
-    __global const cl_float*            coord     // 1
-    __global const cl_float*            omega     // 2
-    __global const aboutIlluminance_t*  ai        // 3
-    __global illuminanceCell_t*         uc        // 4
+    __global const aboutPlanet_t*             ap,     // 0
+    __global const float*                     coord,  // 1
+    __global const float*                     omega,  // 2
+    __global const aboutIlluminanceSource_t*  ais,    // 3
+    __global illuminanceCell_t*               uc      // 4
 ) {
     // всегда - координаты €чейки 3D-карты
     const uint dnx = get_global_id( 0 );
@@ -49,23 +48,21 @@ __kernel void init(
 
 
     // работаем со всей областью планеты
-    // обнул€ем освещЄнность - посчитаем с нул€
+    // обнул€ем освещЄнность - считаем с нул€
     uc[ i ][ 0 ].star = 0.0f;
 
     // пройдЄм по всем источникам освещени€, наполним карту освещЄнности
     // свет от звЄзд
-    for (uint k = 0; k < ABOUT_ILLUMINANCE_STAR_COUNT; ++k) {
-        starIlluminance(
+    const float c[ 3 ] = { coord[ 0 ],  coord[ 1 ],  coord[ 2 ] };
+    const float o[ 3 ] = { omega[ 0 ],  omega[ 1 ],  omega[ 2 ] };
+    for (uint k = 0; k < ILLUMINANCE_STAR_COUNT; ++k) {
+        starIlluminancePlanet(
             uc[ i ],
+            nc.x, nc.y, nc.z,
             // планета
-            ap->radius, coord, omega,
+            ap->radius.atmosphere, c, o,
             // звезда
-            ai.star[ k ].radius,
-            ai.star[ k ].coord,
-            ai.star[ k ].luminousIntensity
+            &ais->star[ k ]
         );
     }
-
-    // @todo —м. aboutIlluminance_t, illuminance
-
 }
