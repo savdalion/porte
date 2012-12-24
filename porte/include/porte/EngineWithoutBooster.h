@@ -51,8 +51,8 @@ public:
 
 
 
-    inline EngineWithoutBooster( P* p, R timestep ) :
-        mPortulan( p ),
+    inline EngineWithoutBooster( std::unique_ptr< portulan_t >  p,  R timestep ) :
+        mPortulan( std::move( p ) ),
         mTimestep( timestep )
     {
         assert( p && "Карта не указана (портулан не указан)." );
@@ -69,18 +69,18 @@ public:
     * @param extentPortulan Протяжённость портулана. Если не указана,
     *        вычисляется с помощью extent().
     */
-    inline void incarnate( portulan_t* p, real_t extentPortulan = 0 ) {
+    virtual inline void incarnate( std::unique_ptr< portulan_t >  p,  real_t extentPortulan = 0 ) {
         assert( p && "Портулан не указан." );
         assert( (extentPortulan >= 0)
             && "Протяжённость портулана не может быть меньше 0." );
 
-        mPortulan = p;
+        mPortulan = std::move( p );
         mExtent = typelib::empty( extentPortulan ) ? extent() : extentPortulan;
     }
 
 
 
-    inline long pulselive() const {
+    inline long long pulselive() const {
         return mPulselive;
     }
 
@@ -98,7 +98,7 @@ public:
 
 
 
-    inline real_t timelive() const {
+    inline double timelive() const {
         return mTimelive;
     }
 
@@ -114,12 +114,12 @@ public:
 
 
     inline portulan_t const*  portulan() const {
-        return mPortulan;
+        return mPortulan.get();
     }
 
 
     inline portulan_t*  portulan() {
-        return mPortulan;
+        return mPortulan.get();
     }
 
 
@@ -170,12 +170,12 @@ protected:
     /**
     * Портулан, с которым работает движок.
     */
-    portulan_t* mPortulan;
+    std::unique_ptr< portulan_t >  mPortulan;
 
     /**
     * Сколько пульсов прожила система.
     */
-    long mPulselive;
+    long long mPulselive;
 
     /**
     * Время, которое проходит за 1 пульс.
@@ -187,8 +187,10 @@ protected:
     * Сколько времени прожила система.
     * Если шаг времени не меняется движком, время жизни =
     * = шаг * количество прожитых пульсов.
+    *
+    * @todo fine? На больших промежутках пострадает точность.
     */
-    real_t mTimelive;
+    double mTimelive;
 
     /**
     * Протяжённость портулана.

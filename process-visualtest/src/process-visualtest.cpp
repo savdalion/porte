@@ -24,11 +24,12 @@ namespace pniop = portulan::io::world::dungeoncrawl::planet::l0;
 
 // # Соберём все движки в структуру, чтобы до завершения работы программы
 //   ни один из них не был уничтожен (спасибо, std::shared_ptr).
+// @todo fine Переписать через std::unique_ptr?
 typedef struct {
     std::set< pep::Engine::Ptr >  planet;
     std::set< pes::Engine::Ptr >  starSystem;
 } heapEngine_t;
-heapEngine_t heapEngine;
+static heapEngine_t heapEngine;
 
 
 
@@ -96,7 +97,7 @@ int main( int argc, char** argv ) {
     //   другие движки, подписывая их на события друг друга. См. wrapPlanet().
     // 'timestep' влияет на точность рассчётов (больше - ниже).
     // Может быть задействована вместе с 'PULSE'.
-    static const double timestep = MINUTE;
+    static const double timestep = HOUR;
     // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
     //   слушатель событий другим движкам.
     pes::Engine::Ptr  engine( new pes::Engine( timestep ) );
@@ -104,8 +105,8 @@ int main( int argc, char** argv ) {
 
 
     typedef pns::Portulan  starSystem_t;
-    starSystem_t starSystem;
-    pns::topology_t& topology = starSystem.topology().topology();
+    auto starSystem = std::unique_ptr< starSystem_t >( new starSystem_t() );
+    pns::topology_t& topology = starSystem->topology().topology();
 
     static const pns::aboutStarSystem_t aboutStarSystem = {
         // size
@@ -213,6 +214,10 @@ int main( int argc, char** argv ) {
         ++countStar;
     }
 #endif
+
+    // завершаем список пустотой
+    static const pns::aboutStar_t STAR_END_LIST = {};
+    tsc[ countStar ] = STAR_END_LIST;
 
 #endif // звёзды
 
@@ -336,6 +341,10 @@ int main( int argc, char** argv ) {
     }
 #endif
 
+    // завершаем список пустотой
+    static const pns::aboutPlanet_t PLANET_END_LIST = {};
+    tpc[ countPlanet ] = PLANET_END_LIST;
+
 #endif // планеты
 
 
@@ -418,13 +427,9 @@ int main( int argc, char** argv ) {
 
         } // for (size_t i = 0; i < N; ++i)
 
-        /* - Сделали выше.
-        // дозаполняем нулями
-        for ( ; i < pns::ASTEROID_COUNT; ++i) {
-            const pns::aboutAsteroid_t asteroid = {};
-            tac[ countAsteroid ] = asteroid;
-        }
-        */
+        // завершаем список пустотой
+        static const pns::aboutAsteroid_t ASTEROID_END_LIST = {};
+        tac[ countAsteroid ] = ASTEROID_END_LIST;
     }
 #endif // астероиды
 
@@ -443,12 +448,13 @@ int main( int argc, char** argv ) {
         std::endl <<
     std::endl;
 
-#endif // звёздная система
-
 
 
     // Воплощаем звёздную систему
-    engine->incarnate( &starSystem );
+    engine->incarnate( std::move( starSystem ) );
+    // #! starSystem = nullptr
+
+#endif // звёздная система
 
 
 
@@ -463,9 +469,10 @@ int main( int argc, char** argv ) {
     o[ "size-window" ] = 950;
 
     pnios::VolumeVTKVisual  visual( o );
-    visual << starSystem;
+    visual << *engine->portulan();
     
 
+    // # Учитываем инициал. движка звёздной системы, а именно - 'timestep'.
     // 'PULSE' влияет на кол-во отрисовок (больше пульс - меньше кадров).
     // Может быть задействована вместе с 'timestep'.
     // Движок честно считает 'PULSE' кадров с шагом 'timestep' и только
@@ -473,7 +480,7 @@ int main( int argc, char** argv ) {
     // кадров = timestep * PULSE.
     // @example timestep = HOUR,  PULSE = 365 * 24 - Земля будет оставаться
     //          почти неподвижной, т.к. её период обращения ~ 365 дней.
-    static const int PULSE = 60;
+    static const int PULSE = 24;
 
     // запускаем мир
     visual.wait( engine.get(), PULSE, 1 );
@@ -525,8 +532,8 @@ void wrapPlanet(
     */
 
     typedef pnp::Portulan  planet_t;
-    planet_t planet;
-    pnp::topology_t& topology = planet.topology().topology();
+    auto planet = std::unique_ptr< planet_t >( new planet_t() );
+    pnp::topology_t& topology = planet->topology().topology();
 
     // # Мир не большой - работаем с 'float'. См. также структуры и
     //   planet::Engine.
@@ -1067,7 +1074,8 @@ void wrapPlanet(
 
     // инициализируем движок планеты
     std::cout << std::endl;
-    enginePlanet->incarnate( &planet );
+    enginePlanet->incarnate( std::move( planet ) );
+    // #! planet = nullptr
     enginePlanet->init();
 
 
@@ -1088,11 +1096,11 @@ void wrapPlanet(
 #endif
 
     pniop::TextVisual  visual( std::cout, o );
-    visual << "\n\n" << planet;
+    visual << "\n\n" << *enginePlanet->portulan();
     
 
     // Сделаем снимок топологии
-    pniop::SnapshotVTK  snapshot( &planet );
+    pniop::SnapshotVTK  snapshot( enginePlanet->portulan() );
 #if defined COMPONENT_SNAPSHOT_VISUALTEST && defined COMPONENT_DUNGEONCRAWL_PORTE
     snapshot.component();
 #endif

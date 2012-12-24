@@ -129,8 +129,8 @@ inline Engine::~Engine() {
 
 
 
-inline void Engine::incarnate( portulan_t* p, real_t extentPortulan ) {
-    EngineWithoutBooster::incarnate( p, extentPortulan );
+inline void Engine::incarnate( std::unique_ptr< portulan_t >  p,  real_t extentPortulan ) {
+    EngineWithoutBooster::incarnate( std::move( p ), extentPortulan );
 
     // этот движок требует дополнительной подготовки
 

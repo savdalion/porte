@@ -71,7 +71,7 @@ public:
     /**
     * @virtual 
     */
-    virtual void incarnate( portulan_t*, real_t extentPortulan = 0 );
+    virtual void incarnate( std::unique_ptr< portulan_t >,  real_t extentPortulan = 0 );
 
 
 

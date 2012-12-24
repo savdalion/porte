@@ -17,13 +17,15 @@ inline void ListenerPlanet< E >::notifyAfterPulse() {
     assert( engine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
-    // отрабатываем своё событие
+#ifdef _DEBUG
+    // @test
     std::cout << "Пульс планеты " <<
         engine->pulselive() <<
         " " << engine->timelive() << " s" <<
     std::endl;
-    // # Просто заботимся, чтобы слушатели получили это событие.
+#endif
 
+    // # Просто заботимся, чтобы слушатели получили это событие.
 
     // отправляем *своё* событие другим слушателям
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
@@ -40,6 +42,7 @@ inline void ListenerPlanet< E >::notifyAfterPulse() {
 
 template< class E >
 inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
+
     assert( engine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
@@ -80,7 +83,6 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
         engineStarSystem->portulan()->topology().topology();
     updatePlanetFromStarSystem( topologyStarSystem );
 
-
     // зависимые от звёздной системы характеристики обновлены,
     // переводим планету на след. пульс
     // # Движок не любит отсутствие пульсов.
@@ -109,7 +111,9 @@ inline void ListenerPlanet< E >::updatePlanetFromStarSystem(
     // звёзды
     assert( (pnp::ILLUMINANCE_STAR_COUNT >= pns::STAR_COUNT)
         && "Модель освещения не может вместить все звёзды звёздной системы. Увеличьте ILLUMINANCE_STAR_COUNT." );
-    for (auto i = 0; i < pns::STAR_COUNT; ++i) {
+    static const pnp::aboutIlluminanceStar_t ZERO_AIS = {};
+    pnp::aboutIlluminanceStar_t* ais = topology.aboutIlluminanceSource.star;
+    for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
         const pns::aboutStar_t& as = topologyStarSystem.star.content[ i ];
         /* - признак отсутствия звезды - отрицательная или нулевая масса
         assert( (as.mass >= 0.0)
@@ -118,17 +122,20 @@ inline void ListenerPlanet< E >::updatePlanetFromStarSystem(
         if (as.mass <= 0) {
             // # Звезда с пустой mass - звёзд больше нет.
             // добавляем свой признак - пустой radius
-            static const pnp::aboutIlluminanceStar_t ais = {};
-            topology.aboutIlluminanceSource.star[ i ] = ais;
+            ais[ i ] = ZERO_AIS;
             break;
         }
-        const pnp::aboutIlluminanceStar_t ais = {
-            as.radius,
-            as.temperature,
-            as.luminousIntensity,
-            { as.coord[ 0 ],  as.coord[ 1 ],  as.coord[ 2 ] }
+        const pnp::aboutIlluminanceStar_t newAIS = {
+            static_cast< cl_float >( as.radius ),
+            static_cast< cl_float >( as.temperature ),
+            static_cast< cl_float >( as.luminousIntensity ),
+            {
+                static_cast< cl_float >( as.coord[ 0 ] ),
+                static_cast< cl_float >( as.coord[ 1 ] ),
+                static_cast< cl_float >( as.coord[ 2 ] )
+            }
         };
-        topology.aboutIlluminanceSource.star[ i ] = ais;
+        ais[ i ] = newAIS;
 
     } // for (auto i = 0; i < pns::STAR_COUNT; ++i)
 }
