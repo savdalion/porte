@@ -25,7 +25,10 @@ namespace porte {
 * на графических процессорах (OpenCL, Cuda).
 */
 template< size_t SX, size_t SY, size_t SZ >
-class PortulanBooster : public Booster {
+class PortulanBooster :
+    public std::enable_shared_from_this< PortulanBooster< SX, SY, SZ > >,
+    public Booster
+{
 public:
     /**
     * —сылки.
@@ -73,7 +76,7 @@ public:
 
 
 
-    PortulanBooster( portulan_t* );
+    explicit PortulanBooster( portulan_t* );
 
 
     virtual ~PortulanBooster();

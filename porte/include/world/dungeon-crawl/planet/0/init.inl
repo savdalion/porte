@@ -10,6 +10,8 @@ namespace porte {
 
 
 inline void Engine::init() {
+    assert( !mPortulan.expired() );
+
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
     initComponent();
 #endif
@@ -54,7 +56,7 @@ inline void Engine::init() {
 #ifdef COMPONENT_DUNGEONCRAWL_PORTE
 inline void Engine::initComponent() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Определяем состав планеты ..";
@@ -129,7 +131,7 @@ inline void Engine::initComponent() {
 #ifdef TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void Engine::initTemperature() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Разогреваем планету ..";
@@ -231,7 +233,7 @@ inline void Engine::initTemperature() {
 #ifdef SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
 inline void Engine::initSurfaceTemperature() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Рассчитываем температуру поверхности ..";
@@ -305,7 +307,7 @@ inline void Engine::initSurfaceTemperature() {
 #ifdef RAINFALL_DUNGEONCRAWL_PORTE
 inline void Engine::initRainfall() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Оцениваем атмосферные осадки ..";
@@ -384,7 +386,7 @@ inline void Engine::initRainfall() {
 #ifdef DRAINAGE_DUNGEONCRAWL_PORTE
 inline void Engine::initDrainage() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Генерируем дренаж ..";
@@ -464,7 +466,7 @@ inline void Engine::initDrainage() {
 #ifdef LANDSCAPE_DUNGEONCRAWL_PORTE
 inline void Engine::initLandscape() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Задаём ландшафты ..";
@@ -652,7 +654,7 @@ inline void Engine::initLandscape() {
 #ifdef ILLUMINANCE_DUNGEONCRAWL_PORTE
 inline void Engine::initIlluminance() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Освещаем планету ..";
@@ -679,7 +681,7 @@ inline void Engine::initIlluminance() {
 #ifdef BIOME_DUNGEONCRAWL_PORTE
 inline void Engine::initBiome() {
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Распознаём биомы ..";
@@ -836,7 +838,7 @@ inline void Engine::initBiome() {
 inline void Engine::initLiving() {
     // #! Структуры для передачи OpenCL должны быть подготовлены в prepareComponent().
 
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
 
 #ifdef _DEBUG
     std::cout << "Населяем планету ..";
@@ -881,7 +883,7 @@ inline void Engine::initLiving() {
     static const size_t GRID_WORK_DIM = 3;
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid, grid, grid };
 
-    auto& tp = mPortulan->topology().topology();
+    auto& tp = mPortulan.lock()->topology().topology();
 
     // Инициализируем сетку
 

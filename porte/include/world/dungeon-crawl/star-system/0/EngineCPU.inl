@@ -75,7 +75,8 @@ inline void EngineCPU::pulse( int n ) {
 
 inline void EngineCPU::pulse() {
 
-    auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
@@ -111,9 +112,7 @@ inline void EngineCPU::pulse() {
     }
 
 
-    // @todo fine Создать отдельный класс Pulse.
-    ++mPulselive;
-    mTimelive += mTimestep;
+    mLive.inc( mTimestep );
 
 
     // пульс пройден
@@ -132,7 +131,8 @@ inline void EngineCPU::asteroidImpactIn(
     pns::aboutAsteroid_t* aa,
     size_t currentI
 ) {
-    const auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    const auto& topology = mPortulan.lock()->topology().topology();
     const auto& asteroid = topology.asteroid.content;
     const auto& planet   = topology.planet.content;
     const auto& star     = topology.star.content;
@@ -281,7 +281,8 @@ inline void EngineCPU::planetImpactIn(
     pns::aboutPlanet_t* ap,
     size_t currentI
 ) {
-    const auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    const auto& topology = mPortulan.lock()->topology().topology();
     const auto& asteroid = topology.asteroid.content;
     const auto& planet   = topology.planet.content;
     const auto& star     = topology.star.content;
@@ -390,7 +391,8 @@ inline void EngineCPU::starImpactIn(
     pns::aboutStar_t* as,
     size_t currentI
 ) {
-    const auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    const auto& topology = mPortulan.lock()->topology().topology();
     const auto& asteroid = topology.asteroid.content;
     const auto& planet   = topology.planet.content;
     const auto& star     = topology.star.content;
@@ -544,7 +546,8 @@ inline void EngineCPU::notify() {
     // каждый элемент звёздной системы хранит информацию о событиях,
     // которые с ним произошли
 
-    auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
@@ -605,8 +608,8 @@ inline void EngineCPU::notify(
     size_t currentI,
     pns::deltaElement_t& delta
 ) {
-
-    auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
@@ -694,10 +697,11 @@ inline void EngineCPU::calcOptimalTimestep( int step ) {
 
 inline void EngineCPU::harvestStatisticsForOptimizeTimestep() {
 
-    auto& topology = mPortulan->topology().topology();
-    auto& asteroid = topology.asteroid.content;
-    auto& planet   = topology.planet.content;
-    auto& star     = topology.star.content;
+    assert( !mPortulan.expired() );
+    const auto& topology = mPortulan.lock()->topology().topology();
+    const auto& asteroid = topology.asteroid.content;
+    const auto& planet   = topology.planet.content;
+    const auto& star     = topology.star.content;
 
     // чтобы не создавать лапшевидный код, сольём нужные данные в
     // единый список

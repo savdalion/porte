@@ -45,7 +45,7 @@ public:
     * Тип объекта, с которым работает движок.
     */
     typedef typename PortulanBooster< SX, SY, SZ >::portulan_t  portulan_t;
-    typedef typename porte::PortulanBooster< SX, SY, SZ >  pb_t;
+    typedef typename porte::PortulanBooster< SX, SY, SZ >       pb_t;
 
 
 

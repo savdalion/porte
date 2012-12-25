@@ -23,7 +23,7 @@ namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 
 /**
-* Движок для моделирования звёздной системы.
+* Движок для моделирования *звёздной системы*.
 */
 class Engine :
 #if defined( OPENCL_STARSYSTEM_L0_ENGINE_PORTE )
@@ -42,7 +42,7 @@ public:
 
 public:
     // @todo Добавить 'extent' для всех движков ниже.
-    inline Engine( real_t timestep ) :
+    explicit inline Engine( real_t timestep ) :
 #if defined( OPENCL_STARSYSTEM_L0_ENGINE_PORTE )
         EngineOpenCL( p, timestep )
 #elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )

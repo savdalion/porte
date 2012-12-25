@@ -19,10 +19,7 @@ inline void ListenerPlanet< E >::notifyAfterPulse() {
 
 #ifdef _DEBUG
     // @test
-    std::cout << "ѕульс планеты " <<
-        engine->pulselive() <<
-        " " << engine->timelive() << " s" <<
-    std::endl;
+    std::cout << "ѕульс планеты " << engine->live() << std::endl;
 #endif
 
     // # ѕросто заботимс€, чтобы слушатели получили это событие.
@@ -48,7 +45,7 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
 
     // # ѕервый пульс выполн€етс€ всегда. “.о. обеспечим глубокую инициализацию
     //   портуланов без необходимости делать это отдельно.
-    const bool notFirstPulse = (engine->pulselive() != 0);
+    const bool notFirstPulse = !engine->live().first();
 
     // обеспечиваем доступ к движкам и портуланам
     assert( whose && "Ќе получен движок, которого слушают." );
@@ -61,7 +58,8 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
     // # ƒолжны получать верный результат при любом временном шаге
     //   звЄздной системы.
     // сколько времени прошло с момента последнего пульса звЄздной системы
-    const auto timedelta = engineStarSystem->timelive() - engine->timelive();
+    const auto timedelta =
+        engineStarSystem->live().timelive() - engine->live().timelive();
     if ( (timedelta <= 0) && notFirstPulse ) {
         // холостой и обратный ход времени не отрабатываем
         return;
@@ -70,8 +68,8 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
     // сколько это в пульсах планеты
     assert( (engine->timestep() > 0)
         && "Ўаг времени дл€ планеты должен быть больше 0." );
-    const int pulsedelta =
-        static_cast< int >( timedelta / engine->timestep() );
+    const auto pulsedelta =
+        Pulse::pulsedelta( timedelta, engine->timestep() );
     // дожидаемс€, когда врем€ звЄздной системы позволит отработать
     // хот€ бы 1 пульс планеты (если это не 1-й пульс)
     if ( (pulsedelta == 0) && notFirstPulse ) {

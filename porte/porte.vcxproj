@@ -18,6 +18,7 @@
     <ClInclude Include="include\porte\StoreListener.h" />
     <ClInclude Include="include\porte\PortulanBooster.h" />
     <ClInclude Include="include\porte\AEngine.h" />
+    <ClInclude Include="include\porte\Pulse.h" />
     <ClInclude Include="include\world\dungeon-crawl\planet\0\ListenerPlanet.h" />
     <ClInclude Include="include\world\dungeon-crawl\planet\0\Engine.h" />
     <ClInclude Include="include\world\dungeon-crawl\planet\0\Listener.h" />

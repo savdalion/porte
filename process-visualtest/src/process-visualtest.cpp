@@ -22,18 +22,28 @@ namespace pep = porte::world::dungeoncrawl::planet::l0;
 namespace pniop = portulan::io::world::dungeoncrawl::planet::l0;
 
 
-// # Соберём все движки в структуру, чтобы до завершения работы программы
-//   ни один из них не был уничтожен (спасибо, std::shared_ptr).
-// @todo fine Переписать через std::unique_ptr?
+// # Соберём все портуланы и движки в структуру, чтобы до завершения работы
+//   программы ни один из них не был уничтожен (спасибо, std::shared_ptr).
 typedef struct {
-    std::set< pep::Engine::Ptr >  planet;
-    std::set< pes::Engine::Ptr >  starSystem;
+    std::set< std::shared_ptr< pnp::Portulan > >  planet;
+    std::set< std::shared_ptr< pns::Portulan > >  starSystem;
+} heapPortulan_t;
+
+typedef struct {
+    std::set< std::shared_ptr< pep::Engine > >  planet;
+    std::set< std::shared_ptr< pes::Engine > >  starSystem;
 } heapEngine_t;
-static heapEngine_t heapEngine;
+
+typedef struct {
+    heapPortulan_t  portulan;
+    heapEngine_t    engine;
+} heap_t;
+
+static heap_t heap;
 
 
 
-static void wrapPlanet( heapEngine_t*, pes::Engine::Ptr, const pns::aboutPlanet_t& );
+static void wrapPlanet( heap_t*,  std::shared_ptr< pes::Engine >,  const pns::aboutPlanet_t& );
 
 
 /**
@@ -100,12 +110,14 @@ int main( int argc, char** argv ) {
     static const double timestep = HOUR;
     // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
     //   слушатель событий другим движкам.
-    pes::Engine::Ptr  engine( new pes::Engine( timestep ) );
-    heapEngine.starSystem.insert( engine );
+    std::shared_ptr< pes::Engine >  engine( new pes::Engine( timestep ) );
+    heap.engine.starSystem.insert( engine );
 
 
     typedef pns::Portulan  starSystem_t;
-    auto starSystem = std::unique_ptr< starSystem_t >( new starSystem_t() );
+    std::shared_ptr< starSystem_t >  starSystem( new starSystem_t() );
+    heap.portulan.starSystem.insert( starSystem );
+
     pns::topology_t& topology = starSystem->topology().topology();
 
     static const pns::aboutStarSystem_t aboutStarSystem = {
@@ -310,7 +322,7 @@ int main( int argc, char** argv ) {
         ++countPlanet;
 
         // тут же оборачиваем планету в свой движок
-        wrapPlanet( &heapEngine, engine, planet );
+        wrapPlanet( &heap, engine, planet );
     }
 #endif
 
@@ -451,7 +463,7 @@ int main( int argc, char** argv ) {
 
 
     // Воплощаем звёздную систему
-    engine->incarnate( std::move( starSystem ) );
+    engine->incarnate( starSystem );
     // #! starSystem = nullptr
 
 #endif // звёздная система
@@ -516,12 +528,12 @@ int main( int argc, char** argv ) {
 * # Подключим движок звёздной системы как слушателя событий планеты. Например,
 *   движок звёздной системы должен знать о разрушении / расколе планеты.
 */
-void wrapPlanet(
-    heapEngine_t*              heapEngine,
-    pes::Engine::Ptr           ess,
+inline void wrapPlanet(
+    heap_t*  heap,
+    std::shared_ptr< pes::Engine >  ess,
     const pns::aboutPlanet_t&  pss
 ) {
-    assert( heapEngine );
+    assert( heap );
 
 #if 1
     // расширяем топологию планеты, опираясь на дынные 'planetStarSystem'
@@ -532,7 +544,9 @@ void wrapPlanet(
     */
 
     typedef pnp::Portulan  planet_t;
-    auto planet = std::unique_ptr< planet_t >( new planet_t() );
+    std::shared_ptr< planet_t >  planet( new planet_t() );
+    heap->portulan.planet.insert( planet );
+
     pnp::topology_t& topology = planet->topology().topology();
 
     // # Мир не большой - работаем с 'float'. См. также структуры и
@@ -714,8 +728,8 @@ void wrapPlanet(
     // будем считать и день, и ночь
     // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
     //   слушатель событий другим движкам.
-    pep::Engine::Ptr  enginePlanet( new pep::Engine( HALF_DAY ) );
-    heapEngine->planet.insert( enginePlanet );
+    std::shared_ptr< pep::Engine >  engine( new pep::Engine( HALF_DAY ) );
+    heap->engine.planet.insert( engine );
 
 
 #if 0
@@ -1074,18 +1088,17 @@ void wrapPlanet(
 
     // инициализируем движок планеты
     std::cout << std::endl;
-    enginePlanet->incarnate( std::move( planet ) );
+    engine->incarnate( planet );
     // #! planet = nullptr
-    enginePlanet->init();
+    engine->init();
 
 
     // подписываем движок планеты на события от звёздной системы
     // @todo fine Слишком многословно. Проще?
-    ess->addListenerStarSystem( enginePlanet, ess, enginePlanet );
-
+    ess->addListenerStarSystem( engine, ess, engine );
 
     // подписываем движок звёздной системы на события от планеты
-    enginePlanet->addListenerPlanet( ess, enginePlanet, ess );
+    engine->addListenerPlanet( ess, engine, ess );
 
 
 
@@ -1096,11 +1109,11 @@ void wrapPlanet(
 #endif
 
     pniop::TextVisual  visual( std::cout, o );
-    visual << "\n\n" << *enginePlanet->portulan();
+    visual << "\n\n" << *engine->portulan();
     
 
     // Сделаем снимок топологии
-    pniop::SnapshotVTK  snapshot( enginePlanet->portulan() );
+    pniop::SnapshotVTK  snapshot( engine->portulan() );
 #if defined COMPONENT_SNAPSHOT_VISUALTEST && defined COMPONENT_DUNGEONCRAWL_PORTE
     snapshot.component();
 #endif
@@ -1155,5 +1168,4 @@ void wrapPlanet(
 #endif
 
 #endif
-
 }

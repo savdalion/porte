@@ -52,7 +52,7 @@ public:
 
 
 public:
-    UniformHeatTransfer( portulan_t* );
+    explicit UniformHeatTransfer( portulan_t* );
 
     virtual ~UniformHeatTransfer();
 

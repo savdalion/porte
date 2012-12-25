@@ -75,7 +75,7 @@ inline void EngineOpenCL::pulse( int n ) {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeStarSystem,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        &mPortulan->topology().topology().aboutStarSystem,
+        &mPortulan.lock()->topology().topology().aboutStarSystem,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -86,7 +86,7 @@ inline void EngineOpenCL::pulse( int n ) {
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeBody,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        mPortulan->topology().topology().body.content,
+        mPortulan.lock()->topology().topology().body.content,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -174,7 +174,7 @@ inline void EngineOpenCL::pulse( int n ) {
         CL_TRUE,
         0,
         memsizeBody,
-        mPortulan->topology().topology().body.content,
+        mPortulan.lock()->topology().topology().body.content,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );

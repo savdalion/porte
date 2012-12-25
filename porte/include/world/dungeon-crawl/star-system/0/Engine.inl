@@ -13,7 +13,8 @@ inline Engine::real_t Engine::extent() {
 
     // находим максимальное расстояние от центра координат среди элементов
     // портулана звёздной системы
-    auto& topology = mPortulan->topology().topology();
+    assert( !mPortulan.expired() );
+    auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;

@@ -84,6 +84,9 @@
     <ClInclude Include="include\porte\AEngine.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="include\porte\Pulse.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="porte\include\Engine.inl">

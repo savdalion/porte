@@ -2,6 +2,7 @@
 
 #include "../../configure.h"
 #include "AEngine.h"
+#include "Pulse.h"
 #include <typelib/typelib.h>
 #include <portulan/portulan.h>
 #include <limits>
@@ -23,7 +24,9 @@ namespace porte {
 * @see Проект "portulan" > https://github.com/savdalion/portulan
 */
 template< class P, typename R >
-class EngineWithoutBooster : public AEngine {
+class EngineWithoutBooster :
+    public AEngine
+{
 public:
     /**
     * Ссылки.
@@ -40,10 +43,9 @@ public:
 
 public:
     inline EngineWithoutBooster( R timestep ) :
-        mPortulan( nullptr ),
-        mPulselive( 0 ),
+        mPortulan( std::shared_ptr< P >( nullptr ) ),
         mTimestep( timestep ),
-        mTimelive( 0 )
+        mLive()
     {
         assert( (mTimestep >= 1.0)
             && "Шаг времени не может быть меньше секунды." );
@@ -51,8 +53,8 @@ public:
 
 
 
-    inline EngineWithoutBooster( std::unique_ptr< portulan_t >  p,  R timestep ) :
-        mPortulan( std::move( p ) ),
+    inline EngineWithoutBooster( std::shared_ptr< portulan_t >  p,  R timestep ) :
+        mPortulan( p ),
         mTimestep( timestep )
     {
         assert( p && "Карта не указана (портулан не указан)." );
@@ -69,19 +71,19 @@ public:
     * @param extentPortulan Протяжённость портулана. Если не указана,
     *        вычисляется с помощью extent().
     */
-    virtual inline void incarnate( std::unique_ptr< portulan_t >  p,  real_t extentPortulan = 0 ) {
+    virtual inline void incarnate( std::shared_ptr< portulan_t >  p,  real_t extentPortulan = 0 ) {
         assert( p && "Портулан не указан." );
         assert( (extentPortulan >= 0)
             && "Протяжённость портулана не может быть меньше 0." );
 
-        mPortulan = std::move( p );
+        mPortulan = p;
         mExtent = typelib::empty( extentPortulan ) ? extent() : extentPortulan;
     }
 
 
 
-    inline long long pulselive() const {
-        return mPulselive;
+    inline Pulse live() const {
+        return mLive;
     }
 
 
@@ -98,12 +100,6 @@ public:
 
 
 
-    inline double timelive() const {
-        return mTimelive;
-    }
-
-
-
     /**
     * @return Протяжённость портулана.
     *         Метод должен вычислить протяжённость, если она ещё
@@ -113,13 +109,15 @@ public:
 
 
 
-    inline portulan_t const*  portulan() const {
-        return mPortulan.get();
+    inline std::shared_ptr< const portulan_t >  portulan() const {
+        assert( !mPortulan.expired() );
+        return mPortulan.lock();
     }
 
 
-    inline portulan_t*  portulan() {
-        return mPortulan.get();
+    inline std::shared_ptr< portulan_t >  portulan() {
+        assert( !mPortulan.expired() );
+        return mPortulan.lock();
     }
 
 
@@ -169,13 +167,9 @@ protected:
 protected:
     /**
     * Портулан, с которым работает движок.
+    * Храним как weak_ptr: можем передавать портулан *нескольким* движкам.
     */
-    std::unique_ptr< portulan_t >  mPortulan;
-
-    /**
-    * Сколько пульсов прожила система.
-    */
-    long long mPulselive;
+    std::weak_ptr< portulan_t >  mPortulan;
 
     /**
     * Время, которое проходит за 1 пульс.
@@ -184,13 +178,12 @@ protected:
     real_t mTimestep;
 
     /**
-    * Сколько времени прожила система.
-    * Если шаг времени не меняется движком, время жизни =
-    * = шаг * количество прожитых пульсов.
+    * Сколько пульсов прожила система.
     *
-    * @todo fine? На больших промежутках пострадает точность.
+    * Если шаг времени (mTimestep) не меняется движком, время жизни =
+    * = шаг * количество прожитых пульсов.
     */
-    double mTimelive;
+    Pulse mLive;
 
     /**
     * Протяжённость портулана.

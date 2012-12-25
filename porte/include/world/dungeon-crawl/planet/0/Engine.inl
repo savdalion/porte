@@ -129,19 +129,20 @@ inline Engine::~Engine() {
 
 
 
-inline void Engine::incarnate( std::unique_ptr< portulan_t >  p,  real_t extentPortulan ) {
-    EngineWithoutBooster::incarnate( std::move( p ), extentPortulan );
+inline void Engine::incarnate( std::shared_ptr< portulan_t >  p,  real_t extentPortulan ) {
+    EngineWithoutBooster::incarnate( p, extentPortulan );
 
     // этот движок требует дополнительной подготовки
 
     // Подготавливаем стат. структуры для ядер OpenCL
     // aboutPlanet
+    assert( !mPortulan.expired() );
     aboutPlanetCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeAboutPlanet,
-        &mPortulan->topology().topology().aboutPlanet,
+        &mPortulan.lock()->topology().topology().aboutPlanet,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -162,7 +163,7 @@ inline Engine::real_t Engine::extent() {
     }
 
     // протяжённость здесь зависит от радиуса атмосферы планеты
-    auto& topology = mPortulan->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
     mExtent = topology.aboutPlanet.radius.atmosphere * 2.0f;
 
     return mExtent;
@@ -189,9 +190,7 @@ inline void Engine::pulse() {
     // @todo ...
 
 
-    // @todo fine Создать отдельный класс Pulse.
-    ++mPulselive;
-    mTimelive += mTimestep;
+    mLive.inc( mTimestep );
 
 
     // пульс пройден
@@ -276,10 +275,10 @@ inline void Engine::compileCLKernel(
     // # Масштаб - сколько метров содержит 1 ячейка рабочей сетки и
     //   какую часть портулана занимает эта ячейка.
     const float scale =
-        mPortulan->topology().topology().aboutPlanet.size /
+        mPortulan.lock()->topology().topology().aboutPlanet.size /
         static_cast< float >( G );
     const float partScale =
-        scale / mPortulan->topology().topology().aboutPlanet.size;
+        scale / mPortulan.lock()->topology().topology().aboutPlanet.size;
 
     std::ostringstream commonOptions;
     commonOptions

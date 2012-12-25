@@ -50,7 +50,7 @@ public:
 
 
 public:
-    Chemistry( portulan_t* );
+    explicit Chemistry( portulan_t* );
 
     virtual ~Chemistry();
 

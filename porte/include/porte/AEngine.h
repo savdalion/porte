@@ -14,7 +14,9 @@ namespace porte {
 *
 * @see EngineWithoutBooster
 */
-class AEngine {
+class AEngine :
+    public std::enable_shared_from_this< AEngine >
+{
 public:
     /**
     * —сылки.

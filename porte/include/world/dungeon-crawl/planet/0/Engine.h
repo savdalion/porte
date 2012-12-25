@@ -40,7 +40,7 @@ namespace pes = porte::world::dungeoncrawl::starsystem::l0;
 
 
 /**
-* Движок для моделирования планеты, населённой созданиями из Engine.
+* Движок для моделирования *планеты*, населённой созданиями из Dungeon Crawl.
 *
 * @template См. Engine.
 */
@@ -61,7 +61,7 @@ public:
 
 
 public:
-    Engine( real_t timestep );
+    explicit Engine( real_t timestep );
 
     virtual ~Engine();
 
@@ -71,7 +71,7 @@ public:
     /**
     * @virtual 
     */
-    virtual void incarnate( std::unique_ptr< portulan_t >,  real_t extentPortulan = 0 );
+    virtual void incarnate( std::shared_ptr< portulan_t >,  real_t extentPortulan = 0 );
 
 
 

@@ -42,7 +42,7 @@ inline EngineND::EngineND(
     // наполняем мир ND телами
     for (size_t i = 0; i < pns::BODY_COUNT; ++i) {
         pns::aboutBody_t* b =
-            &mPortulan->topology().topology().body.content[ i ];
+            &mPortulan.lock()->topology().topology().body.content[ i ];
         incarnateBody( b );
     }
 }
