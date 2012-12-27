@@ -142,10 +142,8 @@ private:
 namespace std {
 
 inline std::ostream& operator<<( std::ostream& out, const porte::Pulse& p ) {
-    const auto tl = p.timelive();
-    out << "#" << p.pulselive() << "  " <<
-        typelib::time::humanDuration< porte::Pulse::number_t >( tl );
-        //tl;
+    const typelib::time::Time<>  tl( p.timelive() );
+    out << "#" << p.pulselive() << "  " << tl;
     return out;
 }
 
