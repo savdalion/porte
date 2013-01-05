@@ -11,7 +11,7 @@ namespace porte {
 * Определения могут быть использованы для отключения сохранения данных
 * в файлах.
 */
-/*
+#if 1
 #define COMPONENT_SNAPSHOT_VISUALTEST
 #define TEMPERATURE_SNAPSHOT_VISUALTEST
 #define SURFACE_TEMPERATURE_SNAPSHOT_VISUALTEST
@@ -21,7 +21,9 @@ namespace porte {
 #define ILLUMINANCE_SNAPSHOT_VISUALTEST
 #define BIOME_SNAPSHOT_VISUALTEST
 #define LIVING_SNAPSHOT_VISUALTEST
-*/
+#endif
+
+
 
 
 /**

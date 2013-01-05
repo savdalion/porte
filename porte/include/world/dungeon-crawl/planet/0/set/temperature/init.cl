@@ -107,7 +107,7 @@ __kernel void init(
 
 
     // @test
-    //tc[i].average = -56789.0f;
+    //tc[i][0].average = 56789.0f;
     //return;
     
     // @test
@@ -149,5 +149,5 @@ __kernel void init(
     } else {
         spaceTemperature( tc[i], ap, distanceByHalfSize );
     }
-    
+
 }
