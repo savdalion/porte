@@ -7,14 +7,14 @@
 
 
 inline void exteriorCrustLandscape(
-    __global       landscapeCell_t           lc,
-    __global const landscapePlanet_t*        lp,
-    __global const componentCell_t           cc,
-    __global const temperatureCell_t         tc,
-    __global const surfaceTemperatureCell_t  stc,
-    __global const rainfallCell_t            rc,
-    __global const drainageCell_t            dc,
-    uint2*                                   rstate
+    __global       elementLandscape_t*             lc,
+    __global const landscapePlanet_t*              lp,
+    __global const portionComponent_t*             cc,
+    __global const behaviourTemperature_t*         tc,
+    __global const behaviourSurfaceTemperature_t*  stc,
+    __global const behaviourRainfall_t*            rc,
+    __global const behaviourDrainage_t*            dc,
+    uint2*                                         rstate
 ) {
     // задаЄм кол-во элементов ландшафта в этой €чейке
     // # ќдна €чейка содержит не более LANDSCAPE_CELL приближЄнных ландшафтов.

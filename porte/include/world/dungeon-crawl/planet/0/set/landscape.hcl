@@ -14,14 +14,14 @@
 * эл. ландшафта по заданным параметрам.
 */
 inline void landscape(
-    __global       elementLandscape_t*       el,
-    __global const landscapePlanet_t*        lp,
-    __global const componentCell_t           cc,
-    __global const temperatureCell_t         tc,
-    __global const surfaceTemperatureCell_t  stc,
-    __global const rainfallCell_t            rc,
-    __global const drainageCell_t            dc,
-    uint2*                                   rstate
+    __global       elementLandscape_t*             el,
+    __global const landscapePlanet_t*              lp,
+    __global const portionComponent_t*             cc,
+    __global const behaviourTemperature_t*         tc,
+    __global const behaviourSurfaceTemperature_t*  stc,
+    __global const behaviourRainfall_t*            rc,
+    __global const behaviourDrainage_t*            dc,
+    uint2*                                         rstate
 ) {
     el->code = (enum CODE_ELEMENT_LANDSCAPE)intDiapasonRandom(
         rstate,  (int2)( 1, CEL_last - 1 )

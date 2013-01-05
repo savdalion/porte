@@ -1,3 +1,6 @@
+// #! CPU не понимает '#pragma OPENCL'.
+#ifdef GPU_OPENCL
+
 // –азрешаем запись в короткие регистры.
 // @todo optimize? –аботать только с длинными регистрами?
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
@@ -11,3 +14,5 @@
 #pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
 //#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 //#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
+
+#endif

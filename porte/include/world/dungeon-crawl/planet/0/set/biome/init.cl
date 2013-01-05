@@ -8,12 +8,12 @@
 
 
 inline void exteriorCrustBiome(
-    __global       biomeCell_t               bc,
-    __global const surfaceTemperatureCell_t  stc,
-    __global const rainfallCell_t            rc,
-    __global const drainageCell_t            dc,
-    __global const landscapeCell_t           lc,
-    uint2*                                   rstate
+    __global       presentBiome_t*                 bc,
+    __global const behaviourSurfaceTemperature_t*  stc,
+    __global const behaviourRainfall_t*            rc,
+    __global const behaviourDrainage_t*            dc,
+    __global const elementLandscape_t*             lc,
+    uint2*                                         rstate
 ) {
     /* @test
     bc[ 0 ].code = CB_TAIGA;

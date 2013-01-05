@@ -209,14 +209,20 @@ inline void Engine::prepareCLContext() {
     errorCL = oclGetPlatformID( &platformCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // Get the number of GPU devices available to the platform
+    // Get the number of devices available to the platform
+#ifdef GPU_OPENCL_PLANET_PORTE
     errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_GPU, 0, nullptr, &devCountCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // Create the device list
     devicesCL = new cl_device_id[ devCountCL ];
     errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_GPU, devCountCL, devicesCL, nullptr );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+#else
+    errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_CPU, 0, nullptr, &devCountCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    devicesCL = new cl_device_id[ devCountCL ];
+    errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_CPU, devCountCL, devicesCL, nullptr );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+#endif
 
     size_t endDevCL = devCountCL - 1;
     deviceUsedCL = CLAMP( deviceUsedCL, 0, endDevCL );
@@ -234,7 +240,7 @@ inline void Engine::prepareCLContext() {
 
 
 #ifdef _DEBUG
-    std::cout << "Выбрано устройство (OpenCL):" << std::endl;
+    std::cout << "Выбрано устройство OpenCL:" << std::endl;
     oclPrintDevInfo( LOGCONSOLE, devicesCL[ deviceUsedCL ] );
 #endif
 
@@ -440,6 +446,13 @@ inline std::string Engine::commonConstantCLKernel() {
     options
         // лечим точность для float
         << std::fixed
+
+        // на чём будет OpenCL (требует разного кода)
+#ifdef GPU_OPENCL_PLANET_PORTE
+        << " -D GPU_OPENCL"
+#else
+        << " -D CPU_OPENCL"
+#endif
 
         // component
         << " -D COMPONENT_GRID=" << pnp::COMPONENT_GRID

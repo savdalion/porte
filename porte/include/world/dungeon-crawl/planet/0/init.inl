@@ -669,7 +669,7 @@ inline void Engine::initIlluminance() {
 
 
 #ifdef _DEBUG
-    std::cout << " на первом пульсе" << std::endl;
+    std::cout << " (на первом пульсе)" << std::endl;
 #endif
 }
 #endif

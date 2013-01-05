@@ -69,7 +69,8 @@ inline bool spaceZone( __global const aboutPlanet_t* ap, float distanceByHalfSiz
 */
 inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distance, int4 nc ) {
     // обеспечиваем непрерывность сферы
-    static const float K = 2.5f;
+    // # Здесь не помешает хранение 'static', но CPU OpenCL не воспринимает его.
+    const float K = 2.5f;
     const float outerSphere = (float)GRID / 2.0f * ap->radius.crust;
     const float innerSphere = ((float)GRID / 2.0f - K) * ap->radius.crust;
 
@@ -83,7 +84,8 @@ inline bool exteriorCrustZone( __global const aboutPlanet_t* ap, float distance,
 */
 inline bool interiorAtmosphereZone( __global const aboutPlanet_t* ap, float distance, int4 nc ) {
     // обеспечиваем непрерывность сферы
-    static const float K = 2.5f;
+    // # Здесь не помешает хранение 'static', но CPU OpenCL не воспринимает его.
+    const float K = 2.5f;
     const float outerSphere = ((float)GRID / 2.0f + K) * ap->radius.crust;
     const float innerSphere = (float)GRID / 2.0f * ap->radius.crust;
 

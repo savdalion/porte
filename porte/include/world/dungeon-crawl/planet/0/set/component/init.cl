@@ -15,7 +15,7 @@
 *   # Проверка, что координата находится в требуемой зоне уже осуществлена.
 *   # Пропорции компонентов при инициализации не зависят от глубины залегания.
 */
-inline void zoneComponent( __global componentCell_t c, __global const zoneComponent_t* z ) {
+inline void zoneComponent( __global portionComponent_t* c,  __global const zoneComponent_t* z ) {
     /* @test
     for (uint k = 0; k < COMPONENT_CELL; ++k) {
         c[k].code  = CC_NONE;
@@ -68,7 +68,7 @@ inline void zoneComponent( __global componentCell_t c, __global const zoneCompon
 
 
 
-inline void coreComponent( __global componentCell_t c, __global const aboutPlanet_t* ap ) {
+inline void coreComponent( __global portionComponent_t* c, __global const aboutPlanet_t* ap ) {
     /* - Свёрнуто. См. ниже.
     // # В 1-й ячейке храниться по COMPONENT_CELL компонентов.
     uint k = 0;
@@ -95,28 +95,28 @@ inline void coreComponent( __global componentCell_t c, __global const aboutPlane
 
 
 
-inline void mantleComponent( __global componentCell_t c, __global const aboutPlanet_t* ap ) {
+inline void mantleComponent( __global portionComponent_t* c, __global const aboutPlanet_t* ap ) {
     zoneComponent( c, ap->component.mantle );
 }
 
 
 
 
-inline void crustComponent( __global componentCell_t c, __global const aboutPlanet_t* ap ) {
+inline void crustComponent( __global portionComponent_t* c, __global const aboutPlanet_t* ap ) {
     zoneComponent( c, ap->component.crust );
 }
 
 
 
 
-inline void atmosphereComponent( __global componentCell_t c, __global const aboutPlanet_t* ap ) {
+inline void atmosphereComponent( __global portionComponent_t* c, __global const aboutPlanet_t* ap ) {
     zoneComponent( c, ap->component.atmosphere );
 }
 
 
 
 
-inline void spaceComponent( __global componentCell_t c, __global const aboutPlanet_t* ap ) {
+inline void spaceComponent( __global portionComponent_t* c, __global const aboutPlanet_t* ap ) {
     zoneComponent( c, ap->component.space );
 }
 

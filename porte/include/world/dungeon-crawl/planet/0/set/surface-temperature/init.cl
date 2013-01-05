@@ -11,7 +11,7 @@
 * »нициализирует температуру на поверхности планетарной коры.
 *   # ѕроверка, что координата находитс€ в требуемой зоне уже осуществлена.
 */
-inline void exteriorCrustTemperature( __global surfaceTemperatureCell_t t, __global const aboutPlanet_t* ap, const int4 nc ) {
+inline void exteriorCrustTemperature( __global behaviourSurfaceTemperature_t* t, __global const aboutPlanet_t* ap, const int4 nc ) {
     // # „тобы сохранить похожесть с другими структурами, температура
     //   хранитс€ в наборе с кол-вом €чеек = 1.
     
@@ -34,7 +34,7 @@ inline void exteriorCrustTemperature( __global surfaceTemperatureCell_t t, __glo
 * »нициализирует температуру на прилегающей к планетарной коре зоне атмосферы.
 *   # ѕроверка, что координата находитс€ в требуемой зоне уже осуществлена.
 */
-inline void interiorAtmosphereTemperature( __global surfaceTemperatureCell_t t, __global const aboutPlanet_t* ap, const int4 nc ) {
+inline void interiorAtmosphereTemperature( __global behaviourSurfaceTemperature_t* t, __global const aboutPlanet_t* ap, const int4 nc ) {
     // @see exteriorCrustTemperature()
     const float ed = (float)nc.z / (float)MAX_COORD_GRID;
     const float pole = ap->surfaceTemperature.crust.pole;

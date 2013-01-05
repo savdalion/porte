@@ -186,7 +186,10 @@ inline void zoneLiving(
         */
         
         lc[i][o][lifeCycle].code = code;
-        static const float VOLUME_K = (float)(GRID * GRID * GRID / 9 + 1);
+
+        // # «десь не помешает хранение 'static', но CPU OpenCL не воспринимает его.
+        const float VOLUME_K = (float)(GRID * GRID * GRID / 9 + 1);
+
         const float powerIteration = z[k].count / ((float)ITERATION_GROW_COUNT * VOLUME_K);
         const float qty = grow * floatDice( rstate, 1, powerIteration );
         lc[i][o][lifeCycle].count += qty;

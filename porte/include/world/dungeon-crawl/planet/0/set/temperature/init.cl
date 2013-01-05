@@ -50,7 +50,7 @@ inline float zoneTemperature( __global const zoneTemperature_t* z, float radius,
 * »нициализирует температуру в заданной зоне области планеты.
 *   # ѕроверка, что координата находитс€ в требуемой зоне уже осуществлена.
 */
-inline void coreTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void coreTemperature( __global behaviourTemperature_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     // # „тобы сохранить похожесть с другими структурами, температура
     //   хранитс€ в наборе с кол-вом €чеек = 1.
 
@@ -60,7 +60,7 @@ inline void coreTemperature( __global temperatureCell_t t, __global const aboutP
 
 
 
-inline void mantleTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void mantleTemperature( __global behaviourTemperature_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     // @see coreTemperature()
     t[0].average = zoneTemperature( &ap->temperature.mantle, ap->radius.core, distanceByHalfSize );
 }
@@ -68,21 +68,21 @@ inline void mantleTemperature( __global temperatureCell_t t, __global const abou
 
 
 
-inline void crustTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void crustTemperature( __global behaviourTemperature_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     t[0].average = zoneTemperature( &ap->temperature.crust, ap->radius.core, distanceByHalfSize );
 }
 
 
 
 
-inline void atmosphereTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void atmosphereTemperature( __global behaviourTemperature_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     t[0].average = zoneTemperature( &ap->temperature.atmosphere, ap->radius.core, distanceByHalfSize );
 }
 
 
 
 
-inline void spaceTemperature( __global temperatureCell_t t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
+inline void spaceTemperature( __global behaviourTemperature_t* t, __global const aboutPlanet_t* ap, float distanceByHalfSize ) {
     t[0].average = zoneTemperature( &ap->temperature.space, ap->radius.core, distanceByHalfSize );
 }
 

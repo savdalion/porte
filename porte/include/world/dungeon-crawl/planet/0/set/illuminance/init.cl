@@ -11,7 +11,7 @@
 // @define illuminance-utils.h
 // @todo fine Разобраться, почему нельзя объявить метод только в illuminance-utils.h.
 void starIlluminancePlanet(
-    __global illuminanceCell_t  u,
+    __global sourceIlluminance_t*  u,
     const int ix, const int iy, const int iz,
     // планета
     const float  radius,

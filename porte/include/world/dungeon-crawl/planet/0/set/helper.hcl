@@ -20,23 +20,44 @@ __constant const float PRECISION = 1e-5f;
 */
 
 inline bool zero( const float a ) {
-    return  ( isless( a, PRECISION ) && isgreater( a, -PRECISION ) );
+// #! В CPU не реализованы некоторые функции.
+#ifdef GPU_OPENCL
+    return ( isless( a, PRECISION ) && isgreater( a, -PRECISION ) );
+#else
+    return ( (a < PRECISION) && (a > -PRECISION) );
+#endif
 }
 
 inline bool lZero( const float a ) {
-    return isless( a, -PRECISION );
+#ifdef GPU_OPENCL
+    return isless( a, 0.0f );
+#else
+    return (a < 0.0f);
+#endif
 }
 
 inline bool leZero( const float a ) {
-    return lZero( a ) || zero( a );
+#ifdef GPU_OPENCL
+    return isless( a, PRECISION );
+#else
+    return (a < PRECISION);
+#endif
 }
 
 inline bool gZero( const float a ) {
-    return isgreater( a, PRECISION );
+#ifdef GPU_OPENCL
+    return isgreater( a, 0.0f );
+#else
+    return (a > 0.0f);
+#endif
 }
 
 inline bool geZero( const float a ) {
-    return gZero( a ) || zero( a );
+#ifdef GPU_OPENCL
+    return isgreater( a, -PRECISION );
+#else
+    return (a > PRECISION);
+#endif
 }
 
 inline bool equal( const float a, const float b ) {
@@ -215,7 +236,8 @@ inline uint ic( const int4 nc ) {
 *      https://github.com/savdalion/typelib
 */
 inline int4 isc( const uint cell ) {
-    static const int4 a[27] = {
+    // # Здесь не помешает хранение 'static', но CPU OpenCL не воспринимает его.
+    const int4 a[27] = {
         // центральный 2D слой: 0-8
         (int4)(  0,  0,  0,  0 ),
         (int4)(  0,  0, +1,  0 ),

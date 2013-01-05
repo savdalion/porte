@@ -39,6 +39,15 @@ static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
 
 
 
+
+/**
+* Настраивает движок планетной системы для работы на GPU OpenCL.
+* Если не декларирован, движок работает на CPU OpenCL.
+*/
+//#define GPU_OPENCL_PLANET_PORTE
+
+
+
 /**
 * Включает движок звёздной системы на работу через OpenCL. Иначе,
 * подключается движок расчётов на CPU.
