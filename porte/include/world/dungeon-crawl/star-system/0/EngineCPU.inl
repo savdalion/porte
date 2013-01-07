@@ -30,7 +30,7 @@ inline EngineCPU::EngineCPU(
 
 
     // # Отдаём ссылку на себя слушателю.
-    ListenerStarSystem::engine = this;
+    ListenerStarSystem::mEngine = this;
 }
 
 
@@ -121,6 +121,10 @@ inline void EngineCPU::pulse() {
 
     // просматриваем события движка, информируем слушателей
     notify();
+
+
+    // собираем статистику для элементов портулана
+    statistics();
 }
 
 
@@ -677,6 +681,16 @@ inline void EngineCPU::notify(
 ) {
 }
 
+
+
+
+
+inline void EngineCPU::statistics() {
+    const auto& os = mPortulan.lock()->orderStatistics();
+    for (auto itr = os.cbegin(); itr != os.cend(); ++itr) {
+        itr->second->grabPulse( mLive.pulselive() );
+    }
+}
 
 
 

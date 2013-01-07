@@ -34,7 +34,7 @@ class ListenerPlanet :
 {
 protected:
     inline ListenerPlanet() :
-        engine( nullptr )
+        mEngine( nullptr )
     {
     }
 
@@ -71,7 +71,7 @@ public:
 
 
 protected:
-    E* engine;
+    E* mEngine;
 };
 
 

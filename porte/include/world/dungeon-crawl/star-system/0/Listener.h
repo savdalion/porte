@@ -47,7 +47,7 @@ public:
     /**
     * Завершился 1 пульс звёздной системы.
     */
-    virtual void afterPulse( AEngine::Ptr whose ) {}
+    virtual inline void afterPulse( AEngine::Ptr whose ) {}
 
 
 
@@ -57,7 +57,7 @@ public:
     *
     * @param deltaCountAsteroid Счётчик изменения в кол-ве астероидов.
     */
-    virtual void afterAsteroidCollisionStar(
+    virtual inline void afterAsteroidCollisionStar(
         AEngine::Ptr whose,
         pns::asteroidContent_t,  size_t ia,
         pns::starContent_t,      size_t ib,
@@ -74,7 +74,7 @@ public:
     * @param delta   Как изменилось кол-во: плюс - увеличилось,
     *        минус - уменьшилось.
     */
-    virtual void afterChangeCountAsteroid(
+    virtual inline void afterChangeCountAsteroid(
         size_t current,  int delta
     ) {}
 

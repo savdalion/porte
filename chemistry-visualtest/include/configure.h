@@ -15,5 +15,4 @@ static const std::string PATH_MEDIA =
 
 
     } // visualtest
-
 } // porte

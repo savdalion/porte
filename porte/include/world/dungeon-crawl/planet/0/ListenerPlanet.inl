@@ -6,20 +6,27 @@ namespace porte {
 
 
 namespace pnp = portulan::world::dungeoncrawl::planet::l0;
+namespace pniop = portulan::io::world::dungeoncrawl::planet::l0;
 namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 namespace pes = porte::world::dungeoncrawl::starsystem::l0;
 
 
-
-
 template< class E >
 inline void ListenerPlanet< E >::notifyAfterPulse() {
-    assert( engine &&
+    assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
 #ifdef _DEBUG
     // @test
-    std::cout << "Пульс планеты " << engine->live() << std::endl;
+    std::cout << "Пульс планеты " << mEngine->live() << std::endl;
+
+    // визуализируем
+    /* - @todo
+    pniop::StatOgre3DVisual::option_t  o;
+    o[ "source-options" ] = "visual-planet.json";
+    pniop::StatOgre3DVisual  visual( o );
+    engine->portulan()->draw( visual );
+    */
 #endif
 
     // # Просто заботимся, чтобы слушатели получили это событие.
@@ -40,12 +47,12 @@ inline void ListenerPlanet< E >::notifyAfterPulse() {
 template< class E >
 inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
 
-    assert( engine &&
+    assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
     // # Первый пульс выполняется всегда. Т.о. обеспечим глубокую инициализацию
     //   портуланов без необходимости делать это отдельно.
-    const bool notFirstPulse = !engine->live().first();
+    const bool notFirstPulse = !mEngine->live().first();
 
     // обеспечиваем доступ к движкам и портуланам
     assert( whose && "Не получен движок, которого слушают." );
@@ -59,17 +66,17 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
     //   звёздной системы.
     // сколько времени прошло с момента последнего пульса звёздной системы
     const auto timedelta =
-        engineStarSystem->live().timelive() - engine->live().timelive();
+        engineStarSystem->live().timelive() - mEngine->live().timelive();
     if ( (timedelta <= 0) && notFirstPulse ) {
         // холостой и обратный ход времени не отрабатываем
         return;
     }
 
     // сколько это в пульсах планеты
-    assert( (engine->timestep() > 0)
+    assert( (mEngine->timestep() > 0)
         && "Шаг времени для планеты должен быть больше 0." );
     const auto pulsedelta =
-        Pulse::pulsedelta( timedelta, engine->timestep() );
+        Pulse::pulsedelta( timedelta, mEngine->timestep() );
     // дожидаемся, когда время звёздной системы позволит отработать
     // хотя бы 1 пульс планеты (если это не 1-й пульс)
     if ( (pulsedelta == 0) && notFirstPulse ) {
@@ -85,7 +92,7 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
     // переводим планету на след. пульс
     // # Движок не любит отсутствие пульсов.
     // инициализацию от звёздной системы сделали выше
-    *engine << ( (pulsedelta > 0) ? pulsedelta : 1 );
+    *mEngine << ( (pulsedelta > 0) ? pulsedelta : 1 );
 
 
     // это чужое событие - не отправляем дальше
@@ -100,10 +107,10 @@ template< class E >
 inline void ListenerPlanet< E >::updatePlanetFromStarSystem(
     const pns::topology_t&  topologyStarSystem
 ) {
-    assert( engine &&
+    assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
-    auto& topology = engine->portulan()->topology().topology();
+    auto& topology = mEngine->portulan()->topology().topology();
 
     // источники освещения
     // звёзды

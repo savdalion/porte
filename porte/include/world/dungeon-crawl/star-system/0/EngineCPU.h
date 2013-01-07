@@ -3,7 +3,6 @@
 #include "../../../../../configure.h"
 #include "../../../../porte/EngineWithoutBooster.h"
 #include "ListenerStarSystem.h"
-
 #include <boost/algorithm/minmax_element.hpp>
 
 // # Все комментарии см. в planet::l0::Engine.
@@ -42,7 +41,9 @@ public:
 public:
     EngineCPU( real_t timestep );
 
+
     virtual ~EngineCPU();
+
 
 
 
@@ -80,6 +81,7 @@ private:
 
 
 
+
     /**
     * Какая сила действует на тело A со стороны B -> в 'force'.
     *
@@ -100,6 +102,7 @@ private:
 
 
 
+
     /**
     * @return true Если тела столкнулись (определяется параметром 'distance').
     */
@@ -108,6 +111,7 @@ private:
         const real_t coordB[ 3 ],
         real_t collisionDistance
     );
+
 
 
 
@@ -122,11 +126,21 @@ private:
 
 
 
+
+    /**
+    * Собирает статистику для элементов портулана.
+    */
+    void statistics();
+
+
+
+
     /**
     * Рассчитывает оптимальный шаг времени, опираясь на результат
     * метода timeConverge().
     */
     void calcOptimalTimestep( int step );
+
 
 
 
@@ -141,6 +155,7 @@ private:
         const pns::point_t& a,
         const pns::point_t& b
     );
+
 
 
 

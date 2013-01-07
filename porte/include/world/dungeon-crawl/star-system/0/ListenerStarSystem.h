@@ -32,7 +32,7 @@ class ListenerStarSystem :
 {
 protected:
     inline ListenerStarSystem() :
-        engine( nullptr )
+        mEngine( nullptr )
     {
     }
 
@@ -71,7 +71,7 @@ public:
 
 
 protected:
-    E* engine;
+    E* mEngine;
 };
 
 

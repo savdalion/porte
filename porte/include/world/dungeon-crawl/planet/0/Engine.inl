@@ -100,7 +100,7 @@ inline Engine::Engine(
 
 
     // # Отдаём ссылку на себя слушателю.
-    ListenerPlanet::engine = this;
+    ListenerPlanet::mEngine = this;
 }
 
 
@@ -454,6 +454,8 @@ inline std::string Engine::commonConstantCLKernel() {
         << " -D CPU_OPENCL"
 #endif
 
+        // @todo optimize fine Передавать только необходимые ядру константы.
+
         // component
         << " -D COMPONENT_GRID=" << pnp::COMPONENT_GRID
         << " -D MIN_COORD_COMPONENT_GRID=" << componentSMC_t::minCoord().x
@@ -518,6 +520,8 @@ inline std::string Engine::commonConstantCLKernel() {
         << " -D ENERGY_WASTE_LIVING=" << pnp::ENERGY_WASTE_LIVING
         << " -D HABITAT_SURVIVOR_LIVING=" << pnp::HABITAT_SURVIVOR_LIVING
         << " -D BIOME_COMFORT_SURVIVOR_LIVING=" << pnp::BIOME_COMFORT_SURVIVOR_LIVING
+        << " -D FRIEND_COUNT_LIVING=" << pnp::FRIEND_COUNT_LIVING
+        << " -D ENEMY_COUNT_LIVING=" << pnp::ENEMY_COUNT_LIVING
 
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION

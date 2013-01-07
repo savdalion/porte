@@ -29,7 +29,7 @@ public:
     /**
     * Завершился 1 пульс планеты.
     */
-    virtual void afterPulse( AEngine::Ptr whose ) {}
+    virtual inline void afterPulse( AEngine::Ptr whose ) {}
 
 
 

@@ -11,7 +11,7 @@ namespace porte {
 * Определения могут быть использованы для отключения сохранения данных
 * в файлах.
 */
-#if 1
+#if 0
 #define COMPONENT_SNAPSHOT_VISUALTEST
 #define TEMPERATURE_SNAPSHOT_VISUALTEST
 #define SURFACE_TEMPERATURE_SNAPSHOT_VISUALTEST
@@ -45,17 +45,6 @@ namespace porte {
 // #! Выяснено: Использовать для систем с огромными расстояниями...
 //    не практично.
 //#define ND_STARSYSTEM_L0_ENGINE_PORTE
-
-
-/**
-* Разрешает использовать тип 'double' в движках PORTE.
-* Без этой директивы движки стараются поместиться в 'float'.
-* 
-* #! Не все видеокарты поддерживают 'double' для OpenCL.
-*
-* @see typedef real_t
-*/
-#define PERMIT_DOUBLE_ENGINE_PORTE
 
 
     } // visualtest

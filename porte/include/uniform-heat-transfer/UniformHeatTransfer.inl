@@ -374,14 +374,19 @@ inline void UniformHeatTransfer< SX, SY, SZ >::prepare() {
     errorCL = oclGetPlatformID( &platformCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    // Get the number of GPU devices available to the platform
+#ifdef GPU_OPENCL_UHT_PORTE
     errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_GPU, 0, nullptr, &devCountCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // Create the device list
     devicesCL = new cl_device_id[ devCountCL ];
     errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_GPU, devCountCL, devicesCL, nullptr );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+#else
+    errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_CPU, 0, nullptr, &devCountCL );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    devicesCL = new cl_device_id[ devCountCL ];
+    errorCL = clGetDeviceIDs( platformCL, CL_DEVICE_TYPE_CPU, devCountCL, devicesCL, nullptr );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+#endif
 
     size_t endDevCL = devCountCL - 1;
     deviceUsedCL = CLAMP( deviceUsedCL, 0, endDevCL );

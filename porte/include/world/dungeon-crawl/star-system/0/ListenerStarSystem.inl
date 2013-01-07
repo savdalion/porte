@@ -10,11 +10,12 @@ namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAfterPulse() {
-    assert( engine &&
+    assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
     // отрабатываем своё событие
     // # Просто заботимся, чтобы слушатели получили это событие.
+
 
     // отправляем *своё* событие другим слушателям
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
@@ -23,6 +24,7 @@ inline void ListenerStarSystem< E >::notifyAfterPulse() {
     ) { if ( etr ) {
         etr->listener.lock()->afterPulse( etr->whose );
     } }
+
 }
 
 
@@ -35,7 +37,7 @@ inline void ListenerStarSystem< E >::notifyAfterAsteroidCollisionStar(
     pns::starContent_t     b,  size_t ib,
     pns::deltaElement_t&   delta
 ) {
-    assert( engine &&
+    assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
     // отрабатываем своё событие

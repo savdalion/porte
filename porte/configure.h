@@ -27,7 +27,7 @@ static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
 * Отключается, как правило, для отладки.
 *   # Необходимо помнить о зависимостях элементов друг от друга.
 */
-#if 1
+#if 0
 #define COMPONENT_DUNGEONCRAWL_PORTE
 #define TEMPERATURE_DUNGEONCRAWL_PORTE
 #define SURFACE_TEMPERATURE_DUNGEONCRAWL_PORTE
@@ -59,6 +59,20 @@ static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
 //#define OPENCL_STARSYSTEM_L0_ENGINE_PORTE
 #define ND_STARSYSTEM_L0_ENGINE_PORTE
 */
+
+
+
+
+/**
+* Разрешает использовать тип 'double' в движках PORTE.
+* Без этой директивы движки стараются поместиться в 'float'.
+* 
+* #! Не все видеокарты поддерживают 'double' для OpenCL.
+*
+* @see typedef real_t
+* @see portulan::PERMIT_DOUBLE_ENGINE_PORTULAN
+*/
+#define PERMIT_DOUBLE_ENGINE_PORTE
 
 
 } // porte
