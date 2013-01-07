@@ -171,7 +171,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_STAR, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countStar;
     }
@@ -210,7 +210,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_STAR, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countStar;
     }
@@ -249,7 +249,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_STAR, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countStar;
     }
@@ -331,7 +331,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
     }
@@ -370,7 +370,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
 
@@ -409,7 +409,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
     }
@@ -443,7 +443,7 @@ int main( int argc, char** argv ) {
 
         // заявка на сбор статистики
         static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
-        starSystem->addOrderStatistics( uide );
+        starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
     }
