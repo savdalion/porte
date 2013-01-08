@@ -83,6 +83,33 @@ private:
 
 
     /**
+    * Распределяет запомненные наблюдателем события между участниками
+    * (элементами звёздной системы).
+    *
+    * @see observer_t
+    */
+    void dealEvent();
+    void dealEventCollision( pns::eventTwo_t* );
+    void dealEventCollision( pns::eventTwo_t*,  pns::aboutAsteroid_t*,  pns::aboutStar_t* );
+    void dealEventCollision( pns::eventTwo_t*,  pns::aboutStar_t*,  pns::aboutAsteroid_t* );
+
+
+
+
+    /**
+    * В памяти элементов звёздной системы остаются только уникальные события.
+    * Память наблюдателя не затрагивается.
+    *
+    *  #! Порядок запомненных событий не сохраняется.
+    *
+    * @see observer_t
+    */
+    void uniqueEvent();
+
+
+
+
+    /**
     * Какая сила действует на тело A со стороны B -> в 'force'.
     *
     * @return false Если тела столкнулись (определяется параметром
@@ -117,12 +144,12 @@ private:
 
     /**
     * Просматривает события движка, информирует слушателей.
-    * notify() с параметрами вызывается для конкретного элемента.
+    * notifyAndCompleteEvent() с параметрами вызывается для конкретного элемента.
     */
-    void notify();
-    void notify( pns::aboutAsteroid_t*, size_t currentI, pns::deltaElement_t& );
-    void notify( pns::aboutPlanet_t*,   size_t currentI );
-    void notify( pns::aboutStar_t*,     size_t currentI );
+    void notifyAndCompleteEvent();
+    void notifyAndCompleteEvent( pns::aboutAsteroid_t*,  size_t currentI,  pns::deltaElement_t& );
+    void notifyAndCompleteEvent( pns::aboutPlanet_t*,    size_t currentI,  pns::deltaElement_t& );
+    void notifyAndCompleteEvent( pns::aboutStar_t*,      size_t currentI,  pns::deltaElement_t& );
 
 
 

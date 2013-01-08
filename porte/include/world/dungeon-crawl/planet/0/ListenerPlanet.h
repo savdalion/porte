@@ -45,7 +45,7 @@ public:
     /**
     * # Просто заботимся, чтобы слушатели получили это событие.
     */
-    void notifyAfterPulse();
+    void notifyAndCompletePulse();
 
 
 

@@ -144,12 +144,14 @@ int main( int argc, char** argv ) {
 #if 1
     // Звезда I
     // центр
-#if 0
+#if 1
     {
         static const pns::uid_t uid = 1;
         static const pns::aboutStar_t star = {
             // uid
             uid,
+            // live
+            true,
             // mass
             1.9891e30,
             // radius
@@ -180,15 +182,17 @@ int main( int argc, char** argv ) {
     // Звезда II
     // слева
     // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-#if 1
+#if 0
     {
         static const pns::uid_t uid = 2;
         static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
             1.9891e30,  1.9891e30 + 1.9891e30,  (6.9551e8 * 70.0) * 2.0
-        ) / 2.0;
+        ) / 1.9;
         static const pns::aboutStar_t star = {
             // uid
             uid,
+            // live
+            true,
             // mass
             1.9891e30,
             // radius
@@ -219,15 +223,17 @@ int main( int argc, char** argv ) {
     // Звезда III
     // справа
     // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-#if 1
+#if 0
     {
         static const pns::uid_t uid = 3;
         static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
             1.9891e30,  1.9891e30 + 1.9891e30,  (6.9551e8 * 70.0) * 2.0
-        ) / 2.0;
+        ) / 1.9;
         static const pns::aboutStar_t star = {
             // uid
             uid,
+            // live
+            true,
             // mass
             1.9891e30,
             // radius
@@ -271,7 +277,7 @@ int main( int argc, char** argv ) {
     // #! При добавлении новых звёзд (Звезда I == Солнце), для каждой планеты
     //    следует отрегулировать скорость.
 
-#if 1
+#if 0
     // Меркурий
     // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%80%D0%BA%D1%83%D1%80%D0%B8%D0%B9_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
 #if 0
@@ -283,6 +289,8 @@ int main( int argc, char** argv ) {
         static const pns::aboutPlanet_t planet = {
             // uid
             uid,
+            // live
+            true,
             // mass
             3.33022e23,
             // radius
@@ -313,6 +321,8 @@ int main( int argc, char** argv ) {
         static const pns::aboutPlanet_t planet = {
             // uid
             uid,
+            // live
+            true,
             // mass
             4.8685e24,
             // radius
@@ -348,6 +358,8 @@ int main( int argc, char** argv ) {
         static const pns::aboutPlanet_t planet = {
             // uid
             uid,
+            // live
+            true,
             // mass
             5.9736e24,
             // radius
@@ -391,6 +403,8 @@ int main( int argc, char** argv ) {
         static const pns::aboutPlanet_t planet = {
             // uid
             uid,
+            // live
+            true,
             // mass
             0.64185e24,
             // radius
@@ -426,6 +440,8 @@ int main( int argc, char** argv ) {
         static const pns::aboutPlanet_t planet = {
             // uid
             uid,
+            // live
+            true,
             // mass
             1.1e24,
             // radius
@@ -460,12 +476,12 @@ int main( int argc, char** argv ) {
     // астероиды
     // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
     // @source http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%8F%D1%81_%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4%D0%BE%D0%B2
-    static const size_t N_ASTEROID = 100;
+    static const size_t N_ASTEROID = 1000;
     assert( (N_ASTEROID <= pns::ASTEROID_COUNT) &&
-        "Количество астероидов превышает зарезервированный для них объём." );
+        "Количество астероидов превышает зарезервированный для них объём. См. ASTEROID_COUNT." );
     size_t countAsteroid = 0;
 
-#if 0
+#if 1
     pns::asteroid_t asteroid = {};
     auto& tac = topology.asteroid.content;
     {
@@ -515,6 +531,8 @@ int main( int argc, char** argv ) {
             const pns::aboutAsteroid_t asteroid = {
                 // uid
                 i + 1,
+                // live
+                true,
                 // mass
                 mass,
                 // size

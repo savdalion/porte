@@ -12,7 +12,7 @@ namespace pes = porte::world::dungeoncrawl::starsystem::l0;
 
 
 template< class E >
-inline void ListenerPlanet< E >::notifyAfterPulse() {
+inline void ListenerPlanet< E >::notifyAndCompletePulse() {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 

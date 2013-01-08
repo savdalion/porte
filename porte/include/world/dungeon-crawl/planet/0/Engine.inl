@@ -194,7 +194,7 @@ inline void Engine::pulse() {
 
 
     // пульс пройден
-    notifyAfterPulse();
+    notifyAndCompletePulse();
 }
 
 

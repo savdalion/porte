@@ -56,11 +56,94 @@ public:
     * Астероид столкнулся со звездой.
     *
     * @param deltaCountAsteroid Счётчик изменения в кол-ве астероидов.
+    *
+    * # Все методы ниже вида 'after[A]Collision[B]' обозначают событие
+    *   'после того, как тело A столкнулось с телом B'.
     */
     virtual inline void afterAsteroidCollisionStar(
         AEngine::Ptr whose,
         pns::asteroidContent_t,  size_t ia,
         pns::starContent_t,      size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterAsteroidCollisionPlanet(
+        AEngine::Ptr whose,
+        pns::asteroidContent_t,  size_t ia,
+        pns::planetContent_t,    size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterAsteroidCollisionAsteroid(
+        AEngine::Ptr whose,
+        pns::asteroidContent_t,  size_t ia,
+        pns::asteroidContent_t,  size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterPlanetCollisionStar(
+        AEngine::Ptr whose,
+        pns::planetContent_t,  size_t ia,
+        pns::starContent_t,    size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterPlanetCollisionPlanet(
+        AEngine::Ptr whose,
+        pns::planetContent_t,  size_t ia,
+        pns::planetContent_t,  size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterPlanetCollisionAsteroid(
+        AEngine::Ptr whose,
+        pns::planetContent_t,    size_t ia,
+        pns::asteroidContent_t,  size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterStarCollisionStar(
+        AEngine::Ptr whose,
+        pns::starContent_t,  size_t ia,
+        pns::starContent_t,  size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterStarCollisionPlanet(
+        AEngine::Ptr whose,
+        pns::starContent_t,    size_t ia,
+        pns::planetContent_t,  size_t ib,
+        const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterStarCollisionAsteroid(
+        AEngine::Ptr whose,
+        pns::starContent_t,      size_t ia,
+        pns::asteroidContent_t,  size_t ib,
         const pns::deltaElement_t&
     ) {}
 
@@ -75,6 +158,20 @@ public:
     *        минус - уменьшилось.
     */
     virtual inline void afterChangeCountAsteroid(
+        size_t current,  int delta
+    ) {}
+
+
+
+
+    virtual inline void afterChangeCountPlanet(
+        size_t current,  int delta
+    ) {}
+
+
+
+
+    virtual inline void afterChangeCountStar(
         size_t current,  int delta
     ) {}
 

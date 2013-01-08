@@ -662,7 +662,7 @@ inline void Engine::initIlluminance() {
 
     // # Делается на первом пульсе по сигналу от звёздной системы. Сейчас
     //   погрузим планету в полную темноту.
-    // @see ListenerPlanet::notifyAfterPulse()
+    // @see ListenerPlanet::notifyAndCompletePulse()
     std::memset( topology.illuminance.content, 0, memsizeIlluminance );
     static const pnp::aboutIlluminanceSource_t ais = {};
     topology.aboutIlluminanceSource = ais;

@@ -77,12 +77,19 @@ inline void EngineCPU::pulse() {
 
     assert( !mPortulan.expired() );
     auto& topology = mPortulan.lock()->topology().topology();
+    auto& observer = topology.observer;
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
 
     // рассчитываем воздействия на тела звёздной системы
     // # Реализуем т.о., чтобы минимальными усилиями перенести на OpenCL.
+    //   Для этого (1) запомним события с двумя и более участниками в
+    //   памяти наблюдателя (observer_t), чтобы (2) после уведомить всех
+    //   участников события, а потом (3) корректно и *независимо* отработать
+    //   события каждым участником.
+
+    // (1) запомним события с двумя и более участниками в памяти наблюдателя
 
     // воздействие на астероиды
     for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
@@ -112,15 +119,20 @@ inline void EngineCPU::pulse() {
     }
 
 
+    // (2) уведомим всех участников событий
+    dealEvent();
+
+
+    // (3) корректно и *независимо* отработаем события каждым участником,
+    // уведомляем слушателей
+    notifyAndCompleteEvent();
+
+
+    // мир становится старше
     mLive.inc( mTimestep );
 
-
     // пульс пройден
-    notifyAfterPulse();
-
-
-    // просматриваем события движка, информируем слушателей
-    notify();
+    notifyAndCompletePulse();
 
 
     // собираем статистику для элементов портулана
@@ -136,7 +148,8 @@ inline void EngineCPU::asteroidImpactIn(
     size_t currentI
 ) {
     assert( !mPortulan.expired() );
-    const auto& topology = mPortulan.lock()->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& observer = topology.observer;
     const auto& asteroid = topology.asteroid.content;
     const auto& planet   = topology.planet.content;
     const auto& star     = topology.star.content;
@@ -150,7 +163,7 @@ inline void EngineCPU::asteroidImpactIn(
     };
 
     const real_t maxSide =
-        std::max( std::max( aa->size[ 0 ], aa->size[ 1 ] ), aa->size[ 2 ] );
+        typelib::max( aa->size[ 0 ], aa->size[ 1 ], aa->size[ 2 ] );
 
 
     // действие астероидов
@@ -168,7 +181,7 @@ inline void EngineCPU::asteroidImpactIn(
             break;
         }
         const real_t maxSideK =
-            std::max( std::max( aak.size[ 0 ], aak.size[ 1 ] ), aak.size[ 2 ] );
+            typelib::max( aak.size[ 0 ], aak.size[ 1 ], aak.size[ 2 ] );
         const real_t collisionDistance = std::max( maxSide, maxSideK );
         if ( collision( aa->coord, aak.coord, collisionDistance ) ) {
             memorizeNext(
@@ -195,10 +208,9 @@ inline void EngineCPU::asteroidImpactIn(
             { apk.rotation[ 0 ], apk.rotation[ 1 ], apk.rotation[ 2 ] }
         };
         const real_t noForceDistance = std::max( maxSide, apk.radius );
-        const bool collision = !forceGravityBodyAImpactIn(
-            force,  a, b, noForceDistance
-        );
-        if ( collision ) {
+        const bool hasCollision =
+            !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
+        if ( hasCollision ) {
             const pns::event_t event = {
                 // uid события
                 pns::E_COLLISION,
@@ -211,7 +223,7 @@ inline void EngineCPU::asteroidImpactIn(
 #endif
         }
 
-    } // for (size_t k = 0; k < pns::PLANET_COUNT; ++k)
+    } // for (size_t k = 0 ...
 
 
     // действие звёзд
@@ -229,23 +241,23 @@ inline void EngineCPU::asteroidImpactIn(
             { ask.rotation[ 0 ], ask.rotation[ 1 ], ask.rotation[ 2 ] }
         };
         const real_t noForceDistance = std::max( maxSide, ask.radius );
-        const bool collision = !forceGravityBodyAImpactIn(
-            force,  a, b, noForceDistance
-        );
-        if ( collision ) {
-            const pns::event_t event = {
+        const bool hasCollision =
+            !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
+        if ( hasCollision ) {
+            const pns::eventTwo_t eventTwo = {
                 // uid события
                 pns::E_COLLISION,
-                // pi второй участник события
-                { pns::GE_STAR, k, ask.uid }
+                // участники события
+                { pns::GE_ASTEROID,  currentI,  aa->uid },
+                { pns::GE_STAR,      k,         ask.uid }
             };
-            pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_ASTEROID, aa->uid, event, true );
+            pns::printEventTwo( eventTwo, true );
 #endif
         }
 
-    } // for (size_t k = 0; k < pns::STAR_COUNT; ++k)
+    } // for (size_t k = 0 ...
 
 
     // запоминаем силу
@@ -271,7 +283,7 @@ inline void EngineCPU::asteroidImpactIn(
     aa->velocity[ 1 ] += force[ 1 ] * v;
     aa->velocity[ 2 ] += force[ 2 ] * v;
 
-    // новые координатыq
+    // новые координаты
     aa->coord[ 0 ] += aa->velocity[ 0 ] * timestep();
     aa->coord[ 1 ] += aa->velocity[ 1 ] * timestep();
     aa->coord[ 2 ] += aa->velocity[ 2 ] * timestep();
@@ -286,7 +298,8 @@ inline void EngineCPU::planetImpactIn(
     size_t currentI
 ) {
     assert( !mPortulan.expired() );
-    const auto& topology = mPortulan.lock()->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& observer = topology.observer;
     const auto& asteroid = topology.asteroid.content;
     const auto& planet   = topology.planet.content;
     const auto& star     = topology.star.content;
@@ -323,11 +336,22 @@ inline void EngineCPU::planetImpactIn(
             { apk.rotation[ 0 ], apk.rotation[ 1 ], apk.rotation[ 2 ] }
         };
         const real_t noForceDistance = std::max( ap->radius, apk.radius );
-        const bool collision = !forceGravityBodyAImpactIn(
-            force,  a, b, noForceDistance
-        );
+        const bool hasCollision =
+            !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
+        if ( hasCollision ) {
+            const pns::event_t event = {
+                // uid события
+                pns::E_COLLISION,
+                // pi второй участник события
+                { pns::GE_PLANET, k, apk.uid }
+            };
+            pns::planetMemorizeEvent( &ap->memoryEvent, event );
+#ifdef _DEBUG
+            pns::printEvent( pns::GE_PLANET, ap->uid, event, true );
+#endif
+        }
 
-    } // for (size_t k = 0; k < pns::PLANET_COUNT; ++k)
+    } // for (size_t k = 0 ...
 
 
     // действие звёзд
@@ -345,11 +369,22 @@ inline void EngineCPU::planetImpactIn(
             { ask.rotation[ 0 ], ask.rotation[ 1 ], ask.rotation[ 2 ] }
         };
         const real_t noForceDistance = std::max( ap->radius, ask.radius );
-        const bool collision = !forceGravityBodyAImpactIn(
-            force,  a, b, noForceDistance
-        );
+        const bool hasCollision =
+            !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
+        if ( hasCollision ) {
+            const pns::event_t event = {
+                // uid события
+                pns::E_COLLISION,
+                // pi второй участник события
+                { pns::GE_STAR, k, ask.uid }
+            };
+            pns::planetMemorizeEvent( &ap->memoryEvent, event );
+#ifdef _DEBUG
+            pns::printEvent( pns::GE_PLANET, ap->uid, event, true );
+#endif
+        }
 
-    } // for (size_t k = 0; k < pns::STAR_COUNT; ++k)
+    } // for (size_t k = 0 ...
 
 
     // запоминаем силу
@@ -396,7 +431,8 @@ inline void EngineCPU::starImpactIn(
     size_t currentI
 ) {
     assert( !mPortulan.expired() );
-    const auto& topology = mPortulan.lock()->topology().topology();
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& observer = topology.observer;
     const auto& asteroid = topology.asteroid.content;
     const auto& planet   = topology.planet.content;
     const auto& star     = topology.star.content;
@@ -412,6 +448,33 @@ inline void EngineCPU::starImpactIn(
 
     // действие астероидов
     // # Слишком малы, чтобы гравитационно воздействовать на звезду.
+    // отрабатываем только события, важные для звезды
+    for (size_t k = 0; k < pns::ASTEROID_COUNT; ++k) {
+        // события, регистрируемые звездой со стороны астероида 'k'
+        const pns::aboutAsteroid_t& aak = asteroid[ k ];
+        if ( pns::absentAsteroid( aak ) ) {
+            // # Отсутствующий элемент - сигнал конца списка.
+            break;
+        }
+        const real_t collisionDistance =
+            typelib::max( as->radius, aak.size[ 0 ], aak.size[ 1 ], aak.size[ 2 ] );
+        const bool hasCollision =
+            collision( as->coord, aak.coord, collisionDistance );
+        if ( hasCollision ) {
+            const pns::eventTwo_t eventTwo = {
+                // uid события
+                pns::E_COLLISION,
+                // участники события
+                { pns::GE_STAR,      currentI,  as->uid },
+                { pns::GE_ASTEROID,  k,         aak.uid }
+            };
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
+#ifdef _DEBUG
+            pns::printEventTwo( eventTwo, true );
+#endif
+        }
+
+    } // for (size_t k = 0 ...
 
 
     // действие планет
@@ -437,11 +500,22 @@ inline void EngineCPU::starImpactIn(
             { ask.rotation[ 0 ], ask.rotation[ 1 ], ask.rotation[ 2 ] }
         };
         const real_t noForceDistance = std::max( as->radius, ask.radius );
-        const bool collision = !forceGravityBodyAImpactIn(
-            force,  a, b, noForceDistance
-        );
+        const bool hasCollision =
+            !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
+        if ( hasCollision ) {
+            const pns::event_t event = {
+                // uid события
+                pns::E_COLLISION,
+                // pi второй участник события
+                { pns::GE_STAR, k, ask.uid }
+            };
+            pns::starMemorizeEvent( &as->memoryEvent, event );
+#ifdef _DEBUG
+            pns::printEvent( pns::GE_STAR, as->uid, event, true );
+#endif
+        }
 
-    } // for (size_t k = 0; k < pns::STAR_COUNT; ++k)
+    } // for (size_t k = 0 ...
 
 
     // запоминаем силу
@@ -476,6 +550,188 @@ inline void EngineCPU::starImpactIn(
 
 
 
+inline void EngineCPU::dealEvent() {
+    assert( !mPortulan.expired() );
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& observer = topology.observer;
+
+    // просмотрим память наблюдателя и передадим события в память участников
+
+    // просмотр начинаем с последнего запомненного, в обратном порядке,
+    // до тех пор, пока не просмотрим всё
+    assert( (observer.memoryEventTwo.waldo < pns::OBSERVER_EVENT_TWO_COUNT)
+        && "Валдо находится за пределами выделенной для событий памяти." );
+    for (int k = observer.memoryEventTwo.waldo - 1; k != -1; --k) {
+        pns::eventTwo_t& eventTwo = observer.memoryEventTwo.content[ k ];
+        switch ( eventTwo.uid ) {
+            case pns::E_NONE:
+                // нам не интересны пустые события
+                break;
+
+            case pns::E_COLLISION:
+                dealEventCollision( &eventTwo );
+                break;
+
+            default:
+                assert( false
+                    && "Неизвестное событие." );
+        }
+
+    } // for (int k = ...
+
+
+    // из-за того, что наблюдатель раздаёт события *всем* участникам (см.
+    // выше), события могут дублироваться, корректируем
+    uniqueEvent();
+}
+
+
+
+
+inline void EngineCPU::uniqueEvent() {
+    assert( !mPortulan.expired() );
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& asteroid = topology.asteroid.content;
+    auto& planet   = topology.planet.content;
+    auto& star     = topology.star.content;
+
+    // просмотрим память элементов и удалим дубликаты событий
+    // # Кандидат на параллельную обработку. Вынесено в utils.h.
+
+    for (size_t k = 0; k < pns::ASTEROID_COUNT; ++k) {
+        pns::aboutAsteroid_t& e = asteroid[ k ];
+        if ( pns::absentAsteroid( e ) ) {
+            // # Отсутствующий элемент - сигнал конца списка.
+            break;
+        }
+        pns::asteroidUniqueEvent( &e.memoryEvent );
+    }
+
+
+    for (size_t k = 0; k < pns::PLANET_COUNT; ++k) {
+        pns::aboutPlanet_t& e = planet[ k ];
+        if ( pns::absentPlanet( e ) ) {
+            // # Отсутствующий элемент - сигнал конца списка.
+            break;
+        }
+        pns::planetUniqueEvent( &e.memoryEvent );
+    }
+
+
+    for (size_t k = 0; k < pns::STAR_COUNT; ++k) {
+        pns::aboutStar_t& e = star[ k ];
+        if ( pns::absentStar( e ) ) {
+            // # Отсутствующий элемент - сигнал конца списка.
+            break;
+        }
+        pns::starUniqueEvent( &e.memoryEvent );
+    }
+}
+
+
+
+
+inline void EngineCPU::dealEventCollision( pns::eventTwo_t* eventTwo ) {
+
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& observer = topology.observer;
+    auto& asteroid = topology.asteroid.content;
+    auto& planet   = topology.planet.content;
+    auto& star     = topology.star.content;
+
+    // @todo fine? Переписать обработку событий через классы.
+    const auto geA = eventTwo->piA.ge;
+    const auto geB = eventTwo->piB.ge;
+    const auto iA = eventTwo->piA.ii;
+    const auto iB = eventTwo->piB.ii;
+    switch ( geA ) {
+        case pns::GE_ASTEROID:
+            switch ( geB ) {
+                case pns::GE_STAR:
+                    dealEventCollision( eventTwo,  &asteroid[ iA ],  &star[ iB ] );
+                    break;
+            }
+            break;
+
+        case pns::GE_STAR:
+            switch ( geB ) {
+                case pns::GE_ASTEROID:
+                    dealEventCollision( eventTwo,  &star[ iA ],  &asteroid[ iB ] );
+                    break;
+            }
+            break;
+
+        // @todo ...
+
+    } // switch ( geA )
+}
+
+
+
+
+inline void EngineCPU::dealEventCollision(
+    pns::eventTwo_t*       eventTwo,
+    pns::aboutAsteroid_t*  aa,
+    pns::aboutStar_t*      as
+) {
+    // разбиваем событие на части и передаём участникам
+
+    // I Астероид столкнулся со звездой
+    const pns::event_t eventAsteroid = {
+        // uid события
+        pns::E_COLLISION,
+        // другой участник события
+        eventTwo->piB
+    };
+    pns::asteroidMemorizeEvent( &aa->memoryEvent, eventAsteroid );
+
+    // II Звезда столкнулась с астероидом
+    const pns::event_t eventStar = {
+        // uid события
+        pns::E_COLLISION,
+        // другой участник события
+        eventTwo->piA
+    };
+    pns::starMemorizeEvent( &as->memoryEvent, eventStar );
+
+    // # Отработанное событие наблюдатель забывает.
+    forgetEventTwo( eventTwo );
+}
+
+
+
+
+inline void EngineCPU::dealEventCollision(
+    pns::eventTwo_t*       eventTwo,
+    pns::aboutStar_t*      as,
+    pns::aboutAsteroid_t*  aa
+) {
+    // разбиваем событие на части и передаём участникам
+
+    // I Звезда столкнулась с астероидом
+    const pns::event_t eventStar = {
+        // uid события
+        pns::E_COLLISION,
+        // другой участник события
+        eventTwo->piB
+    };
+    pns::starMemorizeEvent( &as->memoryEvent, eventStar );
+
+    // II Астероид столкнулся со звездой
+    const pns::event_t eventAsteroid = {
+        // uid события
+        pns::E_COLLISION,
+        // другой участник события
+        eventTwo->piA
+    };
+    pns::asteroidMemorizeEvent( &aa->memoryEvent, eventAsteroid );
+
+    // # Отработанное событие наблюдатель забывает.
+    forgetEventTwo( eventTwo );
+}
+
+
+
 
 inline bool EngineCPU::forceGravityBodyAImpactIn(
     real_t force[ 3 ],
@@ -494,7 +750,7 @@ inline bool EngineCPU::forceGravityBodyAImpactIn(
         r[ 1 ] * r[ 1 ] +
         r[ 2 ] * r[ 2 ]
     );
-    if (distance2 <= (noForceDistance * noForceDistance)) {
+    if (distance2 < (noForceDistance * noForceDistance)) {
         // при столкновениях отключаем силу
         return false;
     }
@@ -539,14 +795,14 @@ inline bool EngineCPU::collision(
         r[ 2 ] * r[ 2 ]
     );
 
-    return (distance2 <= (collisionDistance * collisionDistance));
+    return (distance2 < (collisionDistance * collisionDistance));
 }
 
 
 
 
 
-inline void EngineCPU::notify() {
+inline void EngineCPU::notifyAndCompleteEvent() {
     // каждый элемент звёздной системы хранит информацию о событиях,
     // которые с ним произошли
 
@@ -567,15 +823,15 @@ inline void EngineCPU::notify() {
             if ( pns::absentAsteroid( e ) ) {
                 break;
             }
-            notify( &e, i, delta );
+            notifyAndCompleteEvent( &e, i, delta );
         }
 
         // уведомляем подписчиков о прочих изменениях
         // @see #Соглашения в начале метода.
         if (delta.asteroid.count != 0) {
-            const size_t currentCountAsteroid =
+            const size_t currentCount =
                 pns::countAsteroid( asteroid, true );
-            afterChangeCountAsteroid( currentCountAsteroid, delta.asteroid.count );
+            afterChangeCountAsteroid( currentCount, delta.asteroid.count );
         }
     }
 
@@ -587,7 +843,15 @@ inline void EngineCPU::notify() {
             if ( pns::absentPlanet( e ) ) {
                 break;
             }
-            notify( &e, i );
+            notifyAndCompleteEvent( &e, i, delta );
+        }
+
+        // уведомляем подписчиков о прочих изменениях
+        // @see #Соглашения в начале метода.
+        if (delta.planet.count != 0) {
+            const size_t currentCount =
+                pns::countPlanet( planet, true );
+            afterChangeCountPlanet( currentCount, delta.planet.count );
         }
     }
 
@@ -599,7 +863,15 @@ inline void EngineCPU::notify() {
             if ( pns::absentStar( e ) ) {
                 break;
             }
-            notify( &e, i );
+            notifyAndCompleteEvent( &e, i, delta );
+        }
+
+        // уведомляем подписчиков о прочих изменениях
+        // @see #Соглашения в начале метода.
+        if (delta.star.count != 0) {
+            const size_t currentCount =
+                pns::countStar( star, true );
+            afterChangeCountStar( currentCount, delta.star.count );
         }
     }
 }
@@ -607,23 +879,26 @@ inline void EngineCPU::notify() {
 
 
 
-inline void EngineCPU::notify(
-    pns::aboutAsteroid_t* aa,
-    size_t currentI,
-    pns::deltaElement_t& delta
+inline void EngineCPU::notifyAndCompleteEvent(
+    pns::aboutAsteroid_t*  aa,
+    size_t                 currentI,
+    pns::deltaElement_t&   delta
 ) {
     assert( !mPortulan.expired() );
+
     auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
 
     // просматриваем события, отрабатываем, забываем
-    bool needOptimizeAsteroid = false;
+    const auto pastCount = delta.asteroid.count;
 
     // просмотр начинаем с последнего запомненного, в обратном порядке,
     // до тех пор, пока не просмотрим всё
-    for (int k = aa->memoryEvent.ck - 1; k != aa->memoryEvent.ck; --k) {
+    assert( (aa->memoryEvent.waldo < pns::ASTEROID_EVENT_COUNT)
+        && "Валдо находится за пределами выделенной для событий памяти." );
+    for (int k = aa->memoryEvent.waldo - 1; k != aa->memoryEvent.waldo; --k) {
         if (k < 0) {
             k = pns::ASTEROID_EVENT_COUNT - 1;
         }
@@ -638,13 +913,35 @@ inline void EngineCPU::notify(
 
             // астероид столкнулся со звездой
             if (event.pi.ge == pns::GE_STAR) {
-                notifyAfterAsteroidCollisionStar(
+                notifyAndCompleteEventAsteroidCollisionStar(
                     asteroid,  currentI,
                     star,      event.pi.ii,
                     delta
                 );
-                // астероидов стало меньше
-                needOptimizeAsteroid = true;
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+            // астероид столкнулся с планетой
+            if (event.pi.ge == pns::GE_PLANET) {
+                notifyAndCompleteEventAsteroidCollisionPlanet(
+                    asteroid,  currentI,
+                    planet,    event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+            // астероид столкнулся с другим астероидом
+            if (event.pi.ge == pns::GE_ASTEROID) {
+                notifyAndCompleteEventAsteroidCollisionAsteroid(
+                    asteroid,  currentI,
+                    asteroid,  event.pi.ii,
+                    delta
+                );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
                 continue;
@@ -656,29 +953,194 @@ inline void EngineCPU::notify(
     }
 
 
+    // все события отработаны, cбрасываем валдо
+    aa->memoryEvent.waldo = 0;
+
+
     // оптимизируем списки элементов
-    if ( needOptimizeAsteroid ) {
-        pns::optimizeAsteroid( asteroid );
+    // астероидов стало меньше?
+    const bool needOptimize = (pastCount != delta.asteroid.count);
+    if ( needOptimize ) {
+        pns::optimizeCountAsteroid( asteroid );
+    }
+}
+
+
+
+
+inline void EngineCPU::notifyAndCompleteEvent(
+    pns::aboutPlanet_t*   ap,
+    size_t                currentI,
+    pns::deltaElement_t&  delta
+) {
+    assert( !mPortulan.expired() );
+
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& asteroid = topology.asteroid.content;
+    auto& planet   = topology.planet.content;
+    auto& star     = topology.star.content;
+
+    // просматриваем события, отрабатываем, забываем
+    const auto pastCount = delta.planet.count;
+
+    // просмотр начинаем с последнего запомненного, в обратном порядке,
+    // до тех пор, пока не просмотрим всё
+    assert( (ap->memoryEvent.waldo < pns::PLANET_EVENT_COUNT)
+        && "Валдо находится за пределами выделенной для событий памяти." );
+    for (int k = ap->memoryEvent.waldo - 1; k != ap->memoryEvent.waldo; --k) {
+        if (k < 0) {
+            k = pns::PLANET_EVENT_COUNT - 1;
+        }
+        pns::event_t& event = ap->memoryEvent.content[ k ];
+        if (event.uid == pns::E_NONE) {
+            // нам не интересны пустые события
+            continue;
+        }
+
+        // планета столкнулась с другим элементом звёздной системы
+        if (event.uid == pns::E_COLLISION) {
+
+            // планета столкнулась со звездой
+            if (event.pi.ge == pns::GE_STAR) {
+                notifyAndCompleteEventPlanetCollisionStar(
+                    planet,  currentI,
+                    star,    event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+            // планета столкнулась с другой планетой
+            if (event.pi.ge == pns::GE_PLANET) {
+                notifyAndCompleteEventPlanetCollisionPlanet(
+                    planet,  currentI,
+                    planet,  event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+            // планета столкнулась с астероидом
+            if (event.pi.ge == pns::GE_ASTEROID) {
+                notifyAndCompleteEventPlanetCollisionAsteroid(
+                    planet,    currentI,
+                    asteroid,  event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+        } // if (event.uid == pns::E_COLLISION)
+
+        // @todo ...
     }
 
+
+    // все события отработаны, cбрасываем валдо
+    ap->memoryEvent.waldo = 0;
+
+
+    // оптимизируем списки элементов
+    // планет стало меньше?
+    const bool needOptimize = (pastCount != delta.planet.count);
+    if ( needOptimize ) {
+        pns::optimizeCountPlanet( planet );
+    }
 }
 
 
 
 
-inline void EngineCPU::notify(
-    pns::aboutPlanet_t* ap,
-    size_t currentI
+inline void EngineCPU::notifyAndCompleteEvent(
+    pns::aboutStar_t*     as,
+    size_t                currentI,
+    pns::deltaElement_t&  delta
 ) {
-}
+    assert( !mPortulan.expired() );
+
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& asteroid = topology.asteroid.content;
+    auto& planet   = topology.planet.content;
+    auto& star     = topology.star.content;
+
+    // просматриваем события, отрабатываем, забываем
+    const auto pastCount = delta.star.count;
+
+    // просмотр начинаем с последнего запомненного, в обратном порядке,
+    // до тех пор, пока не просмотрим всё
+    assert( (as->memoryEvent.waldo < pns::STAR_EVENT_COUNT)
+        && "Валдо находится за пределами выделенной для событий памяти." );
+    for (int k = as->memoryEvent.waldo - 1; k != as->memoryEvent.waldo; --k) {
+        if (k < 0) {
+            k = pns::STAR_EVENT_COUNT - 1;
+        }
+        pns::event_t& event = as->memoryEvent.content[ k ];
+        if (event.uid == pns::E_NONE) {
+            // нам не интересны пустые события
+            continue;
+        }
+
+        // звезда столкнулась с другим элементом звёздной системы
+        if (event.uid == pns::E_COLLISION) {
+
+            // звезда столкнулась с другой звездой
+            if (event.pi.ge == pns::GE_STAR) {
+                notifyAndCompleteEventStarCollisionStar(
+                    star,  currentI,
+                    star,  event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+            // звезда столкнулась с планетой
+            if (event.pi.ge == pns::GE_PLANET) {
+                notifyAndCompleteEventStarCollisionPlanet(
+                    star,    currentI,
+                    planet,  event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+            // звезда столкнулась с астероидом
+            if (event.pi.ge == pns::GE_ASTEROID) {
+                notifyAndCompleteEventStarCollisionAsteroid(
+                    star,      currentI,
+                    asteroid,  event.pi.ii,
+                    delta
+                );
+                // # Отработанное событие надо забыть.
+                forgetEvent( &event );
+                continue;
+            }
+
+        } // if (event.uid == pns::E_COLLISION)
+
+        // @todo ...
+    }
 
 
+    // все события отработаны, cбрасываем валдо
+    as->memoryEvent.waldo = 0;
 
 
-inline void EngineCPU::notify(
-    pns::aboutStar_t* as,
-    size_t currentI
-) {
+    // оптимизируем списки элементов
+    // звёзд стало меньше?
+    const bool needOptimize = (pastCount != delta.star.count);
+    if ( needOptimize ) {
+        pns::optimizeCountStar( star );
+    }
 }
 
 
