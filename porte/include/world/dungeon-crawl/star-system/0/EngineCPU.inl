@@ -219,7 +219,7 @@ inline void EngineCPU::asteroidImpactIn(
             };
             pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_ASTEROID, currentI, event, true );
+            pns::printEvent( pns::GE_ASTEROID, currentI, event, &topology );
 #endif
         }
 
@@ -253,7 +253,7 @@ inline void EngineCPU::asteroidImpactIn(
             };
             pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEventTwo( eventTwo, true );
+            pns::printEventTwo( eventTwo, &topology );
 #endif
         }
 
@@ -347,7 +347,7 @@ inline void EngineCPU::planetImpactIn(
             };
             pns::planetMemorizeEvent( &ap->memoryEvent, event );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_PLANET, ap->uid, event, true );
+            pns::printEvent( pns::GE_PLANET, ap->uid, event, &topology );
 #endif
         }
 
@@ -380,7 +380,7 @@ inline void EngineCPU::planetImpactIn(
             };
             pns::planetMemorizeEvent( &ap->memoryEvent, event );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_PLANET, ap->uid, event, true );
+            pns::printEvent( pns::GE_PLANET, ap->uid, event, &topology );
 #endif
         }
 
@@ -470,7 +470,7 @@ inline void EngineCPU::starImpactIn(
             };
             pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEventTwo( eventTwo, true );
+            pns::printEventTwo( eventTwo, &topology );
 #endif
         }
 
@@ -511,7 +511,7 @@ inline void EngineCPU::starImpactIn(
             };
             pns::starMemorizeEvent( &as->memoryEvent, event );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_STAR, as->uid, event, true );
+            pns::printEvent( pns::GE_STAR, as->uid, event, &topology );
 #endif
         }
 
@@ -817,62 +817,51 @@ inline void EngineCPU::notifyAndCompleteEvent() {
     pns::deltaElement_t delta = {};
 
     // события у астероидов
-    {
-        for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
-            auto& e = asteroid[ i ];
-            if ( pns::absentAsteroid( e ) ) {
-                break;
-            }
+    for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
+        auto& e = asteroid[ i ];
+        if ( pns::presentAsteroid( e ) ) {
             notifyAndCompleteEvent( &e, i, delta );
         }
-
-        // уведомляем подписчиков о прочих изменениях
-        // @see #Соглашения в начале метода.
-        if (delta.asteroid.count != 0) {
-            const size_t currentCount =
-                pns::countAsteroid( asteroid, true );
-            afterChangeCountAsteroid( currentCount, delta.asteroid.count );
-        }
     }
-
 
     // события у планет
-    {
-        for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
-            auto& e = planet[ i ];
-            if ( pns::absentPlanet( e ) ) {
-                break;
-            }
+    for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
+        auto& e = planet[ i ];
+        if ( pns::presentPlanet( e ) ) {
             notifyAndCompleteEvent( &e, i, delta );
         }
+    }
 
-        // уведомляем подписчиков о прочих изменениях
-        // @see #Соглашения в начале метода.
-        if (delta.planet.count != 0) {
-            const size_t currentCount =
-                pns::countPlanet( planet, true );
-            afterChangeCountPlanet( currentCount, delta.planet.count );
+    // события у звёзд
+    for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
+        auto& e = star[ i ];
+        if ( pns::presentStar( e ) ) {
+            notifyAndCompleteEvent( &e, i, delta );
         }
     }
 
 
-    // события у звёзд
-    {
-        for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
-            auto& e = star[ i ];
-            if ( pns::absentStar( e ) ) {
-                break;
-            }
-            notifyAndCompleteEvent( &e, i, delta );
-        }
+    // оптимизируем списки, уведомляем подписчиков о прочих изменениях
+    // #! Оптимизация должна быть только после всех уведомлений / отработок.
+    //    Иначе можем получить искажённую картину, т.к. порядок отработки
+    //    событий не определён.
+    // @see #Соглашения в начале метода.
+    if (delta.asteroid.count != 0) {
+        pns::optimizeCountAsteroid( asteroid );
+        const size_t n = pns::countAsteroid( asteroid, true );
+        afterChangeCountAsteroid( n, delta.asteroid.count );
+    }
 
-        // уведомляем подписчиков о прочих изменениях
-        // @see #Соглашения в начале метода.
-        if (delta.star.count != 0) {
-            const size_t currentCount =
-                pns::countStar( star, true );
-            afterChangeCountStar( currentCount, delta.star.count );
-        }
+    if (delta.planet.count != 0) {
+        pns::optimizeCountPlanet( planet );
+        const size_t n = pns::countPlanet( planet, true );
+        afterChangeCountPlanet( n, delta.planet.count );
+    }
+
+    if (delta.star.count != 0) {
+        pns::optimizeCountStar( star );
+        const size_t n = pns::countStar( star, true );
+        afterChangeCountStar( n, delta.star.count );
     }
 }
 
@@ -892,7 +881,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
     auto& star     = topology.star.content;
 
     // просматриваем события, отрабатываем, забываем
-    const auto pastCount = delta.asteroid.count;
 
     // просмотр начинаем с последнего запомненного, в обратном порядке,
     // до тех пор, пока не просмотрим всё
@@ -955,14 +943,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
     // все события отработаны, cбрасываем валдо
     aa->memoryEvent.waldo = 0;
-
-
-    // оптимизируем списки элементов
-    // астероидов стало меньше?
-    const bool needOptimize = (pastCount != delta.asteroid.count);
-    if ( needOptimize ) {
-        pns::optimizeCountAsteroid( asteroid );
-    }
 }
 
 
@@ -981,7 +961,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
     auto& star     = topology.star.content;
 
     // просматриваем события, отрабатываем, забываем
-    const auto pastCount = delta.planet.count;
 
     // просмотр начинаем с последнего запомненного, в обратном порядке,
     // до тех пор, пока не просмотрим всё
@@ -1044,14 +1023,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
     // все события отработаны, cбрасываем валдо
     ap->memoryEvent.waldo = 0;
-
-
-    // оптимизируем списки элементов
-    // планет стало меньше?
-    const bool needOptimize = (pastCount != delta.planet.count);
-    if ( needOptimize ) {
-        pns::optimizeCountPlanet( planet );
-    }
 }
 
 
@@ -1070,7 +1041,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
     auto& star     = topology.star.content;
 
     // просматриваем события, отрабатываем, забываем
-    const auto pastCount = delta.star.count;
 
     // просмотр начинаем с последнего запомненного, в обратном порядке,
     // до тех пор, пока не просмотрим всё
@@ -1133,14 +1103,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
     // все события отработаны, cбрасываем валдо
     as->memoryEvent.waldo = 0;
-
-
-    // оптимизируем списки элементов
-    // звёзд стало меньше?
-    const bool needOptimize = (pastCount != delta.star.count);
-    if ( needOptimize ) {
-        pns::optimizeCountStar( star );
-    }
 }
 
 

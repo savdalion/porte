@@ -32,6 +32,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "process-visualtest", "proce
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "portulan-test", "..\portulan\portulan-test\portulan-test.vcxproj", "{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dcw-process-test", "dcw-process-test\dcw-process-test.vcxproj", "{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -67,6 +69,10 @@ Global
 		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Debug|Win32.Build.0 = Debug|Win32
 		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Release|Win32.ActiveCfg = Release|Win32
 		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Release|Win32.Build.0 = Release|Win32
+		{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}.Debug|Win32.Build.0 = Debug|Win32
+		{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}.Release|Win32.ActiveCfg = Release|Win32
+		{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

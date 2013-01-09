@@ -19,6 +19,8 @@ namespace pnp = portulan::world::dungeoncrawl::planet::l0;
 * Научен хранить других слушателей.
 *
 * @see #Соглашения в starsystem::Listener.
+*
+* @todo extend Добавить слушателей 'before*()'.
 */
 class Listener : public StoreListenerPlanet {
 public:

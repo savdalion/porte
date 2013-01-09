@@ -37,6 +37,8 @@ namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 *
 * #i Методы не объявлены как const, т.к. класс наследован
 *    от StoreListenerStarSystem.
+*
+* @todo extend Добавить слушателей 'before*()'.
 */
 class Listener : public StoreListenerStarSystem {
 public:

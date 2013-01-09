@@ -98,9 +98,6 @@ int main( int argc, char** argv ) {
 // @todo fine Заполнить данными из др. звёздных систем >
 //       http://ru.wikipedia.org/wiki/%D0%A1%D0%BF%D0%B8%D1%81%D0%BE%D0%BA_%D1%8D%D0%BA%D0%B7%D0%BE%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82_%D0%B2_%D0%BE%D0%B1%D0%B8%D1%82%D0%B0%D0%B5%D0%BC%D0%BE%D0%B9_%D0%B7%D0%BE%D0%BD%D0%B5
 #if 1
-// @todo fine В звёздной системе работать с двойной точностью.
-//       NVIDIA 8800GTS работает только с real_t.
-
     // Инициализируем движок звёздной системы
     // # Инициализация происходит частичная, чтобы в процессе формирования
     //   портулана звёзной системы можно было привязывать к элементам
@@ -137,13 +134,13 @@ int main( int argc, char** argv ) {
 
     // звёзды
     // # Звезда - центр координат.
-    pns::star_t star = {};
     auto& tsc = topology.star.content;
     size_t countStar = 0;
 
 #if 1
     // Звезда I
     // центр
+    // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
 #if 1
     {
         static const pns::uid_t uid = 1;
@@ -270,7 +267,6 @@ int main( int argc, char** argv ) {
 
 
     // планеты
-    pns::planet_t planet = {};
     auto& tpc = topology.planet.content;
     size_t countPlanet = 0;
 
@@ -482,7 +478,6 @@ int main( int argc, char** argv ) {
     size_t countAsteroid = 0;
 
 #if 1
-    pns::asteroid_t asteroid = {};
     auto& tac = topology.asteroid.content;
     {
         // не случайный генератор случ. чисел: полезно каждый
@@ -490,22 +485,23 @@ int main( int argc, char** argv ) {
         static const size_t SEED = 12345;
         typelib::Random< size_t >  seed( 0, 1000000000, SEED );
 
-        typelib::Random< pns::real_t >  averageRadius( 100, 300000, seed.next() );
-        typelib::Random< pns::real_t >  proportionRadius( 0.5, 1.5, seed.next() );
-        typelib::Random< pns::real_t >  density( 2000, 4000, seed.next() );
+        typelib::Random< pns::real_t >
+            averageRadius( 100, 300000, seed.next() );
+        typelib::Random< pns::real_t >
+            proportionRadius( 0.5, 1.5, seed.next() );
+        typelib::Random< pns::real_t >
+            density( 2000, 4000, seed.next() );
 
-        typelib::Random< pns::real_t >  distance(
-            asteroidOrbit * 0.9, asteroidOrbit * 1.1, seed.next()
-        );
-        typelib::Random< pns::real_t >  angle( 0.0, M_PI * 2.0, seed.next() );
+        typelib::Random< pns::real_t >
+            distance( asteroidOrbit * 0.9,  asteroidOrbit * 1.1,  seed.next() );
+        typelib::Random< pns::real_t >
+            angle( 0.0,  M_PI * 2.0,  seed.next() );
 
         static const pns::real_t velocityOrbit = 17500;
-        typelib::Random< pns::real_t >  velocity(
-            velocityOrbit * 0.95, velocityOrbit * 1.05, seed.next()
-        );
+        typelib::Random< pns::real_t >
+            velocity( velocityOrbit * 0.95,  velocityOrbit * 1.05,  seed.next() );
 
-        size_t i = 0;
-        for ( ; i < N_ASTEROID; ++i) {
+        for (size_t i = 0; i < N_ASTEROID; ++i) {
             // # Принимаем за эллипсоид.
             const pns::real_t ar = averageRadius.next();
             const pns::real_t rx = ar * proportionRadius.next();
