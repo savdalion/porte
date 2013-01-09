@@ -34,8 +34,8 @@ inline void ListenerStarSystem< E >::notifyAndCompletePulse() {
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar(
     pns::asteroidContent_t a,  size_t ia,
-    pns::starContent_t     b,  size_t ib,
-    pns::deltaElement_t&   delta
+    const pns::starContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -73,8 +73,8 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionPlanet(
     pns::asteroidContent_t a,  size_t ia,
-    pns::planetContent_t   b,  size_t ib,
-    pns::deltaElement_t&   delta
+    const pns::planetContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
 }
 
@@ -85,8 +85,8 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionPlan
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAsteroid(
     pns::asteroidContent_t a,  size_t ia,
-    pns::asteroidContent_t b,  size_t ib,
-    pns::deltaElement_t&   delta
+    const pns::asteroidContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
 }
 
@@ -95,9 +95,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAste
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
-    pns::planetContent_t  a,  size_t ia,
-    pns::starContent_t    b,  size_t ib,
-    pns::deltaElement_t&  delta
+    pns::planetContent_t a,  size_t ia,
+    const pns::starContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -106,11 +106,11 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
     std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetCollisionStar() " <<
     std::endl;
 
-    pns::aboutPlanet_t& ap = a[ ia ];
-    pns::aboutStar_t&   as = b[ ib ];
+    pns::aboutPlanet_t&      ap = a[ ia ];
+    const pns::aboutStar_t&  as = b[ ib ];
 
     // # Звезда поглощает планету.
-    as.mass += ap.mass;
+    //as.mass += ap.mass;
     pns::excludePlanet( &ap );
     --delta.planet.count;
 
@@ -131,9 +131,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionPlanet(
-    pns::planetContent_t  a,  size_t ia,
-    pns::planetContent_t  b,  size_t ib,
-    pns::deltaElement_t&  delta
+    pns::planetContent_t a,  size_t ia,
+    const pns::planetContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
 }
 
@@ -142,9 +142,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionPlanet
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionAsteroid(
-    pns::planetContent_t    a,  size_t ia,
-    pns::asteroidContent_t  b,  size_t ib,
-    pns::deltaElement_t&    delta
+    pns::planetContent_t a,  size_t ia,
+    const pns::asteroidContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
 }
 
@@ -153,9 +153,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionAstero
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
-    pns::starContent_t    a,  size_t ia,
-    pns::starContent_t    b,  size_t ib,
-    pns::deltaElement_t&  delta
+    pns::starContent_t a,  size_t ia,
+    const pns::starContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -164,13 +164,13 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
     std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionStar() " <<
     std::endl;
 
-    pns::aboutStar_t& asA = a[ ia ];
-    pns::aboutStar_t& asB = b[ ib ];
+    pns::aboutStar_t&        asA = a[ ia ];
+    const pns::aboutStar_t&  asB = b[ ib ];
 
     // # @todo ? Звезда с большей массой поглощает звезду с меньшей.
     // # Звезда A поглощает звезду B.
     asA.mass += asB.mass;
-    pns::excludeStar( &asB );
+    //pns::excludeStar( &asB );
     --delta.star.count;
 
 
@@ -190,9 +190,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
-    pns::starContent_t    a,  size_t ia,
-    pns::planetContent_t  b,  size_t ib,
-    pns::deltaElement_t&  delta
+    pns::starContent_t a,  size_t ia,
+    const pns::planetContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
 }
 
@@ -201,9 +201,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
 
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid(
-    pns::starContent_t      a,  size_t ia,
-    pns::asteroidContent_t  b,  size_t ib,
-    pns::deltaElement_t&    delta
+    pns::starContent_t a,  size_t ia,
+    const pns::asteroidContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
