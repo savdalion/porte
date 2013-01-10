@@ -58,8 +58,10 @@ static const double TIMESTEP = MINUTE;
 * кадров = timestep * PULSE.
 * @example timestep = HOUR,  PULSE = 365 * 24 - Земля будет оставаться
 *          почти неподвижной, т.к. её период обращения ~ 365 дней.
+* @example timestep = MINUTE,  PULSE = 60 - просчитываться модель будет
+*          с точностью до 1 минуты, отображаться - каждый час своей жизни.
 */
-static const int PULSE = 60 * 12;
+static const int PULSE = 60;
 
 
 
@@ -98,6 +100,47 @@ protected:
             { 1.5e15, 1.5e15, 1.5e15 }
         };
         topology()->aboutStarSystem = aboutStarSystem;
+
+
+        // # Звезда - центр координат.
+        auto& tsc = topology()->star.content;
+        size_t countStar = 0;
+
+        // Звезда
+        // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
+    #if 1
+        {
+            static const pns::uid_t uid = 1;
+            static const pns::aboutStar_t star = {
+                // uid
+                uid,
+                // live
+                true,
+                // mass
+                1.9891e30,
+                // radius
+                6.9551e8,
+                // temperature,
+                1.5e6,
+                // luminousIntensity
+                3e27,
+                // coord
+                { 0, 0, 0 },
+                // rotation
+                { 0, 0, 0 },
+                // force
+                { 0, 0, 0 },
+                // velocity
+                { 0, 0, 0 }
+            };
+            tsc[ countStar ] = star;
+            ++countStar;
+        }
+    #endif
+
+        // завершаем список звёзд пустотой
+        static const pns::aboutStar_t STAR_END_LIST = {};
+        tsc[ countStar ] = STAR_END_LIST;
     }
 
 
@@ -145,50 +188,7 @@ private:
 TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
 #if 1
 
-    // # Звезда - центр координат.
-    auto& tsc = topology()->star.content;
-    size_t countStar = 0;
-
-    // Звезда
-    // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-#if 1
-    {
-        static const pns::uid_t uid = 1;
-        static const pns::aboutStar_t star = {
-            // uid
-            uid,
-            // live
-            true,
-            // mass
-            1.9891e30,
-            // radius
-            6.9551e8,
-            // temperature,
-            1.5e6,
-            // luminousIntensity
-            3e27,
-            // coord
-            { 0, 0, 0 },
-            // rotation
-            { 0, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 0, 0 }
-        };
-        tsc[ countStar ] = star;
-        ++countStar;
-    }
-#endif
-
-    // завершаем список звёзд пустотой
-    static const pns::aboutStar_t STAR_END_LIST = {};
-    tsc[ countStar ] = STAR_END_LIST;
-
-
-
-
-    // астероиды
+    // астероид
     // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
     // @source http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%8F%D1%81_%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4%D0%BE%D0%B2
     auto& tac = topology()->asteroid.content;
@@ -235,12 +235,8 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
     tac[ countAsteroid ] = ASTEROID_END_LIST;
 
 
-
-
     // воплощаем
     engine()->incarnate( portulan() );
-
-
 
 
     // покажем результат
@@ -254,15 +250,17 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
     visual << *portulan();
     
 
-    // делаем снимок мира
+    // делаем снимок мира (см. SetUp() и выше)
     const auto massStar = topology()->star.content[ 0 ].mass;
     const auto allMassAsteroid = topology()->asteroid.content[ 0 ].mass;
 
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int NEED_STEP = 5;
-    visual.wait( engine().get(), PULSE, 1, NEED_STEP, true );
+    static const int needStep = 24 * 2;
+    static const bool closeWindow = true;
+    static const bool showPulse = true;
+    visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
 
 
     // проверяем результат
@@ -288,49 +286,6 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
 
 TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
 #if 1
-
-    // # Звезда - центр координат.
-    auto& tsc = topology()->star.content;
-    size_t countStar = 0;
-
-    // Звезда
-    // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-#if 1
-    {
-        static const pns::uid_t uid = 1;
-        static const pns::aboutStar_t star = {
-            // uid
-            uid,
-            // live
-            true,
-            // mass
-            1.9891e30,
-            // radius
-            6.9551e8,
-            // temperature,
-            1.5e6,
-            // luminousIntensity
-            3e27,
-            // coord
-            { 0, 0, 0 },
-            // rotation
-            { 0, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 0, 0 }
-        };
-        tsc[ countStar ] = star;
-        ++countStar;
-    }
-#endif
-
-    // завершаем список звёзд пустотой
-    static const pns::aboutStar_t STAR_END_LIST = {};
-    tsc[ countStar ] = STAR_END_LIST;
-
-
-
 
     // астероиды
     // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
@@ -385,12 +340,8 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
     tac[ countAsteroid ] = ASTEROID_END_LIST;
 
 
-
-
     // воплощаем
     engine()->incarnate( portulan() );
-
-
 
 
     // покажем результат
@@ -404,14 +355,18 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
     visual << *portulan();
     
 
-    // делаем снимок мира
+    // делаем снимок мира (см. SetUp() и выше)
     const auto massStar = topology()->star.content[ 0 ].mass;
+    const pns::real_t allMassAsteroid =
+        std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
 
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int NEED_STEP = 25;
-    visual.wait( engine().get(), PULSE, 1, NEED_STEP, true );
+    static const int needStep = 24 * 3;
+    static const bool closeWindow = true;
+    static const bool showPulse = true;
+    visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
 
 
     // проверяем результат
@@ -419,11 +374,6 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
     {
-        const pns::real_t allMassAsteroid =
-            std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
-        const auto sum0 = massStar + massAsteroid[ 0 ];
-        const auto sum1 = massStar + massAsteroid[ 1 ];
-        const auto sum01 = massStar + massAsteroid[ 0 ] + massAsteroid[ 1 ];
         const auto sum = massStar + allMassAsteroid;
         const auto actual = topology()->star.content[ 0 ].mass;
         //@todo ? Разрушается топология астероидов из-за обратного порядка столкновений?
@@ -443,49 +393,6 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
 
 TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1000Star1 ) {
 #if 1
-
-    // # Звезда - центр координат.
-    auto& tsc = topology()->star.content;
-    size_t countStar = 0;
-
-    // Звезда
-    // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-#if 1
-    {
-        static const pns::uid_t uid = 1;
-        static const pns::aboutStar_t star = {
-            // uid
-            uid,
-            // live
-            true,
-            // mass
-            1.9891e30,
-            // radius
-            6.9551e8,
-            // temperature,
-            1.5e6,
-            // luminousIntensity
-            3e27,
-            // coord
-            { 0, 0, 0 },
-            // rotation
-            { 0, 0, 0 },
-            // force
-            { 0, 0, 0 },
-            // velocity
-            { 0, 0, 0 }
-        };
-        tsc[ countStar ] = star;
-        ++countStar;
-    }
-#endif
-
-    // завершаем список звёзд пустотой
-    static const pns::aboutStar_t STAR_END_LIST = {};
-    tsc[ countStar ] = STAR_END_LIST;
-
-
-
 
     // астероиды
     // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
@@ -553,12 +460,8 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1000Star1 ) {
     tac[ countAsteroid ] = ASTEROID_END_LIST;
 
 
-
-
     // воплощаем
     engine()->incarnate( portulan() );
-
-
 
 
     // покажем результат
@@ -572,14 +475,18 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1000Star1 ) {
     visual << *portulan();
     
 
-    // делаем снимок мира
+    // делаем снимок мира (см. SetUp() и выше)
     const auto massStar = topology()->star.content[ 0 ].mass;
+    const pns::real_t allMassAsteroid =
+        std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
 
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int NEED_STEP = 5;
-    visual.wait( engine().get(), PULSE, 1, NEED_STEP, true );
+    static const int needStep = 24 * 3;
+    static const bool closeWindow = true;
+    static const bool showPulse = true;
+    visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
 
 
     // проверяем результат
@@ -587,8 +494,6 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1000Star1 ) {
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
     {
-        const pns::real_t allMassAsteroid =
-            std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
         const auto sum = massStar + allMassAsteroid;
         const auto actual = topology()->star.content[ 0 ].mass;
         EXPECT_LT( massStar, actual );

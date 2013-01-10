@@ -605,7 +605,10 @@ int main( int argc, char** argv ) {
     static const int PULSE = 60 * 12;
 
     // запускаем мир
-    visual.wait( engine.get(), PULSE, 1 );
+    static const int needStep = 0;
+    static const bool closeWindow = true;
+    static const bool showPulse = true;
+    visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine.get() );
 
 
 
