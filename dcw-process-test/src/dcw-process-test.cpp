@@ -1,6 +1,7 @@
 #include "../include/StdAfx.h"
 #include "../include/configure.h"
 
+//#include "../include/world/dangeon-crawl/star-system/AsteroidAsteroidCollision.h"
 #include "../include/world/dangeon-crawl/star-system/AsteroidStarCollision.h"
 
 

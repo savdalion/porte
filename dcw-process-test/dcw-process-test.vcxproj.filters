@@ -24,6 +24,12 @@
     <ClInclude Include="include\world\dangeon-crawl\star-system\AsteroidStarCollision.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="include\world\dangeon-crawl\star-system\AsteroidAsteroidCollision.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dangeon-crawl\star-system\StarSystemTest.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\stdafx.cpp">

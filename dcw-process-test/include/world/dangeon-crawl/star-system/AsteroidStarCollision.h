@@ -1,98 +1,33 @@
 #pragma once
 
-#include "../include/configure.h"
-#include <porte/porte.h>
-#include <portulan/portulan.h>
-
-
-// Включается в "porte" для интерпретации структур C++ как OpenCL.
-#undef PORTULAN_AS_OPEN_CL_STRUCT
-
-// (!) Убираем определения define, заданные в файлах cl.h и wingdi.h, т.к.
-// они совпадают с именем наших структур.
-// @todo bad solution
-#undef CC_NONE
-#undef CL_NONE
-
+#include "StarSystemTest.h"
 
 
 namespace {
 
-namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
-namespace pes = porte::world::dungeoncrawl::starsystem::l0;
-namespace pnios = portulan::io::world::dungeoncrawl::starsystem::l0;
-
-namespace pnp = portulan::world::dungeoncrawl::planet::l0;
-namespace pep = porte::world::dungeoncrawl::planet::l0;
-namespace pniop = portulan::io::world::dungeoncrawl::planet::l0;
-
 
 /**
-* # Время - измерение, проходящее сквозь все портуланы. Указывается в секундах.
+* Тестирование отработки столкновений элементов звёздной системы:
+* астероида и звезды.
 */
-static const double SECOND     = 1.0;
-static const double MINUTE     = SECOND * 60.0;
-static const double HOUR       = MINUTE * 60.0;
-static const double DAY        = HOUR   * 24.0;
-static const double HALF_DAY   = DAY    / 2.0;
-static const double WEEK       = DAY    * 7.0;
-static const double MONTH      = DAY    * 30.0;
-static const double HALF_MONTH = MONTH  / 2.0;
-static const double YEAR       = DAY    * 365.0;
-static const double HALF_YEAR  = YEAR   / 2.0;
-
-
-/**
-* 'timestep' влияет на точность рассчётов (больше - ниже).
-*  Может быть задействована вместе с 'PULSE'.
-*/
-static const double TIMESTEP = MINUTE;
-
-
-/*
-* # Учитываем инициал. движка звёздной системы, а именно - 'timestep'.
-* 'PULSE' влияет на кол-во отрисовок (больше пульс - меньше кадров).
-* Может быть задействована вместе с 'timestep'.
-* Движок честно считает 'PULSE' кадров с шагом 'timestep' и только
-* после - показывает картинку. Др. словами, реальное время отображаемых
-* кадров = timestep * PULSE.
-* @example timestep = HOUR,  PULSE = 365 * 24 - Земля будет оставаться
-*          почти неподвижной, т.к. её период обращения ~ 365 дней.
-* @example timestep = MINUTE,  PULSE = 60 - просчитываться модель будет
-*          с точностью до 1 минуты, отображаться - каждый час своей жизни.
-*/
-static const int PULSE = 60;
-
-
-
-
-/**
-* Тестирование отработки столкновений элементов звёздной системы.
-*/
-class AsteroidStarCollisionStarSystemTest : public ::testing::Test {
+class AsteroidStarCollisionSST : public StarSystemTest {
 protected:
-    inline AsteroidStarCollisionStarSystemTest(
-    ) :
-        // Инициализируем движок звёздной системы
-        // # Инициализация происходит частичная, чтобы в процессе формирования
-        //   портулана звёзной системы можно было привязывать к элементам
-        //   другие движки, подписывая их на события друг друга. См. wrapPlanet().
-        // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
-        //   слушатель событий другим движкам.
-        mEngine( new pes::Engine( TIMESTEP ) ),
-        mPortulan( new pns::Portulan() )
-    {
+    inline AsteroidStarCollisionSST(
+    ) {
     }
 
 
 
 
-    virtual inline ~AsteroidStarCollisionStarSystemTest() {
+    virtual inline ~AsteroidStarCollisionSST() {
     }
 
 
 
 
+    /**
+    * @virtual StarSystemTest
+    */
     virtual inline void SetUp() {
         static const pns::aboutStarSystem_t aboutStarSystem = {
             // size
@@ -143,39 +78,6 @@ protected:
         tsc[ countStar ] = STAR_END_LIST;
     }
 
-
-
-
-    virtual void TearDown() {
-    }
-
-
-
-
-    inline std::shared_ptr< pes::Engine >  engine() {
-        return mEngine;
-    }
-
-
-
-
-    inline std::shared_ptr< pns::Portulan >  portulan() {
-        return mPortulan;
-    }
-
-
-
-
-    inline pns::topology_t* topology() {
-        return &mPortulan->topology().topology();
-    }
-
-
-
-
-private:
-    std::shared_ptr< pes::Engine >    mEngine;
-    std::shared_ptr< pns::Portulan >  mPortulan;
 };
 
 
@@ -185,7 +87,10 @@ private:
 
 
 
-TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
+TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
+#if 1
+
+    // подготовка
 #if 1
 
     // астероид
@@ -201,8 +106,8 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
     {
         const pns::uid_t uid = 1;
         const pns::real_t rx = 10e3;
-        const pns::real_t ry = 20e3;
-        const pns::real_t rz = 30e3;
+        const pns::real_t ry = 12e3;
+        const pns::real_t rz = 15e3;
         const pns::real_t density = 5000.0;
         const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
         const pns::aboutAsteroid_t asteroid = {
@@ -240,14 +145,16 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
 
 
     // покажем результат
-    pnios::VolumeVTKVisual::option_t  o;
+    pnios::FormVTKVisual::option_t  o;
     o[ "extent" ] = engine()->extent();
     o[ "auto-scale-camera" ] = false;
     o[ "without-clear" ] = false;
     o[ "size-window" ] = 1000;
 
-    pnios::VolumeVTKVisual  visual( o );
+    pnios::FormVTKVisual  visual( o );
     visual << *portulan();
+
+#endif  // /подготовка
     
 
     // делаем снимок мира (см. SetUp() и выше)
@@ -284,7 +191,10 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1Star1 ) {
 
 
 
-TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
+TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
+#if 1
+
+    // подготовка
 #if 1
 
     // астероиды
@@ -304,8 +214,8 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
     for (size_t i = 0; i < N_ASTEROID; ++i) {
         const pns::uid_t uid = i + 1;
         const pns::real_t rx = 10e3 * (i + 1);
-        const pns::real_t ry = 20e3 * (i + 1);
-        const pns::real_t rz = 30e3 * (i + 1);
+        const pns::real_t ry = 12e3 * (i + 1);
+        const pns::real_t rz = 15e3 * (i + 1);
         const pns::real_t density = 5000.0;
         const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
         massAsteroid[ i ] = mass;
@@ -345,14 +255,16 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
 
 
     // покажем результат
-    pnios::VolumeVTKVisual::option_t  o;
+    pnios::FormVTKVisual::option_t  o;
     o[ "extent" ] = engine()->extent();
     o[ "auto-scale-camera" ] = false;
     o[ "without-clear" ] = false;
     o[ "size-window" ] = 1000;
 
-    pnios::VolumeVTKVisual  visual( o );
+    pnios::FormVTKVisual  visual( o );
     visual << *portulan();
+
+#endif  // /подготовка
     
 
     // делаем снимок мира (см. SetUp() и выше)
@@ -391,7 +303,10 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid2Star1 ) {
 
 
 
-TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1000Star1 ) {
+TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
+#if 1
+
+    // подготовка
 #if 1
 
     // астероиды
@@ -465,15 +380,17 @@ TEST_F( AsteroidStarCollisionStarSystemTest,  Asteroid1000Star1 ) {
 
 
     // покажем результат
-    pnios::VolumeVTKVisual::option_t  o;
+    pnios::FormVTKVisual::option_t  o;
     o[ "extent" ] = engine()->extent();
     o[ "auto-scale-camera" ] = false;
     o[ "without-clear" ] = false;
     o[ "size-window" ] = 1000;
 
-    pnios::VolumeVTKVisual  visual( o );
+    pnios::FormVTKVisual  visual( o );
     visual << *portulan();
-    
+
+#endif  // /подготовка
+
 
     // делаем снимок мира (см. SetUp() и выше)
     const auto massStar = topology()->star.content[ 0 ].mass;
