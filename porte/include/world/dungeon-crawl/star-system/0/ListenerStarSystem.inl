@@ -42,6 +42,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidCollisionStar() " <<
+		a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     pns::aboutAsteroid_t&    aa = a[ ia ];
@@ -88,6 +89,63 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAste
     const pns::asteroidContent_t b,  size_t ib,
     pns::deltaElement_t& delta
 ) {
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidCollisionAsteroid() " <<
+		a[ ia ].uid << " + " << b[ ib ].uid <<
+    std::endl;
+
+    // # Это событие является обобщением других событий.
+    //   См. Engine::dealEventCollision().
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) {
+        etr->listener.lock()->afterAsteroidCollisionAsteroid(
+            etr->whose,  a, ia,  b, ib,  delta
+        );
+    } }
+}
+
+
+
+
+
+template< class E >
+inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidChangeVelocity(
+    pns::asteroidContent_t a,  size_t ia,
+    const pns::real_t deltaVelocity[ 3 ]
+) {
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidChangeVelocity() " <<
+		a[ ia ].uid <<
+    std::endl;
+
+
+    pns::aboutAsteroid_t&  aa = a[ ia ];
+
+    aa.velocity[ 0 ] += deltaVelocity[ 0 ];
+    aa.velocity[ 1 ] += deltaVelocity[ 1 ];
+    aa.velocity[ 2 ] += deltaVelocity[ 2 ];
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) {
+        etr->listener.lock()->afterAsteroidChangeVelocity(
+            etr->whose,  a, ia,  deltaVelocity
+        );
+    } }
 }
 
 
@@ -104,6 +162,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetCollisionStar() " <<
+		a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     pns::aboutPlanet_t&      ap = a[ ia ];
@@ -162,6 +221,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionStar() " <<
+		a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     pns::aboutStar_t&        asA = a[ ia ];
@@ -210,6 +270,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionAsteroid() " <<
+		a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     pns::aboutStar_t&            as = a[ ia ];

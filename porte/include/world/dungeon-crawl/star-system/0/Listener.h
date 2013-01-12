@@ -57,7 +57,7 @@ public:
     /**
     * Астероид столкнулся со звездой.
     *
-    * @param deltaCountAsteroid Счётчик изменения в кол-ве астероидов.
+    * @param deltaElement_t Счётчик изменения в кол-ве астероидов.
     *
     * # Все методы ниже вида 'after[A]Collision[B]' обозначают событие
     *   'после того, как тело A столкнулось с телом B'.
@@ -67,6 +67,23 @@ public:
         const pns::asteroidContent_t,  size_t ia,
         const pns::starContent_t,  size_t ib,
         const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    /**
+    * У астероида изменилась скорость.
+    *
+    * @param deltaVelocity На сколько изменился вектор скорости.
+    *
+    * # Все методы ниже вида 'after[A]Collision[B]' обозначают событие
+    *   'после того, как тело A столкнулось с телом B'.
+    */
+    virtual inline void afterAsteroidChangeVelocity(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        const pns::real_t  deltaVelocity[ 3 ]
     ) {}
 
 

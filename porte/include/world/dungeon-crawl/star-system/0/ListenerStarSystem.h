@@ -84,6 +84,14 @@ public:
 
 
 
+    void notifyAndCompleteEventAsteroidChangeVelocity(
+        pns::asteroidContent_t,  size_t ia,
+        const pns::real_t deltaVelocity[ 3 ]
+    );
+
+
+
+
     void notifyAndCompleteEventPlanetCollisionStar(
         pns::planetContent_t,  size_t ia,
         const pns::starContent_t,  size_t ib,

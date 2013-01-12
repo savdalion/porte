@@ -55,10 +55,10 @@ protected:
                 1.9891e30,
                 // radius
                 6.9551e8,
-                // temperature,
+                // kernelTemperature,
+                13.5e6,
+                // surfaceTemperature,
                 1.5e6,
-                // luminousIntensity
-                3e27,
                 // coord
                 { 0, 0, 0 },
                 // rotation
@@ -78,6 +78,15 @@ protected:
         tsc[ countStar ] = STAR_END_LIST;
     }
 
+
+
+
+    inline pns::real_t luminosityStar() const {
+        const auto& tsc = topology()->star.content;
+        return typelib::compute::physics::luminosity(
+            tsc[ 0 ].radius,  tsc[ 0 ].surfaceTemperature
+        );
+    }
 };
 
 
@@ -110,6 +119,19 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         const pns::real_t rz = 15e3;
         const pns::real_t density = 5000.0;
         const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
+
+        const pns::real_t albedo = 0.6;
+
+        const auto tsc = topology()->star.content;
+        const pns::real_t radiusStar = tsc[ 0 ].radius;
+        const pns::real_t surfaceTemperatureStar = tsc[ 0 ].surfaceTemperature;
+
+        const pns::real_t d = asteroidOrbit;
+        const pns::real_t temperature =
+                typelib::compute::physics::effectiveTemperature(
+                    luminosityStar(), d, albedo
+                );
+
         const pns::aboutAsteroid_t asteroid = {
             // uid
             uid,
@@ -120,14 +142,36 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // size
             { rx, ry, rz },
             // coord
-            { asteroidOrbit, 0, 0 },
+            { d, 0, 0 },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
             { 0, 0, 0 },
-            // memoryEvent
+            // density
+            // # ~ Кремний 2330 кг / м3
+            density,
+            // temperature
+            temperature,
+            // albedo
+            albedo,
+            // meltingPoint
+            // # ~ Кремний 1680 К
+            1600,
+            // boilingPoint
+            // # ~ Кремний 2620 К
+            2600,
+            // heatCapacity
+            // # ~ Кремний 800 Дж / (кг * м)
+            800.0,
+            // enthalpyFusion
+            // # ~ Кремний 50.6 кДж / моль
+            50000 / 28.0855,
+            // enthalpyVaporization
+            // # ~ Кремний 383 кДж / моль
+            380000 / 28.0855,
+            // # memoryEvent
             { 0, {} }
         };
         tac[ countAsteroid ] = asteroid;
@@ -145,13 +189,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
 
     // покажем результат
-    pnios::FormVTKVisual::option_t  o;
+    pnios::VolumeVTKVisual::option_t  o;
     o[ "extent" ] = engine()->extent();
     o[ "auto-scale-camera" ] = false;
     o[ "without-clear" ] = false;
     o[ "size-window" ] = 1000;
 
-    pnios::FormVTKVisual  visual( o );
+    pnios::VolumeVTKVisual  visual( o );
     visual << *portulan();
 
 #endif  // /подготовка
@@ -177,6 +221,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     {
         const auto sum = massStar + allMassAsteroid;
         const auto actual = topology()->star.content[ 0 ].mass;
+        // #! Слишком малая масса астероида провалит тест (тип pns::real_t).
         EXPECT_LT( massStar, actual );
         EXPECT_DOUBLE_EQ( sum, actual );
     }
@@ -209,6 +254,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
     // для позиционирования астероидов
     static const pns::real_t asteroidOrbit = 1.49598261e11 / 10;
 
+    const auto tsc = topology()->star.content;
+    const pns::real_t radiusStar = tsc[ 0 ].radius;
+    const pns::real_t surfaceTemperatureStar = tsc[ 0 ].surfaceTemperature;
+
 #if 1
     std::array< pns::real_t, N_ASTEROID >  massAsteroid;
     for (size_t i = 0; i < N_ASTEROID; ++i) {
@@ -217,8 +266,19 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
         const pns::real_t ry = 12e3 * (i + 1);
         const pns::real_t rz = 15e3 * (i + 1);
         const pns::real_t density = 5000.0;
-        const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
+        const pns::real_t mass =
+            4.0 / 3.0 * M_PI * rx * ry * rz * density;
         massAsteroid[ i ] = mass;
+
+        const pns::real_t albedo = 0.6;
+
+        const pns::real_t d =
+            asteroidOrbit + asteroidOrbit * 0.1 * i;
+        const pns::real_t temperature =
+                typelib::compute::physics::effectiveTemperature(
+                    luminosityStar(), d, albedo
+                );
+
         const pns::aboutAsteroid_t asteroid = {
             // uid
             uid,
@@ -229,14 +289,36 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
             // size
             { rx, ry, rz },
             // coord
-            { asteroidOrbit + asteroidOrbit * 0.1 * i,  0,  0 },
+            { d,  0,  0 },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
             { 0, 0, 0 },
-            // memoryEvent
+            // density
+            // # ~ Кремний 2330 кг / м3
+            density,
+            // temperature
+            temperature,
+            // albedo
+            albedo,
+            // meltingPoint
+            // # ~ Кремний 1680 К
+            1600,
+            // boilingPoint
+            // # ~ Кремний 2620 К
+            2600,
+            // heatCapacity
+            // # ~ Кремний 800 Дж / (кг * м)
+            800.0,
+            // enthalpyFusion
+            // # ~ Кремний 50.6 кДж / моль
+            50000 / 28.0855,
+            // enthalpyVaporization
+            // # ~ Кремний 383 кДж / моль
+            380000 / 28.0855,
+            // # memoryEvent
             { 0, {} }
         };
         tac[ countAsteroid ] = asteroid;
@@ -255,13 +337,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
 
 
     // покажем результат
-    pnios::FormVTKVisual::option_t  o;
+    pnios::VolumeVTKVisual::option_t  o;
     o[ "extent" ] = engine()->extent();
     o[ "auto-scale-camera" ] = false;
     o[ "without-clear" ] = false;
     o[ "size-window" ] = 1000;
 
-    pnios::FormVTKVisual  visual( o );
+    pnios::VolumeVTKVisual  visual( o );
     visual << *portulan();
 
 #endif  // /подготовка
@@ -328,6 +410,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
     typelib::Random< pns::real_t >
         angle( 0.0,  M_PI * 2.0,  seed.next() );
 
+    const auto tsc = topology()->star.content;
+    const pns::real_t radiusStar = tsc[ 0 ].radius;
+    const pns::real_t surfaceTemperatureStar = tsc[ 0 ].surfaceTemperature;
+
 #if 1
     std::array< pns::real_t, N_ASTEROID >  massAsteroid;
     for (size_t i = 0; i < N_ASTEROID; ++i) {
@@ -338,12 +424,21 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
         const pns::real_t density = 5000.0;
         const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
         massAsteroid[ i ] = mass;
+
         // расположим астероиды хаотически
         const pns::real_t d  = distance.next();
         const pns::real_t da = angle.next();
         const pns::real_t cx = d * std::sin( da );
         const pns::real_t cy = d * std::cos( da );
         const pns::real_t cz = 0;
+
+        const pns::real_t albedo = 0.6;
+
+        const pns::real_t temperature =
+                typelib::compute::physics::effectiveTemperature(
+                    luminosityStar(), d, albedo
+                );
+
         const pns::aboutAsteroid_t asteroid = {
             // uid
             uid,
@@ -361,7 +456,29 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
             { 0, 0, 0 },
             // velocity
             { 0, 0, 0 },
-            // memoryEvent
+            // density
+            // # ~ Кремний 2330 кг / м3
+            density,
+            // temperature
+            temperature,
+            // albedo
+            albedo,
+            // meltingPoint
+            // # ~ Кремний 1680 К
+            1600,
+            // boilingPoint
+            // # ~ Кремний 2620 К
+            2600,
+            // heatCapacity
+            // # ~ Кремний 800 Дж / (кг * м)
+            800.0,
+            // enthalpyFusion
+            // # ~ Кремний 50.6 кДж / моль
+            50000 / 28.0855,
+            // enthalpyVaporization
+            // # ~ Кремний 383 кДж / моль
+            380000 / 28.0855,
+            // # memoryEvent
             { 0, {} }
         };
         tac[ countAsteroid ] = asteroid;
@@ -380,13 +497,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
 
 
     // покажем результат
-    pnios::FormVTKVisual::option_t  o;
+    pnios::VolumeVTKVisual::option_t  o;
     o[ "extent" ] = engine()->extent();
     o[ "auto-scale-camera" ] = false;
     o[ "without-clear" ] = false;
     o[ "size-window" ] = 1000;
 
-    pnios::FormVTKVisual  visual( o );
+    pnios::VolumeVTKVisual  visual( o );
     visual << *portulan();
 
 #endif  // /подготовка

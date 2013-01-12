@@ -124,7 +124,7 @@ inline void EngineCPU::pulse() {
 
 
     // (3) корректно и *независимо* отработаем события каждым участником,
-    // уведомляем слушателей
+    //     уведомляем слушателей
     notifyAndCompleteEvent();
 
 
@@ -168,7 +168,7 @@ inline void EngineCPU::asteroidImpactIn(
 
     // действие астероидов
     // # Слишком малы, чтобы гравитационно воздействовать на себя.
-#if 0
+#if 1
     // Но вполне могут столкнуться друг с другом.
     for (size_t k = 0; k < pns::ASTEROID_COUNT; ++k) {
         if (currentI == k) {
@@ -176,20 +176,30 @@ inline void EngineCPU::asteroidImpactIn(
             continue;
         }
         const pns::aboutAsteroid_t& aak = asteroid[ k ];
-        if ( pns::absent( aak ) ) {
+        if ( pns::absentAsteroid( aak ) ) {
             // # Отсутствующий элемент - сигнал конца списка.
             break;
         }
-        const real_t maxSideK =
-            typelib::max( aak.size[ 0 ], aak.size[ 1 ], aak.size[ 2 ] );
-        const real_t collisionDistance = std::max( maxSide, maxSideK );
-        if ( collision( aa->coord, aak.coord, collisionDistance ) ) {
-            memorizeNext(
-                pns::GE_ASTEROID, aa->event, &countEvent,
-                pns::E_COLLISION_ASTEROID, k
-            );
+        // # Столкновение фиксируем при малейшей вероятности (по размерам).
+        const real_t collisionDistance =
+            typelib::max( maxSide, aak.size[ 0 ], aak.size[ 1 ], aak.size[ 2 ] );
+        const bool hasCollision =
+            collision( aa->coord, aak.coord, collisionDistance );
+        if ( hasCollision ) {
+            const pns::eventTwo_t eventTwo = {
+                // uid события
+                pns::E_COLLISION,
+                // участники события
+                { pns::GE_ASTEROID,  currentI,  aa->uid },
+                { pns::GE_ASTEROID,  k,         aak.uid }
+            };
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
+#ifdef _DEBUG
+            pns::printEventTwo( eventTwo, &topology );
+#endif
         }
-    }
+
+    } // for (size_t k = 0 ...
 #endif
 
 
@@ -551,7 +561,9 @@ inline void EngineCPU::starImpactIn(
 
 
 inline void EngineCPU::dealEvent() {
+
     assert( !mPortulan.expired() );
+
     auto& topology = mPortulan.lock()->topology().topology();
     auto& observer = topology.observer;
 
@@ -589,7 +601,9 @@ inline void EngineCPU::dealEvent() {
 
 
 inline void EngineCPU::uniqueEvent() {
+
     assert( !mPortulan.expired() );
+
     auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
@@ -647,6 +661,9 @@ inline void EngineCPU::dealEventCollision( pns::eventTwo_t* eventTwo ) {
     switch ( geA ) {
         case pns::GE_ASTEROID:
             switch ( geB ) {
+                case pns::GE_ASTEROID:
+                    dealEventCollision( eventTwo,  &asteroid[ iA ],  &asteroid[ iB ] );
+                    break;
                 case pns::GE_STAR:
                     dealEventCollision( eventTwo,  &asteroid[ iA ],  &star[ iB ] );
                     break;
@@ -664,6 +681,208 @@ inline void EngineCPU::dealEventCollision( pns::eventTwo_t* eventTwo ) {
         // @todo ...
 
     } // switch ( geA )
+}
+
+
+
+
+inline void EngineCPU::dealEventCollision(
+    pns::eventTwo_t*       eventTwo,
+    pns::aboutAsteroid_t*  a,
+    pns::aboutAsteroid_t*  b
+) {
+    // разбиваем событие на части и передаём участникам
+
+    // чтобы рассчитать последствия столкновения двух астероидов, надо
+    // оценить некоторые характеристики удара
+    // # Что произойдёт с астероидом определим по силе столкновения.
+    // # Удар - прямой.
+    // # Коэффициент восстановления у астероидов одинаков.
+    const typelib::VectorT< pns::real_t >  va( a->velocity );
+    const typelib::VectorT< pns::real_t >  vb( b->velocity );
+    static const pns::real_t COR = 0.5;
+    const auto rv = typelib::compute::physics::speedCollision(
+        a->mass, va, b->mass, vb, COR
+    );
+
+    // Астероид A
+    const auto& rva = rv.first;
+    const auto rval = rva.length();
+    const auto val = va.length();
+    const auto deltaRVAL = rval - val;
+
+    // # Малые изменения скорости проигнорируем.
+    auto deltaRVA = typelib::VectorT< pns::real_t >::ZERO();
+    pns::real_t deltaTemperatureAAfter = 0.0;
+    const bool changeVelocityA = (std::abs( deltaRVAL ) > 0.01);
+	if ( changeVelocityA ) {
+        deltaRVA = rva - va;
+        const auto val2 = val * val;
+        const auto rval2 = rval * rval;
+
+        // кинет. энергия до и после столкновения
+        const auto kineticABefore = a->mass * val2 / 2.0;
+        const auto kineticAAfter  = a->mass * rval2 / 2.0;
+
+        // # Каждый астероид изменит температуру настолько, насколько
+        //   изменилась его кинетическая энергия.
+        const auto deltaKineticA = kineticAAfter - kineticABefore;
+        deltaTemperatureAAfter =
+            typelib::compute::physics::deltaTemperature(
+                deltaKineticA, a->mass, a->heatCapacity
+            );
+    } // if ( changeVelocityA )
+
+
+    // Астероид B
+    // @see Коммент. для астероида A.
+    const auto& rvb = rv.second;
+    const auto rvbl = rvb.length();
+    const auto vbl = vb.length();
+    const auto deltaRVBL = rvbl - vbl;
+
+    auto deltaRVB = typelib::VectorT< pns::real_t >::ZERO();
+    pns::real_t deltaTemperatureBAfter = 0.0;
+    const bool changeVelocityB = (std::abs( deltaRVBL ) > 0.01);
+	if ( changeVelocityB ) {
+        deltaRVB = rvb - vb;
+        const auto vbl2 = vbl * vbl;
+        const auto rvbl2 = rvbl * rvbl;
+
+        const auto kineticBBefore = b->mass * vbl2 / 2.0;
+        const auto kineticBAfter  = b->mass * rvbl2 / 2.0;
+
+        const auto deltaKineticB = kineticBAfter - kineticBBefore;
+        deltaTemperatureBAfter =
+            typelib::compute::physics::deltaTemperature(
+                deltaKineticB, b->mass, b->heatCapacity
+            );
+    } // if ( changeVelocityB )
+
+
+    // раздаём события участникам
+    if ( changeVelocityA ) {
+        dealEventCollision(
+            a,  deltaRVA,  deltaRVAL,  deltaTemperatureAAfter,
+            *b, deltaRVB,  deltaRVBL,  deltaTemperatureBAfter,
+            eventTwo->piB
+        );
+    }
+
+    if ( changeVelocityB ) {
+        dealEventCollision(
+            b,  deltaRVB,  deltaRVBL,  deltaTemperatureBAfter,
+            *a, deltaRVA,  deltaRVAL,  deltaTemperatureAAfter,
+            eventTwo->piA
+        );
+    }
+
+
+    // # Отработанное событие наблюдатель забывает.
+    forgetEventTwo( eventTwo );
+}
+
+
+
+
+inline void EngineCPU::dealEventCollision(
+    pns::aboutAsteroid_t*  a,
+    const typelib::VectorT< pns::real_t >&  deltaVA,  
+    pns::real_t  deltaVAL,
+    pns::real_t  deltaTemperatureAAfter,
+
+    const pns::aboutAsteroid_t&  b,
+    const typelib::VectorT< pns::real_t >&  deltaVB,
+    pns::real_t  deltaVBL,
+    pns::real_t  deltaTemperatureBAfter,
+    const pns::pointerElement_t&  pb
+) {
+    // Астероид A столкнулся с астероидом B
+    // # Изменения касаются только элемента A.
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_COLLISION,
+            // другой участник события
+            pb
+        };
+        pns::asteroidMemorizeEvent( &a->memoryEvent, event );
+    }
+
+
+    // помимо общего события, регистрируем последствия, которые необходимо
+    // отработать в рамках этого же пульса
+
+    // рассмотрим разницу температур
+    if (
+        // температура может подняться до температуры кипения...
+        (deltaTemperatureAAfter >= a->boilingPoint)
+        // ...или до температура плавления...
+     || (deltaTemperatureAAfter >= a->meltingPoint)
+    ) {
+        // астероид раскалывается на расплавленные осколки
+        {
+            static const size_t SEED = 12345;
+            static typelib::Random< size_t >  genN( 5, 10, SEED );
+            const size_t n = genN.next();
+            const pns::event_t event = {
+                // uid события
+                pns::E_CRUSH_N,
+                // другой участник события - не важен для этого события
+                {},
+                // характеристика
+                {
+                    n,
+                    deltaVA.x, deltaVA.y, deltaVA.z,
+                    deltaTemperatureAAfter
+                }
+            };
+            pns::asteroidMemorizeEvent( &a->memoryEvent, event );
+        }
+        return;
+    }
+
+
+    // ...или удар просто может быть очень сильным...
+    const bool powerfullCollision =
+        (deltaTemperatureAAfter >= (a->meltingPoint / 2.0));
+    if ( powerfullCollision ) {
+        // астероид раскалывается
+        {
+            static const size_t SEED = 12345;
+            static typelib::Random< size_t >  genN( 2, 5, SEED );
+            const size_t n = genN.next();
+            const pns::event_t event = {
+                // uid события
+                pns::E_CRUSH_N,
+                // другой участник события - не важен для этого события
+                {},
+                // характеристика
+                {
+                    n,
+                    deltaVA.x, deltaVA.y, deltaVA.z,
+                    deltaTemperatureAAfter
+                }
+            };
+            pns::asteroidMemorizeEvent( &a->memoryEvent, event );
+        }
+        return;
+    }
+
+
+    // ...или сила удара недостаточна, чтобы расколоть астероид
+    // меняется скорость астероида
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_VELOCITY,
+            // другой участник события - не важен для этого события
+            {},
+            // характеристика
+            { deltaVA.x, deltaVA.y, deltaVA.z }
+        };
+        pns::asteroidMemorizeEvent( &a->memoryEvent, event );
+    }
 }
 
 
@@ -842,7 +1061,7 @@ inline void EngineCPU::notifyAndCompleteEvent() {
 
 
     // оптимизируем списки, уведомляем подписчиков о прочих изменениях
-    // #! Оптимизация должна быть только после всех уведомлений / отработок.
+    // #! Оптимизация должна быть после всех уведомлений / отработок.
     //    Иначе можем получить искажённую картину, т.к. порядок отработки
     //    событий не определён.
     // @see #Соглашения в начале метода.
@@ -937,8 +1156,25 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         } // if (event.uid == pns::E_COLLISION)
 
+
+        // у астероида изменилась скорость
+        if (event.uid == pns::E_CHANGE_VELOCITY) {
+            const pns::real_t deltaVelocity[ 3 ] = {
+                event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ]
+            };
+            notifyAndCompleteEventAsteroidChangeVelocity(
+                asteroid,  currentI,
+                deltaVelocity
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
         // @todo ...
-    }
+
+    } // for (int k = aa->memoryEvent.waldo - 1; ...
 
 
     // все события отработаны, cбрасываем валдо

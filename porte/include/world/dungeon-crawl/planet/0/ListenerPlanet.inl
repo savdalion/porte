@@ -132,8 +132,8 @@ inline void ListenerPlanet< E >::updatePlanetFromStarSystem(
         }
         const pnp::aboutIlluminanceStar_t newAIS = {
             static_cast< cl_float >( as.radius ),
-            static_cast< cl_float >( as.temperature ),
-            static_cast< cl_float >( as.luminousIntensity ),
+            static_cast< cl_float >( as.surfaceTemperature ),
+            static_cast< cl_float >( as.luminosity ),
             {
                 static_cast< cl_float >( as.coord[ 0 ] ),
                 static_cast< cl_float >( as.coord[ 1 ] ),

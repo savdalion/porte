@@ -89,8 +89,28 @@ private:
     * @see observer_t
     */
     void dealEvent();
+
     void dealEventCollision( pns::eventTwo_t* );
+
+
+    void dealEventCollision( pns::eventTwo_t*,  pns::aboutAsteroid_t*,  pns::aboutAsteroid_t* );
+
+    void dealEventCollision(
+        pns::aboutAsteroid_t*  a,
+        const typelib::VectorT< pns::real_t >&  rva,  
+        pns::real_t  rval,
+        pns::real_t  deltaTemperatureAAfter,
+
+        const pns::aboutAsteroid_t&  b,
+        const typelib::VectorT< pns::real_t >&  rvb,
+        pns::real_t  rvbl,
+        pns::real_t  deltaTemperatureBAfter,
+        const pns::pointerElement_t&  pb
+    );
+
+
     void dealEventCollision( pns::eventTwo_t*,  pns::aboutAsteroid_t*,  pns::aboutStar_t* );
+
     void dealEventCollision( pns::eventTwo_t*,  pns::aboutStar_t*,  pns::aboutAsteroid_t* );
 
 

@@ -153,10 +153,10 @@ int main( int argc, char** argv ) {
             1.9891e30,
             // radius
             6.9551e8,
-            // temperature,
+            // kernelTemperature,
+            13.5e6,
+            // surfaceTemperature,
             1.5e6,
-            // luminousIntensity
-            3e27,
             // coord
             { 0, 0, 0 },
             // rotation
@@ -194,10 +194,10 @@ int main( int argc, char** argv ) {
             1.9891e30,
             // radius
             6.9551e8,
-            // temperature,
+            // kernelTemperature,
+            13.5e6,
+            // surfaceTemperature,
             1.5e6,
-            // luminousIntensity
-            3e27,
             // coord
             { -6.9551e8 * 70.0, 0, 0 },
             // rotation
@@ -235,10 +235,10 @@ int main( int argc, char** argv ) {
             1.9891e30,
             // radius
             6.9551e8,
-            // temperature,
+            // kernelTemperature,
+            13.5e6,
+            // surfaceTemperature,
             1.5e6,
-            // luminousIntensity
-            3e27,
             // coord
             { 6.9551e8 * 70.0, 0, 0 },
             // rotation
@@ -501,6 +501,13 @@ int main( int argc, char** argv ) {
         typelib::Random< pns::real_t >
             velocity( velocityOrbit * 0.95,  velocityOrbit * 1.05,  seed.next() );
 
+        const pns::real_t radiusStar = tsc[ 0 ].radius;
+        const pns::real_t surfaceTemperatureStar = tsc[ 0 ].surfaceTemperature;
+        const pns::real_t luminosityStar =
+            typelib::compute::physics::luminosity(
+                radiusStar, surfaceTemperatureStar
+            );
+
         for (size_t i = 0; i < N_ASTEROID; ++i) {
             // # Принимаем за эллипсоид.
             const pns::real_t ar = averageRadius.next();
@@ -509,14 +516,21 @@ int main( int argc, char** argv ) {
             const pns::real_t rz = ar * proportionRadius.next();
 
             const pns::real_t volume = 4.0 / 3.0 * M_PI * rx * ry * rz;
-            const pns::real_t _density = density.next();
-            const pns::real_t mass = volume * _density;
+            const pns::real_t rdensity = density.next();
+            const pns::real_t mass = volume * rdensity;
 
             const pns::real_t d  = distance.next();
             const pns::real_t da = angle.next();
             const pns::real_t cx = d * std::sin( da );
             const pns::real_t cy = d * std::cos( da );
             const pns::real_t cz = 0;
+
+            const pns::real_t albedo = 0.6;
+
+            const pns::real_t temperature =
+                typelib::compute::physics::effectiveTemperature(
+                    luminosityStar, d, albedo
+                );
 
             // скорости - перпендикулярны силе от центра звёздной системы
             const pns::real_t _velocity = velocity.next();
@@ -541,7 +555,29 @@ int main( int argc, char** argv ) {
                 { 0, 0, 0 },
                 // velocity
                 { vx, vy, vz },
-                // memoryEvent
+                // density
+                // # ~ Кремний 2330 кг / м3
+                rdensity,
+                // temperature
+                temperature,
+                // albedo
+                albedo,
+                // meltingPoint
+                // # ~ Кремний 1680 К
+                1600,
+                // boilingPoint
+                // # ~ Кремний 2620 К
+                2600,
+                // heatCapacity
+                // # ~ Кремний 800 Дж / (кг * м)
+                800.0,
+                // enthalpyFusion
+                // # ~ Кремний 50.6 кДж / моль
+                50000 / 28.0855,
+                // enthalpyVaporization
+                // # ~ Кремний 383 кДж / моль
+                380000 / 28.0855,
+                // # memoryEvent
                 { 0, {} }
             };
             tac[ countAsteroid ] = asteroid;
