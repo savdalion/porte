@@ -656,8 +656,8 @@ inline void EngineCPU::dealEventCollision( pns::eventTwo_t* eventTwo ) {
     // @todo fine? Переписать обработку событий через классы.
     const auto geA = eventTwo->piA.ge;
     const auto geB = eventTwo->piB.ge;
-    const auto iA = eventTwo->piA.ii;
-    const auto iB = eventTwo->piB.ii;
+    const auto iA  = eventTwo->piA.ii;
+    const auto iB  = eventTwo->piB.ii;
     switch ( geA ) {
         case pns::GE_ASTEROID:
             switch ( geB ) {
@@ -727,10 +727,10 @@ inline void EngineCPU::dealEventCollision(
         // # Каждый астероид изменит температуру настолько, насколько
         //   изменилась его кинетическая энергия.
         const auto deltaKineticA = kineticAAfter - kineticABefore;
-        deltaTemperatureAAfter =
+        deltaTemperatureAAfter = std::abs(
             typelib::compute::physics::deltaTemperature(
-                deltaKineticA, a->mass, a->heatCapacity
-            );
+                deltaKineticA,  a->mass,  a->heatCapacity
+        ) );
     } // if ( changeVelocityA )
 
 
@@ -753,10 +753,10 @@ inline void EngineCPU::dealEventCollision(
         const auto kineticBAfter  = b->mass * rvbl2 / 2.0;
 
         const auto deltaKineticB = kineticBAfter - kineticBBefore;
-        deltaTemperatureBAfter =
+        deltaTemperatureBAfter = std::abs(
             typelib::compute::physics::deltaTemperature(
-                deltaKineticB, b->mass, b->heatCapacity
-            );
+                deltaKineticB,  b->mass,  b->heatCapacity
+        ) );
     } // if ( changeVelocityB )
 
 
@@ -809,6 +809,12 @@ inline void EngineCPU::dealEventCollision(
         pns::asteroidMemorizeEvent( &a->memoryEvent, event );
     }
 
+#ifdef _DEBUG
+    std::cout << "Температура a" << a->uid << " изменилась на " <<
+        deltaTemperatureAAfter << " C" <<
+    std::endl;
+#endif
+
 
     // помимо общего события, регистрируем последствия, которые необходимо
     // отработать в рамках этого же пульса
@@ -844,8 +850,7 @@ inline void EngineCPU::dealEventCollision(
 
 
     // ...или удар просто может быть очень сильным...
-    const bool powerfullCollision =
-        (deltaTemperatureAAfter >= (a->meltingPoint / 2.0));
+    const bool powerfullCollision = (deltaTemperatureAAfter >= 5.0);
     if ( powerfullCollision ) {
         // астероид раскалывается
         {
@@ -872,6 +877,8 @@ inline void EngineCPU::dealEventCollision(
 
     // ...или сила удара недостаточна, чтобы расколоть астероид
     // меняется скорость астероида
+    // # Проверку, что скорость изменилась достаточно, чтобы зафиксировать
+    //   событие E_CHANGE_VELOCITY, сделали до вызова этого метода.
     {
         const pns::event_t event = {
             // uid события
@@ -880,6 +887,18 @@ inline void EngineCPU::dealEventCollision(
             {},
             // характеристика
             { deltaVA.x, deltaVA.y, deltaVA.z }
+        };
+        pns::asteroidMemorizeEvent( &a->memoryEvent, event );
+    }
+    // меняется температура астероида
+    if (deltaTemperatureAAfter >= 1.0) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_TEMPERATURE,
+            // другой участник события - не важен для этого события
+            {},
+            // характеристика
+            { deltaTemperatureAAfter }
         };
         pns::asteroidMemorizeEvent( &a->memoryEvent, event );
     }
@@ -1165,6 +1184,37 @@ inline void EngineCPU::notifyAndCompleteEvent(
             notifyAndCompleteEventAsteroidChangeVelocity(
                 asteroid,  currentI,
                 deltaVelocity
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // у астероида изменилась температура
+        if (event.uid == pns::E_CHANGE_TEMPERATURE) {
+            const pns::real_t deltaTemperature = event.fReal[ 0 ];
+            notifyAndCompleteEventAsteroidChangeTemperature(
+                asteroid,  currentI,
+                deltaTemperature
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // астероид раскалывается на части
+        if (event.uid == pns::E_CRUSH_N) {
+            const auto n = static_cast< size_t >( event.fReal[ 0 ] );
+            const pns::real_t deltaVelocity[ 3 ] = {
+                event.fReal[ 1 ],  event.fReal[ 2 ],  event.fReal[ 3 ]
+            };
+            const pns::real_t deltaTemperature = event.fReal[ 4 ];
+            notifyAndCompleteEventAsteroidCrushN(
+                asteroid,  currentI,
+                delta,
+                n,  deltaVelocity,  deltaTemperature
             );
             // # Отработанное событие надо забыть.
             forgetEvent( &event );

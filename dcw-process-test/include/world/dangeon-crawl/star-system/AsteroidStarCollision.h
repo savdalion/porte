@@ -118,7 +118,8 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         const pns::real_t ry = 12e3;
         const pns::real_t rz = 15e3;
         const pns::real_t density = 5000.0;
-        const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
+        const pns::real_t mass =
+            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
 
         const pns::real_t albedo = 0.6;
 
@@ -267,7 +268,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
         const pns::real_t rz = 15e3 * (i + 1);
         const pns::real_t density = 5000.0;
         const pns::real_t mass =
-            4.0 / 3.0 * M_PI * rx * ry * rz * density;
+            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
         massAsteroid[ i ] = mass;
 
         const pns::real_t albedo = 0.6;
@@ -422,7 +423,8 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
         const pns::real_t ry = 20e3 * (i / 2 + 1);
         const pns::real_t rz = 30e3 * (i / 2 + 1);
         const pns::real_t density = 5000.0;
-        const pns::real_t mass = 4.0 / 3.0 * M_PI * rx * ry * rz * density;
+        const pns::real_t mass =
+            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
         massAsteroid[ i ] = mass;
 
         // расположим астероиды хаотически

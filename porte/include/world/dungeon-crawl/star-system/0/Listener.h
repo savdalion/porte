@@ -73,17 +73,41 @@ public:
 
 
     /**
-    * У астероида изменилась скорость.
+    * У астероида изменилась температура.
     *
-    * @param deltaVelocity На сколько изменился вектор скорости.
+    * @param deltaTemperature На сколько изменилась температура.
     *
-    * # Все методы ниже вида 'after[A]Collision[B]' обозначают событие
-    *   'после того, как тело A столкнулось с телом B'.
+    * # Все методы ниже вида 'after[A]Change[K]' обозначают событие
+    *   'после того, как у тела A ихменилась характеристика K'.
     */
+    virtual inline void afterAsteroidChangeTemperature(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        pns::real_t  deltaTemperature
+    ) {}
+
+
+
+
     virtual inline void afterAsteroidChangeVelocity(
         AEngine::Ptr whose,
         const pns::asteroidContent_t,  size_t ia,
         const pns::real_t  deltaVelocity[ 3 ]
+    ) {}
+
+
+
+
+    /**
+    * Астероид раскололся на N частей.
+    */
+    virtual inline void afterAsteroidCrushN(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        pns::deltaElement_t&  delta,
+        size_t n,
+        const pns::real_t  deltaVelocity[ 3 ],
+        pns::real_t  deltaTemperature
     ) {}
 
 

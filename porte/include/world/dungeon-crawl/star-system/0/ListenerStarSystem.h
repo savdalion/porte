@@ -84,9 +84,28 @@ public:
 
 
 
+    void notifyAndCompleteEventAsteroidChangeTemperature(
+        pns::asteroidContent_t,  size_t ia,
+        const pns::real_t deltaTemperature
+    );
+
+
+
+
     void notifyAndCompleteEventAsteroidChangeVelocity(
         pns::asteroidContent_t,  size_t ia,
         const pns::real_t deltaVelocity[ 3 ]
+    );
+
+
+
+
+    void notifyAndCompleteEventAsteroidCrushN(
+        pns::asteroidContent_t,  size_t ia,
+        pns::deltaElement_t& delta,
+        size_t n,
+        const pns::real_t  deltaVelocity[ 3 ],
+        const pns::real_t  deltaTemperature
     );
 
 

@@ -515,7 +515,8 @@ int main( int argc, char** argv ) {
             const pns::real_t ry = ar * proportionRadius.next();
             const pns::real_t rz = ar * proportionRadius.next();
 
-            const pns::real_t volume = 4.0 / 3.0 * M_PI * rx * ry * rz;
+            const pns::real_t volume =
+                typelib::compute::geometry::ellipsoid::volume( rx, ry, rz );
             const pns::real_t rdensity = density.next();
             const pns::real_t mass = volume * rdensity;
 
