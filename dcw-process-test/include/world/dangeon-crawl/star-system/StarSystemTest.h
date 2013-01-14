@@ -125,6 +125,13 @@ protected:
 
 
 
+    inline pns::topology_t const* topology() const {
+        return &mPortulan->topology().topology();
+    }
+
+
+
+
 private:
     std::shared_ptr< pes::Engine >    mEngine;
     std::shared_ptr< pns::Portulan >  mPortulan;

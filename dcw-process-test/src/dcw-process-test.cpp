@@ -2,7 +2,7 @@
 #include "../include/configure.h"
 
 #include "../include/world/dangeon-crawl/star-system/AsteroidAsteroidCollision.h"
-//#include "../include/world/dangeon-crawl/star-system/AsteroidStarCollision.h"
+#include "../include/world/dangeon-crawl/star-system/AsteroidStarCollision.h"
 
 
 // Включается в "porte" для интерпретации структур C++ как OpenCL.
@@ -49,7 +49,7 @@ int main( int argc, char** argv ) {
 
 
     std::cout << std::endl << "^" << std::endl;
-    //std::cin.ignore();
+    std::cin.ignore();
 
     return 0;
 
