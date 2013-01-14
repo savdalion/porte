@@ -52,7 +52,7 @@ protected:
                 // live
                 true,
                 // mass
-                1.9891e30,
+                { 1.9891e30, 0.0 },
                 // radius
                 6.9551e8,
                 // kernelTemperature,
@@ -139,7 +139,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // live
             true,
             // mass
-            mass,
+            { mass, 0.0 },
             // size
             { rx, ry, rz },
             // coord
@@ -220,11 +220,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
     {
-        const auto sum = massStar + allMassAsteroid;
         const auto actual = topology()->star.content[ 0 ].mass;
-        // #! —лишком мала€ масса астероида провалит тест (тип pns::real_t).
-        EXPECT_LT( massStar, actual );
-        EXPECT_DOUBLE_EQ( sum, actual );
+        const bool gt = pns::gtMass( actual, massStar );
+        EXPECT_TRUE( gt );
     }
 
 #endif
@@ -286,7 +284,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
             // live
             true,
             // mass
-            mass,
+            { mass, 0.0 },
             // size
             { rx, ry, rz },
             // coord
@@ -351,13 +349,14 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
     
 
     // делаем снимок мира (см. SetUp() и выше)
-    const auto massStar = topology()->star.content[ 0 ].mass;
+    const auto massStar =
+        topology()->star.content[ 0 ].mass;
     const pns::real_t allMassAsteroid =
         std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
 
 
     // запускаем мир
-    // задаЄм такое кол-во шагов, чтобы астероид успел упасть на звезду
+    // задаЄм такое кол-во шагов, чтобы астероиды успели упасть на звезду
     static const int needStep = 24 * 3;
     static const bool closeWindow = true;
     static const bool showPulse = true;
@@ -369,11 +368,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
     {
-        const auto sum = massStar + allMassAsteroid;
         const auto actual = topology()->star.content[ 0 ].mass;
-        //@todo ? –азрушаетс€ топологи€ астероидов из-за обратного пор€дка столкновений?
-        EXPECT_LT( massStar, actual );
-        EXPECT_DOUBLE_EQ( sum, actual );
+        const bool gt = pns::gtMass( actual, massStar );
+        EXPECT_TRUE( gt );
     }
 
 #endif
@@ -386,7 +383,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
 
 
 
-TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
+TEST_F( AsteroidStarCollisionSST,  Asteroid500Star1 ) {
 #if 1
 
     // подготовка
@@ -396,16 +393,20 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
     // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
     // @source http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%8F%D1%81_%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4%D0%BE%D0%B2
     auto& tac = topology()->asteroid.content;
-    static const size_t N_ASTEROID = 1000;
+    static const size_t N_ASTEROID = 500;
     ASSERT_LT( N_ASTEROID, pns::ASTEROID_COUNT ) <<
         " оличество астероидов превышает зарезервированный дл€ них объЄм. —м. ASTEROID_COUNT.";
     size_t countAsteroid = 0;
 
     // дл€ позиционировани€ астероидов
-    static const pns::real_t asteroidOrbit = 1.49598261e11 / 10;
+    static const pns::real_t asteroidOrbit = 1.49598261e11 / 20;
 
     static const size_t SEED = 12345;
     typelib::Random< size_t >  seed( 0, 1000000000, SEED );
+    // плотности позвол€ем быть небольшой, чтобы протестировать сложение
+    // огромной массы звезды с относит. лЄгкими астероидами
+    typelib::Random< pns::real_t >
+        density( 100.0, 5000.0,  seed.next() );
     typelib::Random< pns::real_t >
         distance( asteroidOrbit * 0.5,  asteroidOrbit * 1.0,  seed.next() );
     typelib::Random< pns::real_t >
@@ -422,9 +423,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
         const pns::real_t rx = 10e3 * (i / 2 + 1);
         const pns::real_t ry = 20e3 * (i / 2 + 1);
         const pns::real_t rz = 30e3 * (i / 2 + 1);
-        const pns::real_t density = 5000.0;
+        const pns::real_t densi = density.next();
         const pns::real_t mass =
-            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
+            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * densi;
         massAsteroid[ i ] = mass;
 
         // расположим астероиды хаотически
@@ -447,7 +448,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
             // live
             true,
             // mass
-            mass,
+            { mass, 0.0 },
             // size
             { rx, ry, rz },
             // coord
@@ -460,7 +461,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
             { 0, 0, 0 },
             // density
             // # ~  ремний 2330 кг / м3
-            density,
+            densi,
             // temperature
             temperature,
             // albedo
@@ -512,14 +513,15 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
 
 
     // делаем снимок мира (см. SetUp() и выше)
-    const auto massStar = topology()->star.content[ 0 ].mass;
+    const auto massStar =
+        topology()->star.content[ 0 ].mass;
     const pns::real_t allMassAsteroid =
         std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
 
 
     // запускаем мир
-    // задаЄм такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int needStep = 24 * 3;
+    // задаЄм такое кол-во шагов, чтобы все астероиды успели упасть на звезду
+    static const int needStep = 20;
     static const bool closeWindow = true;
     static const bool showPulse = true;
     visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
@@ -530,10 +532,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1000Star1 ) {
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
     {
-        const auto sum = massStar + allMassAsteroid;
         const auto actual = topology()->star.content[ 0 ].mass;
-        EXPECT_LT( massStar, actual );
-        EXPECT_DOUBLE_EQ( sum, actual );
+        const bool gt = pns::gtMass( actual, massStar );
+        EXPECT_TRUE( gt );
     }
 
 #endif

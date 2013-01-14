@@ -329,7 +329,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCrushN(
             // live
             true,
             // mass
-            mass,
+            { mass, 0.0 },
             // size
             { rx, ry, rz },
             // coord
@@ -459,7 +459,8 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
 
     // # @todo ? Звезда с большей массой поглощает звезду с меньшей.
     // # Звезда A поглощает звезду B.
-    asA.mass += asB.mass;
+    asA.mass.base  += asB.mass.base;
+    asA.mass.knoll += asB.mass.knoll;
     //pns::excludeStar( &asB );
     --delta.star.count;
 
@@ -510,7 +511,8 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid
     // # Элемент может изменить только сам себя.
     // уничтожение астероида отрабатывает сам астероид
     // здесь - только изменим характеристики звезды
-    as.mass += aa.mass;
+    // # Масса астероида мала по сравнению с массой звезды.
+    as.mass.knoll += aa.mass.base + aa.mass.knoll;
 
 
     // отправляем *своё* событие другим слушателям

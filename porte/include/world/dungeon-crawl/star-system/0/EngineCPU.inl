@@ -157,7 +157,7 @@ inline void EngineCPU::asteroidImpactIn(
     // рассчитаем результирующую силу
     real_t force[ 3 ] = { 0, 0, 0 };
     pns::aboutBody_t a = {
-        aa->mass,
+        pns::massAsteroid( *aa ),
         { aa->coord[ 0 ],    aa->coord[ 1 ],    aa->coord[ 2 ] },
         { aa->rotation[ 0 ], aa->rotation[ 1 ], aa->rotation[ 2 ] }
     };
@@ -213,7 +213,7 @@ inline void EngineCPU::asteroidImpactIn(
             break;
         }
         const pns::aboutBody_t b = {
-            apk.mass,
+            pns::massPlanet( apk ),
             { apk.coord[ 0 ],    apk.coord[ 1 ],    apk.coord[ 2 ] },
             { apk.rotation[ 0 ], apk.rotation[ 1 ], apk.rotation[ 2 ] }
         };
@@ -246,7 +246,7 @@ inline void EngineCPU::asteroidImpactIn(
             break;
         }
         const pns::aboutBody_t b = {
-            ask.mass,
+            pns::massStar( ask ),
             { ask.coord[ 0 ],    ask.coord[ 1 ],    ask.coord[ 2 ] },
             { ask.rotation[ 0 ], ask.rotation[ 1 ], ask.rotation[ 2 ] }
         };
@@ -287,7 +287,7 @@ inline void EngineCPU::asteroidImpactIn(
         force[ 1 ] *= inv;
         force[ 2 ] *= inv;
     }
-    const real_t acceleration = f / aa->mass;
+    const real_t acceleration = f / pns::massAsteroid( *aa );
     const real_t v = acceleration * timestep();
     aa->velocity[ 0 ] += force[ 0 ] * v;
     aa->velocity[ 1 ] += force[ 1 ] * v;
@@ -317,7 +317,7 @@ inline void EngineCPU::planetImpactIn(
     // рассчитаем результирующую силу
     real_t force[ 3 ] = { 0, 0, 0 };
     pns::aboutBody_t a = {
-        ap->mass,
+        pns::massPlanet( *ap ),
         { ap->coord[ 0 ],    ap->coord[ 1 ],    ap->coord[ 2 ] },
         { ap->rotation[ 0 ], ap->rotation[ 1 ], ap->rotation[ 2 ] }
     };
@@ -341,7 +341,7 @@ inline void EngineCPU::planetImpactIn(
             break;
         }
         const pns::aboutBody_t b = {
-            apk.mass,
+            pns::massPlanet( apk ),
             { apk.coord[ 0 ],    apk.coord[ 1 ],    apk.coord[ 2 ] },
             { apk.rotation[ 0 ], apk.rotation[ 1 ], apk.rotation[ 2 ] }
         };
@@ -374,7 +374,7 @@ inline void EngineCPU::planetImpactIn(
             break;
         }
         const pns::aboutBody_t b = {
-            ask.mass,
+            pns::massStar( ask ),
             { ask.coord[ 0 ],    ask.coord[ 1 ],    ask.coord[ 2 ] },
             { ask.rotation[ 0 ], ask.rotation[ 1 ], ask.rotation[ 2 ] }
         };
@@ -414,7 +414,7 @@ inline void EngineCPU::planetImpactIn(
         force[ 1 ] *= inv;
         force[ 2 ] *= inv;
     }
-    const real_t acceleration = f / ap->mass;
+    const real_t acceleration = f / pns::massPlanet( *ap );
     const real_t v = acceleration * timestep();
     ap->velocity[ 0 ] += force[ 0 ] * v;
     ap->velocity[ 1 ] += force[ 1 ] * v;
@@ -450,7 +450,7 @@ inline void EngineCPU::starImpactIn(
     // рассчитаем результирующую силу
     real_t force[ 3 ] = { 0, 0, 0 };
     pns::aboutBody_t a = {
-        as->mass,
+        pns::massStar( *as ),
         { as->coord[ 0 ],    as->coord[ 1 ],    as->coord[ 2 ] },
         { as->rotation[ 0 ], as->rotation[ 1 ], as->rotation[ 2 ] }
     };
@@ -505,7 +505,7 @@ inline void EngineCPU::starImpactIn(
             break;
         }
         const pns::aboutBody_t b = {
-            ask.mass,
+            pns::massStar( ask ),
             { ask.coord[ 0 ],    ask.coord[ 1 ],    ask.coord[ 2 ] },
             { ask.rotation[ 0 ], ask.rotation[ 1 ], ask.rotation[ 2 ] }
         };
@@ -545,7 +545,7 @@ inline void EngineCPU::starImpactIn(
         force[ 1 ] *= inv;
         force[ 2 ] *= inv;
     }
-    const real_t acceleration = f / as->mass;
+    const real_t acceleration = f / pns::massStar( *as );
     const real_t v = acceleration * timestep();
     as->velocity[ 0 ] += force[ 0 ] * v;
     as->velocity[ 1 ] += force[ 1 ] * v;
@@ -701,8 +701,10 @@ inline void EngineCPU::dealEventCollision(
     const typelib::VectorT< pns::real_t >  va( a->velocity );
     const typelib::VectorT< pns::real_t >  vb( b->velocity );
     static const pns::real_t COR = 0.5;
+    const auto massA = pns::massAsteroid( *a );
+    const auto massB = pns::massAsteroid( *b );
     const auto rv = typelib::compute::physics::speedCollision(
-        a->mass, va, b->mass, vb, COR
+        massA, va, massB, vb, COR
     );
 
     // Астероид A
@@ -721,15 +723,15 @@ inline void EngineCPU::dealEventCollision(
         const auto rval2 = rval * rval;
 
         // кинет. энергия до и после столкновения
-        const auto kineticABefore = a->mass * val2 / 2.0;
-        const auto kineticAAfter  = a->mass * rval2 / 2.0;
+        const auto kineticABefore = massA * val2 / 2.0;
+        const auto kineticAAfter  = massA * rval2 / 2.0;
 
         // # Каждый астероид изменит температуру настолько, насколько
         //   изменилась его кинетическая энергия.
         const auto deltaKineticA = kineticAAfter - kineticABefore;
         deltaTemperatureAAfter = std::abs(
             typelib::compute::physics::deltaTemperature(
-                deltaKineticA,  a->mass,  a->heatCapacity
+                deltaKineticA,  massA,  a->heatCapacity
         ) );
     } // if ( changeVelocityA )
 
@@ -749,13 +751,13 @@ inline void EngineCPU::dealEventCollision(
         const auto vbl2 = vbl * vbl;
         const auto rvbl2 = rvbl * rvbl;
 
-        const auto kineticBBefore = b->mass * vbl2 / 2.0;
-        const auto kineticBAfter  = b->mass * rvbl2 / 2.0;
+        const auto kineticBBefore = massB * vbl2 / 2.0;
+        const auto kineticBAfter  = massB * rvbl2 / 2.0;
 
         const auto deltaKineticB = kineticBAfter - kineticBBefore;
         deltaTemperatureBAfter = std::abs(
             typelib::compute::physics::deltaTemperature(
-                deltaKineticB,  b->mass,  b->heatCapacity
+                deltaKineticB,  massB,  b->heatCapacity
         ) );
     } // if ( changeVelocityB )
 

@@ -150,7 +150,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            1.9891e30,
+            { 1.9891e30, 0.0 },
             // radius
             6.9551e8,
             // kernelTemperature,
@@ -191,7 +191,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            1.9891e30,
+            { 1.9891e30, 0.0 },
             // radius
             6.9551e8,
             // kernelTemperature,
@@ -232,7 +232,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            1.9891e30,
+            { 1.9891e30, 0.0 },
             // radius
             6.9551e8,
             // kernelTemperature,
@@ -288,7 +288,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            3.33022e23,
+            { 3.33022e23, 0.0 },
             // radius
             2.4397e6,
             // coord
@@ -320,7 +320,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            4.8685e24,
+            { 4.8685e24, 0.0 },
             // radius
             6.0518e6,
             // coord
@@ -357,7 +357,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            5.9736e24,
+            { 5.9736e24, 0.0 },
             // radius
             6.3568e6,
             // coord
@@ -402,7 +402,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            0.64185e24,
+            { 0.64185e24, 0.0 },
             // radius
             3.3895e6,
             // coord
@@ -439,7 +439,7 @@ int main( int argc, char** argv ) {
             // live
             true,
             // mass
-            1.1e24,
+            { 1.1e24, 0.0 },
             // radius
             5.5e6,
             // coord
@@ -545,7 +545,7 @@ int main( int argc, char** argv ) {
                 // live
                 true,
                 // mass
-                mass,
+                { mass, 0.0 },
                 // size
                 { rx, ry, rz },
                 // coord
@@ -715,12 +715,13 @@ inline void wrapPlanet(
     const real_t radiusCore = radiusCrust * 0.4f;
 
     // @todo = f( данные планеты из звёздной системы )
-    const real_t massAtmosphere = static_cast< real_t >( 0.000001 * pss.mass );
-    const real_t massCrust =      static_cast< real_t >( 0.099999 * pss.mass );
-    const real_t massMantle =     static_cast< real_t >( 0.6      * pss.mass );
-    const real_t massCore =       static_cast< real_t >( 0.3      * pss.mass );
+    const real_t mass = pns::massPlanet( pss );
+    const real_t massAtmosphere = static_cast< real_t >( 0.000001 * mass );
+    const real_t massCrust =      static_cast< real_t >( 0.099999 * mass );
+    const real_t massMantle =     static_cast< real_t >( 0.6      * mass );
+    const real_t massCore =       static_cast< real_t >( 0.3      * mass );
     const real_t resultMass = massAtmosphere + massCrust + massMantle + massCore;
-    assert( typelib::equal( pss.mass, resultMass )
+    assert( typelib::equal( mass, resultMass )
         && "Масса планеты должна быть согласована с массой в звёздной системе." );
 
     static const pnp::aboutPlanet_t aboutPlanet = {

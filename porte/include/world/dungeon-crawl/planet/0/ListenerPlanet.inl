@@ -124,8 +124,8 @@ inline void ListenerPlanet< E >::updatePlanetFromStarSystem(
         assert( (as.mass >= 0.0)
             && "Масса звезды не может быть меньше 0. Возможно, ошибка при инициализации списка звёзд." );
         */
-        if (as.mass <= 0) {
-            // # Звезда с пустой mass - звёзд больше нет.
+        if ( pns::absentStar( as ) ) {
+            // # Звёзд больше нет.
             // добавляем свой признак - пустой radius
             ais[ i ] = ZERO_AIS;
             break;

@@ -83,7 +83,7 @@ TEST_F( AsteroidAsteroidCollisionSST,  Asteroid1V0Asteroid1V01Direct ) {
             // live
             true,
             // mass
-            mass,
+            { mass, 0.0 },
             // size
             { rx, ry, rz },
             // coord
@@ -260,7 +260,7 @@ TEST_F( AsteroidAsteroidCollisionSST,  Asteroid1V0Asteroid1V100Direct ) {
             // live
             true,
             // mass
-            mass,
+            { mass, 0.0 },
             // size
             { rx, ry, rz },
             // coord
