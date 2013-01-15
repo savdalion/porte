@@ -178,7 +178,7 @@ public:
     virtual inline void afterPlanetChangeCoord(
         AEngine::Ptr whose,
         const pns::planetContent_t,  size_t ia,
-        const pns::real_t deltaDistance[ 3 ],  pns::real_t absDeltaDistance
+        const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
     ) {}
 
 

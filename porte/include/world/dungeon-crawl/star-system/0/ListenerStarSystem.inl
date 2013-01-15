@@ -330,6 +330,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCrushN(
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { vx, vy, vz },
             // density
@@ -445,6 +446,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetImpactForce(
     ap.force[ 0 ] = force[ 0 ];
     ap.force[ 1 ] = force[ 1 ];
     ap.force[ 2 ] = force[ 2 ];
+    ap.absForce = absForce;
 
 
     // отправляем *своё* событие другим слушателям
@@ -463,22 +465,27 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetImpactForce(
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetChangeCoord(
     pns::planetContent_t a,  size_t ia,
-    const pns::real_t deltaDistance[ 3 ],  pns::real_t absDeltaDistance
+    const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
     // отрабатываем своё событие
     //std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetChangeCoord() " <<
-    //    a[ ia ].uid << " " << absDeltaDistance <<
+    //    a[ ia ].uid << " " << absDeltaCoord <<
     //std::endl;
 
 
     pns::aboutPlanet_t&  ap = a[ ia ];
 
-    ap.coord[ 0 ] += deltaDistance[ 0 ];
-    ap.coord[ 1 ] += deltaDistance[ 1 ];
-    ap.coord[ 2 ] += deltaDistance[ 2 ];
+    ap.coord[ 0 ] += deltaCoord[ 0 ];
+    ap.coord[ 1 ] += deltaCoord[ 1 ];
+    ap.coord[ 2 ] += deltaCoord[ 2 ];
+
+    ap.deltaCoord[ 0 ] += deltaCoord[ 0 ];
+    ap.deltaCoord[ 1 ] += deltaCoord[ 1 ];
+    ap.deltaCoord[ 2 ] += deltaCoord[ 2 ];
+    ap.absDeltaCoord = absDeltaCoord;
 
 
     // отправляем *своё* событие другим слушателям
@@ -486,7 +493,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetChangeCoord(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterPlanetChangeCoord(
-        etr->whose,  a, ia,  deltaDistance, absDeltaDistance
+        etr->whose,  a, ia,  deltaCoord, absDeltaCoord
     ); } }
 }
 
@@ -513,6 +520,11 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetChangeVelocity(
     ap.velocity[ 0 ] += deltaVelocity[ 0 ];
     ap.velocity[ 1 ] += deltaVelocity[ 1 ];
     ap.velocity[ 2 ] += deltaVelocity[ 2 ];
+
+    ap.deltaVelocity[ 0 ] = deltaVelocity[ 0 ];
+    ap.deltaVelocity[ 1 ] = deltaVelocity[ 1 ];
+    ap.deltaVelocity[ 2 ] = deltaVelocity[ 2 ];
+    ap.absDeltaVelocity = absDeltaVelocity;
 
 
     // отправляем *своё* событие другим слушателям

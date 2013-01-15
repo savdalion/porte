@@ -434,7 +434,7 @@ inline void EngineCPU::planetImpactIn(
     ap->test[ 3 ] = v;
     */
 
-    // событие: воздействие силы
+    // воздействие силы
     static const pns::real_t MIN_IMPACT_FORCE = 1.0;
     const auto absForce = sqrt(
         force[ 0 ] * force[ 0 ] +
@@ -487,24 +487,24 @@ inline void EngineCPU::planetImpactIn(
     // # 0.01 - изменение на 1 см.
     static const pns::real_t MIN_CHANGE_DISTANCE = 0.01;
     // координаты меняет скорость
-    const pns::real_t distance[ 3 ] = {
+    const pns::real_t coord[ 3 ] = {
         (ap->velocity[ 0 ] + velocity[ 0 ]) * timestep(),
         (ap->velocity[ 1 ] + velocity[ 1 ]) * timestep(),
         (ap->velocity[ 2 ] + velocity[ 2 ]) * timestep()
     };
-    const auto absDeltaDistance = sqrt(
-        distance[ 0 ] * distance[ 0 ] +
-        distance[ 1 ] * distance[ 1 ] +
-        distance[ 2 ] * distance[ 2 ]
+    const auto absDeltaCoord = sqrt(
+        coord[ 0 ] * coord[ 0 ] +
+        coord[ 1 ] * coord[ 1 ] +
+        coord[ 2 ] * coord[ 2 ]
     );
-    if (absDeltaDistance >= MIN_CHANGE_DISTANCE) {
+    if (absDeltaCoord >= MIN_CHANGE_DISTANCE) {
         const pns::event_t event = {
             // uid события
             pns::E_CHANGE_COORD,
             // pi второй участник события - здесь не важен
             {},
             // характеристика
-            { distance[ 0 ],  distance[ 1 ],  distance[ 2 ],  absDeltaDistance }
+            { coord[ 0 ],  coord[ 1 ],  coord[ 2 ],  absDeltaCoord }
         };
         pns::planetMemorizeEvent( &ap->memoryEvent, event );
     }
@@ -1432,12 +1432,12 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         // изменение координат
         if (event.uid == pns::E_CHANGE_COORD) {
-            const pns::real_t deltaDistance[ 3 ] =
+            const pns::real_t deltaCoord[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
-            const pns::real_t absDeltaDistance = event.fReal[ 3 ];
+            const pns::real_t absDeltaCoord = event.fReal[ 3 ];
             notifyAndCompleteEventPlanetChangeCoord(
                 planet,  currentI,
-                deltaDistance,  absDeltaDistance
+                deltaCoord,  absDeltaCoord
             );
             // # Отработанное событие надо забыть.
             forgetEvent( &event );

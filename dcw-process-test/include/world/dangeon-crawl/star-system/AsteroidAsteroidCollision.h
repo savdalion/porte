@@ -92,6 +92,7 @@ TEST_F( AsteroidAsteroidCollisionSST,  Asteroid1V0Asteroid1V01Direct ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { velocityA.x,  velocityA.y,  velocityA.z },
             // density
@@ -269,6 +270,7 @@ TEST_F( AsteroidAsteroidCollisionSST,  Asteroid1V0Asteroid1V100Direct ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { velocityA.x, velocityA.y, velocityA.z },
             // density

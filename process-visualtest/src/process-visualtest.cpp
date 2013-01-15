@@ -197,6 +197,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { orbitalSpeedStarI.x, orbitalSpeedStarI.y, orbitalSpeedStarI.z }
         };
@@ -235,6 +236,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { orbitalSpeedStarII.x, orbitalSpeedStarII.y, orbitalSpeedStarII.z }
         };
@@ -276,6 +278,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { 0, orbitalSpeed, 0 }
         };
@@ -334,6 +337,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 47870, 0 }
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
@@ -377,6 +381,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 35020, 0 }
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
@@ -420,6 +425,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 29783, 0 },
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z },
@@ -471,6 +477,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 24130, 0 }
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
@@ -515,6 +522,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 13070, 0 }
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
@@ -559,6 +567,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 9690, 0 }
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
@@ -602,6 +611,7 @@ int main( int argc, char** argv ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
         };
@@ -708,8 +718,9 @@ int main( int argc, char** argv ) {
                 { 0, 0, 0 },
                 // force
                 { 0, 0, 0 },
+                0,
                 // velocity
-                { vx, vy, vz },
+                { vx, vy, vz }
                 // density
                 // # ~ Кремний 2330 кг / м3
                 rdensity,

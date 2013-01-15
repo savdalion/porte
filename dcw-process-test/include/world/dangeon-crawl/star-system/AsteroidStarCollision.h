@@ -65,6 +65,7 @@ protected:
                 { 0, 0, 0 },
                 // force
                 { 0, 0, 0 },
+                0,
                 // velocity
                 { 0, 0, 0 }
             };
@@ -148,6 +149,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { 0, 0, 0 },
             // density
@@ -293,6 +295,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { 0, 0, 0 },
             // density
@@ -457,6 +460,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid500Star1 ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             { 0, 0, 0 },
             // density

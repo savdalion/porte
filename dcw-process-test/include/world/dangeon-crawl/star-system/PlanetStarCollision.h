@@ -65,6 +65,7 @@ protected:
                 { 0, 0, 0 },
                 // force
                 { 0, 0, 0 },
+                0,
                 // velocity
                 { 0, 0, 0 }
             };
@@ -129,6 +130,7 @@ TEST_F( PlanetStarCollisionSST,  Planet1Star1 ) {
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
+            0,
             // velocity
             //{ 0, 47870, 0 }
             { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
