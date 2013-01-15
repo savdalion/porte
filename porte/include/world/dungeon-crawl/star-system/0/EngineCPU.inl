@@ -435,7 +435,6 @@ inline void EngineCPU::planetImpactIn(
     */
 
     // воздействие силы
-    static const pns::real_t MIN_IMPACT_FORCE = 1.0;
     const auto absForce = sqrt(
         force[ 0 ] * force[ 0 ] +
         force[ 1 ] * force[ 1 ] +
@@ -453,7 +452,7 @@ inline void EngineCPU::planetImpactIn(
         nf[ 1 ] * absDeltaVelocity,
         nf[ 2 ] * absDeltaVelocity
     };
-    if (absForce >= MIN_IMPACT_FORCE) {
+    if (absForce >= MIN_IMPACT_FORCE_PORTE) {
         const pns::event_t event = {
             // uid события
             pns::E_IMPACT_FORCE,
@@ -466,8 +465,7 @@ inline void EngineCPU::planetImpactIn(
 
         // под действием силы возникают и другие события
         // изменение скорости
-        static const pns::real_t MIN_CHANGE_VELOCITY = 0.1;
-        if (absDeltaVelocity >= MIN_CHANGE_VELOCITY) {
+        if (absDeltaVelocity >= MIN_CHANGE_VELOCITY_PORTE) {
             const pns::event_t event = {
                 // uid события
                 pns::E_CHANGE_VELOCITY,
@@ -485,7 +483,6 @@ inline void EngineCPU::planetImpactIn(
     // изменение координат
     // тело уже может обладать скоростью
     // # 0.01 - изменение на 1 см.
-    static const pns::real_t MIN_CHANGE_DISTANCE = 0.01;
     // координаты меняет скорость
     const pns::real_t coord[ 3 ] = {
         (ap->velocity[ 0 ] + velocity[ 0 ]) * timestep(),
@@ -497,7 +494,7 @@ inline void EngineCPU::planetImpactIn(
         coord[ 1 ] * coord[ 1 ] +
         coord[ 2 ] * coord[ 2 ]
     );
-    if (absDeltaCoord >= MIN_CHANGE_DISTANCE) {
+    if (absDeltaCoord >= MIN_CHANGE_DISTANCE_PORTE) {
         const pns::event_t event = {
             // uid события
             pns::E_CHANGE_COORD,

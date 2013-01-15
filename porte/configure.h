@@ -75,4 +75,15 @@ static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
 #define PERMIT_DOUBLE_ENGINE_PORTE
 
 
+
+
+/**
+* Граничные значения, при которых будут отрабатываться соотв. события движка.
+*/
+static const auto MIN_IMPACT_FORCE_PORTE = 1.0f;
+static const auto MIN_CHANGE_VELOCITY_PORTE = 0.1f;
+static const auto MIN_CHANGE_DISTANCE_PORTE = 0.01f;
+
+
+
 } // porte
