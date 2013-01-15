@@ -133,9 +133,9 @@ TEST_F( AsteroidAsteroidCollisionSST,  Asteroid1V0Asteroid1V01Direct ) {
         // # Такой же, как 1-й.
         pns::aboutAsteroid_t asteroid = tac[ countAsteroid - 1 ];
         asteroid.uid = uid;
-		asteroid.size[ 0 ] = 10;
-		asteroid.size[ 1 ] = 12;
-		asteroid.size[ 2 ] = 15;
+        asteroid.size[ 0 ] = 10;
+        asteroid.size[ 1 ] = 12;
+        asteroid.size[ 2 ] = 15;
         asteroid.coord[ 0 ] = rx * 2.0 + 0.5;
         asteroid.velocity[ 0 ] = velocityB.x;
         asteroid.velocity[ 1 ] = velocityB.y;
@@ -310,9 +310,9 @@ TEST_F( AsteroidAsteroidCollisionSST,  Asteroid1V0Asteroid1V100Direct ) {
         // # Такой же, как 1-й.
         pns::aboutAsteroid_t asteroid = tac[ countAsteroid - 1 ];
         asteroid.uid = uid;
-		asteroid.size[ 0 ] = 10;
-		asteroid.size[ 1 ] = 12;
-		asteroid.size[ 2 ] = 15;
+        asteroid.size[ 0 ] = 10;
+        asteroid.size[ 1 ] = 12;
+        asteroid.size[ 2 ] = 15;
         asteroid.coord[ 0 ] = std::abs( velocityB.x ) + 1.0;
         asteroid.velocity[ 0 ] = velocityB.x;
         asteroid.velocity[ 1 ] = velocityB.y;

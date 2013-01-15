@@ -398,6 +398,7 @@ inline void EngineCPU::planetImpactIn(
     } // for (size_t k = 0 ...
 
 
+    /* - Переписано ч/з события. См. ниже.
     // запоминаем силу
     ap->force[ 0 ] = force[ 0 ];
     ap->force[ 1 ] = force[ 1 ];
@@ -425,12 +426,89 @@ inline void EngineCPU::planetImpactIn(
     ap->coord[ 0 ] += ap->velocity[ 0 ] * timestep();
     ap->coord[ 1 ] += ap->velocity[ 1 ] * timestep();
     ap->coord[ 2 ] += ap->velocity[ 2 ] * timestep();
+    */
     
     /* @test
     ap->test[ 1 ] = f;
     ap->test[ 2 ] = acceleration;
     ap->test[ 3 ] = v;
     */
+
+    // событие: воздействие силы
+    static const pns::real_t MIN_IMPACT_FORCE = 1.0;
+    const auto absForce = sqrt(
+        force[ 0 ] * force[ 0 ] +
+        force[ 1 ] * force[ 1 ] +
+        force[ 2 ] * force[ 2 ]
+    );
+    pns::real_t nf[ 3 ] = { force[ 0 ],  force[ 1 ],  force[ 2 ] };
+    if (absForce > 0.0) {
+        const auto inv = 1.0 / absForce;
+        nf[ 0 ] *= inv;  nf[ 1 ] *= inv;  nf[ 2 ] *= inv;
+    }
+    const auto absAcceleration = absForce / pns::massPlanet( *ap );
+    const auto absDeltaVelocity = absAcceleration * timestep();
+    const pns::real_t velocity[ 3 ] = {
+        nf[ 0 ] * absDeltaVelocity,
+        nf[ 1 ] * absDeltaVelocity,
+        nf[ 2 ] * absDeltaVelocity
+    };
+    if (absForce >= MIN_IMPACT_FORCE) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_IMPACT_FORCE,
+            // pi второй участник события - здесь не важен
+            {},
+            // характеристика
+            { force[ 0 ],  force[ 1 ],  force[ 2 ],  absForce }
+        };
+        pns::planetMemorizeEvent( &ap->memoryEvent, event );
+
+        // под действием силы возникают и другие события
+        // изменение скорости
+        static const pns::real_t MIN_CHANGE_VELOCITY = 0.1;
+        if (absDeltaVelocity >= MIN_CHANGE_VELOCITY) {
+            const pns::event_t event = {
+                // uid события
+                pns::E_CHANGE_VELOCITY,
+                // pi второй участник события - здесь не важен
+                {},
+                // характеристика
+                { velocity[ 0 ],  velocity[ 1 ],  velocity[ 2 ],  absDeltaVelocity }
+            };
+            pns::planetMemorizeEvent( &ap->memoryEvent, event );
+        }
+
+    } // if (absForce >= MIN_IMPACT_FORCE)
+
+
+    // изменение координат
+    // тело уже может обладать скоростью
+    // # 0.01 - изменение на 1 см.
+    static const pns::real_t MIN_CHANGE_DISTANCE = 0.01;
+    // координаты меняет скорость
+    const pns::real_t distance[ 3 ] = {
+        (ap->velocity[ 0 ] + velocity[ 0 ]) * timestep(),
+        (ap->velocity[ 1 ] + velocity[ 1 ]) * timestep(),
+        (ap->velocity[ 2 ] + velocity[ 2 ]) * timestep()
+    };
+    const auto absDeltaDistance = sqrt(
+        distance[ 0 ] * distance[ 0 ] +
+        distance[ 1 ] * distance[ 1 ] +
+        distance[ 2 ] * distance[ 2 ]
+    );
+    if (absDeltaDistance >= MIN_CHANGE_DISTANCE) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_COORD,
+            // pi второй участник события - здесь не важен
+            {},
+            // характеристика
+            { distance[ 0 ],  distance[ 1 ],  distance[ 2 ],  absDeltaDistance }
+        };
+        pns::planetMemorizeEvent( &ap->memoryEvent, event );
+    }
+
 }
 
 
@@ -729,7 +807,7 @@ inline void EngineCPU::dealEventCollision(
     auto deltaRVA = typelib::VectorT< pns::real_t >::ZERO();
     pns::real_t deltaTemperatureAAfter = 0.0;
     const bool changeVelocityA = (std::abs( deltaRVAL ) > 0.01);
-	if ( changeVelocityA ) {
+    if ( changeVelocityA ) {
         deltaRVA = rva - va;
         const auto val2 = val * val;
         const auto rval2 = rval * rval;
@@ -758,7 +836,7 @@ inline void EngineCPU::dealEventCollision(
     auto deltaRVB = typelib::VectorT< pns::real_t >::ZERO();
     pns::real_t deltaTemperatureBAfter = 0.0;
     const bool changeVelocityB = (std::abs( deltaRVBL ) > 0.01);
-	if ( changeVelocityB ) {
+    if ( changeVelocityB ) {
         deltaRVB = rvb - vb;
         const auto vbl2 = vbl * vbl;
         const auto rvbl2 = rvbl * rvbl;
@@ -1335,6 +1413,52 @@ inline void EngineCPU::notifyAndCompleteEvent(
             // нам не интересны пустые события
             continue;
         }
+
+
+        // воздействие силы
+        if (event.uid == pns::E_IMPACT_FORCE) {
+            const pns::real_t force[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absForce = event.fReal[ 3 ];
+            notifyAndCompleteEventPlanetImpactForce(
+                planet,  currentI,
+                force,  absForce
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // изменение координат
+        if (event.uid == pns::E_CHANGE_COORD) {
+            const pns::real_t deltaDistance[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absDeltaDistance = event.fReal[ 3 ];
+            notifyAndCompleteEventPlanetChangeCoord(
+                planet,  currentI,
+                deltaDistance,  absDeltaDistance
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // изменение скорости
+        if (event.uid == pns::E_CHANGE_VELOCITY) {
+            const pns::real_t deltaVelocity[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absDeltaVelocity = event.fReal[ 3 ];
+            notifyAndCompleteEventPlanetChangeVelocity(
+                planet,  currentI,
+                deltaVelocity,  absDeltaVelocity
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
 
         // планета столкнулась с другим элементом звёздной системы
         if (event.uid == pns::E_COLLISION) {

@@ -138,6 +138,30 @@ public:
 
 
 
+    void notifyAndCompleteEventPlanetImpactForce(
+        pns::planetContent_t,  size_t ia,
+        const pns::real_t force[ 3 ],  pns::real_t absForce
+    );
+
+
+
+
+    void notifyAndCompleteEventPlanetChangeCoord(
+        pns::planetContent_t,  size_t ia,
+        const pns::real_t deltaDistance[ 3 ],  pns::real_t absDeltaDistance
+    );
+
+
+
+
+    void notifyAndCompleteEventPlanetChangeVelocity(
+        pns::planetContent_t,  size_t ia,
+        const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
+    );
+
+
+
+
     void notifyAndCompleteEventPlanetDestroy(
         pns::planetContent_t,  size_t ia,
         pns::deltaElement_t& delta

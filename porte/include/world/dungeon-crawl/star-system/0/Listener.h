@@ -164,6 +164,36 @@ public:
 
 
     /**
+    * На планету действует сила.
+    */
+    virtual inline void afterPlanetImpactForce(
+        AEngine::Ptr whose,
+        const pns::planetContent_t,  size_t ia,
+        const pns::real_t force[ 3 ],  pns::real_t absForce
+    ) {}
+
+
+
+
+    virtual inline void afterPlanetChangeCoord(
+        AEngine::Ptr whose,
+        const pns::planetContent_t,  size_t ia,
+        const pns::real_t deltaDistance[ 3 ],  pns::real_t absDeltaDistance
+    ) {}
+
+
+
+
+    virtual inline void afterPlanetChangeVelocity(
+        AEngine::Ptr whose,
+        const pns::planetContent_t,  size_t ia,
+        const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
+    ) {}
+
+
+
+
+    /**
     * Планета уничтожена.
     */
     virtual inline void afterPlanetDestroy(

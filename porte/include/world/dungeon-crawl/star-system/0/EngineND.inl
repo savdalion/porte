@@ -22,13 +22,13 @@ inline EngineND::EngineND(
 
     // создаём мир Newton Dynamics (ND)
     NewtonSetPlatformArchitecture( mPhysicsWorld, 0 );
-	NewtonSetSolverModel( mPhysicsWorld, 0 );
+    NewtonSetSolverModel( mPhysicsWorld, 0 );
     //NewtonSetMinimumFrameRate( mPhysicsWorld, 100.0f );
 
     const pns::real_t halfExtent = extent / 2.0;
-	const dgVector minSize( -halfExtent, -halfExtent, -halfExtent, 1.0f );
-	const dgVector maxSize(  halfExtent,  halfExtent,  halfExtent, 1.0f );
-	NewtonSetWorldSize( mPhysicsWorld, &minSize[0], &maxSize[0] );
+    const dgVector minSize( -halfExtent, -halfExtent, -halfExtent, 1.0f );
+    const dgVector maxSize(  halfExtent,  halfExtent,  halfExtent, 1.0f );
+    NewtonSetWorldSize( mPhysicsWorld, &minSize[0], &maxSize[0] );
 
     /* @test
     // #! В ND rev2086 dgVector, строка 328 убрать _ASSERTE.
@@ -185,7 +185,7 @@ void EngineND::init(
     // пространственное положение элемента
     static const pns::real_t PI_DIV_180 =
         static_cast< pns::real_t >( M_PI / 180.0 );
-	const dgMatrix m(
+    const dgMatrix m(
         dgRollMatrix(  rotation[ 0 ] * PI_DIV_180 ) *
         dgYawMatrix(   rotation[ 1 ] * PI_DIV_180 ) *
         dgPitchMatrix( rotation[ 2 ] * PI_DIV_180 )

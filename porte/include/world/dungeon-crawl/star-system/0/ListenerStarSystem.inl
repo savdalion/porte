@@ -42,7 +42,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidCollisionStar() " <<
-		a[ ia ].uid << " + " << b[ ib ].uid <<
+        a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     pns::aboutAsteroid_t&    aa = a[ ia ];
@@ -92,7 +92,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAste
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidCollisionAsteroid() " <<
-		a[ ia ].uid << " + " << b[ ib ].uid <<
+        a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     // # Это событие является обобщением других событий.
@@ -122,7 +122,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidChangeTempera
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidChangeTemperature() " <<
-		a[ ia ].uid <<
+        a[ ia ].uid <<
     std::endl;
 
 
@@ -154,7 +154,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidChangeVelocit
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidChangeVelocity() " <<
-		a[ ia ].uid <<
+        a[ ia ].uid <<
     std::endl;
 
 
@@ -194,7 +194,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCrushN(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventAsteroidCrushN() " <<
-		a[ ia ].uid << " " << n << "x" <<
+        a[ ia ].uid << " " << n << "x" <<
     std::endl;
 
 
@@ -382,7 +382,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetCollisionStar() " <<
-		a[ ia ].uid << " + " << b[ ib ].uid <<
+        a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     // # Это событие является обобщением других событий.
@@ -425,6 +425,110 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionAstero
 
 
 template< class E >
+inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetImpactForce(
+    pns::planetContent_t a,  size_t ia,
+    const pns::real_t force[ 3 ],  pns::real_t absForce
+) {
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    //std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetImpactForce() " <<
+    //    a[ ia ].uid << " " << absForce <<
+    //std::endl;
+
+
+    pns::aboutPlanet_t&  ap = a[ ia ];
+
+    // # Для этого события уже созданы сопутствующие события.
+    //   См. Engine::*ImpactIn().
+    ap.force[ 0 ] = force[ 0 ];
+    ap.force[ 1 ] = force[ 1 ];
+    ap.force[ 2 ] = force[ 2 ];
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterPlanetImpactForce(
+        etr->whose,  a, ia,  force, absForce
+    ); } }
+}
+
+
+
+
+
+template< class E >
+inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetChangeCoord(
+    pns::planetContent_t a,  size_t ia,
+    const pns::real_t deltaDistance[ 3 ],  pns::real_t absDeltaDistance
+) {
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    //std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetChangeCoord() " <<
+    //    a[ ia ].uid << " " << absDeltaDistance <<
+    //std::endl;
+
+
+    pns::aboutPlanet_t&  ap = a[ ia ];
+
+    ap.coord[ 0 ] += deltaDistance[ 0 ];
+    ap.coord[ 1 ] += deltaDistance[ 1 ];
+    ap.coord[ 2 ] += deltaDistance[ 2 ];
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterPlanetChangeCoord(
+        etr->whose,  a, ia,  deltaDistance, absDeltaDistance
+    ); } }
+}
+
+
+
+
+
+template< class E >
+inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetChangeVelocity(
+    pns::planetContent_t a,  size_t ia,
+    const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
+) {
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    //std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetChangeVelocity() " <<
+    //    a[ ia ].uid << " " << absDeltaVelocity <<
+    //std::endl;
+
+
+    pns::aboutPlanet_t&  ap = a[ ia ];
+
+    ap.velocity[ 0 ] += deltaVelocity[ 0 ];
+    ap.velocity[ 1 ] += deltaVelocity[ 1 ];
+    ap.velocity[ 2 ] += deltaVelocity[ 2 ];
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterPlanetChangeVelocity(
+        etr->whose,  a, ia,  deltaVelocity, absDeltaVelocity
+    ); } }
+}
+
+
+
+
+
+template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetDestroy(
     pns::planetContent_t a,  size_t ia,
     pns::deltaElement_t& delta
@@ -434,7 +538,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetDestroy(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetDestroy() " <<
-		a[ ia ].uid <<
+        a[ ia ].uid <<
     std::endl;
 
 
@@ -479,7 +583,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionPlanet() " <<
-		a[ ia ].uid << " + " << b[ ib ].uid <<
+        a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     // # Это событие является обобщением других событий.
@@ -509,7 +613,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionAsteroid() " <<
-		a[ ia ].uid << " + " << b[ ib ].uid <<
+        a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
     pns::aboutStar_t&            as = a[ ia ];
@@ -548,7 +652,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarChangeMass(
 
     // отрабатываем своё событие
     std::cout << "ListenerStarSystem::notifyAndCompleteEventStarChangeMass() " <<
-		a[ ia ].uid <<
+        a[ ia ].uid <<
     std::endl;
 
 
