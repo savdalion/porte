@@ -59,8 +59,7 @@ public:
     */
     void notifyAndCompleteEventAsteroidCollisionStar(
         pns::asteroidContent_t,  size_t ia,
-        const pns::starContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::starContent_t,  size_t ib
     );
 
 
@@ -68,8 +67,7 @@ public:
 
     void notifyAndCompleteEventAsteroidCollisionPlanet(
         pns::asteroidContent_t,  size_t ia,
-        const pns::planetContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::planetContent_t,  size_t ib
     );
 
 
@@ -77,8 +75,7 @@ public:
 
     void notifyAndCompleteEventAsteroidCollisionAsteroid(
         pns::asteroidContent_t,  size_t ia,
-        const pns::asteroidContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::asteroidContent_t,  size_t ib
     );
 
 
@@ -137,8 +134,7 @@ public:
 
     void notifyAndCompleteEventPlanetCollisionStar(
         pns::planetContent_t,  size_t ia,
-        const pns::starContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::starContent_t,  size_t ib
     );
 
 
@@ -146,8 +142,7 @@ public:
 
     void notifyAndCompleteEventPlanetCollisionPlanet(
         pns::planetContent_t,  size_t ia,
-        const pns::planetContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::planetContent_t,  size_t ib
     );
 
 
@@ -155,8 +150,7 @@ public:
 
     void notifyAndCompleteEventPlanetCollisionAsteroid(
         pns::planetContent_t,  size_t ia,
-        const pns::asteroidContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::asteroidContent_t,  size_t ib
     );
 
 
@@ -196,8 +190,7 @@ public:
 
     void notifyAndCompleteEventStarCollisionStar(
         pns::starContent_t,  size_t ia,
-        const pns::starContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::starContent_t,  size_t ib
     );
 
 
@@ -205,8 +198,7 @@ public:
 
     void notifyAndCompleteEventStarCollisionPlanet(
         pns::starContent_t,  size_t ia,
-        const pns::planetContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::planetContent_t,  size_t ib
     );
 
 
@@ -214,8 +206,7 @@ public:
 
     void notifyAndCompleteEventStarCollisionAsteroid(
         pns::starContent_t,  size_t ia,
-        const pns::asteroidContent_t,  size_t ib,
-        pns::deltaElement_t&
+        const pns::asteroidContent_t,  size_t ib
     );
 
 

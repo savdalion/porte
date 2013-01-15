@@ -65,8 +65,7 @@ public:
     virtual inline void afterAsteroidCollisionStar(
         AEngine::Ptr whose,
         const pns::asteroidContent_t,  size_t ia,
-        const pns::starContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::starContent_t,  size_t ib
     ) {}
 
 
@@ -104,7 +103,6 @@ public:
     virtual inline void afterAsteroidCrushN(
         AEngine::Ptr whose,
         const pns::asteroidContent_t,  size_t ia,
-        pns::deltaElement_t&  delta,
         size_t n,
         const pns::real_t  deltaVelocity[ 3 ],
         pns::real_t  deltaTemperature
@@ -116,8 +114,7 @@ public:
     virtual inline void afterAsteroidCollisionPlanet(
         AEngine::Ptr whose,
         const pns::asteroidContent_t,  size_t ia,
-        const pns::planetContent_t,    size_t ib,
-        const pns::deltaElement_t&
+        const pns::planetContent_t,    size_t ib
     ) {}
 
 
@@ -126,8 +123,7 @@ public:
     virtual inline void afterAsteroidCollisionAsteroid(
         AEngine::Ptr whose,
         const pns::asteroidContent_t,  size_t ia,
-        const pns::asteroidContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::asteroidContent_t,  size_t ib
     ) {}
 
 
@@ -168,8 +164,7 @@ public:
     */
     virtual inline void afterAsteroidDestroy(
         AEngine::Ptr whose,
-        const pns::asteroidContent_t,  size_t ia,
-        pns::deltaElement_t&  delta
+        const pns::asteroidContent_t,  size_t ia
     ) {}
 
 
@@ -178,8 +173,7 @@ public:
     virtual inline void afterPlanetCollisionStar(
         AEngine::Ptr whose,
         const pns::planetContent_t,  size_t ia,
-        const pns::starContent_t,    size_t ib,
-        const pns::deltaElement_t&
+        const pns::starContent_t,    size_t ib
     ) {}
 
 
@@ -188,8 +182,7 @@ public:
     virtual inline void afterPlanetCollisionPlanet(
         AEngine::Ptr whose,
         const pns::planetContent_t,  size_t ia,
-        const pns::planetContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::planetContent_t,  size_t ib
     ) {}
 
 
@@ -198,8 +191,7 @@ public:
     virtual inline void afterPlanetCollisionAsteroid(
         AEngine::Ptr whose,
         const pns::planetContent_t,    size_t ia,
-        const pns::asteroidContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::asteroidContent_t,  size_t ib
     ) {}
 
 
@@ -240,8 +232,7 @@ public:
     */
     virtual inline void afterPlanetDestroy(
         AEngine::Ptr whose,
-        const pns::planetContent_t,  size_t ia,
-        pns::deltaElement_t&  delta
+        const pns::planetContent_t,  size_t ia
     ) {}
 
 
@@ -250,8 +241,7 @@ public:
     virtual inline void afterStarCollisionStar(
         AEngine::Ptr whose,
         const pns::starContent_t,  size_t ia,
-        const pns::starContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::starContent_t,  size_t ib
     ) {}
 
 
@@ -260,8 +250,7 @@ public:
     virtual inline void afterStarCollisionPlanet(
         AEngine::Ptr whose,
         const pns::starContent_t,    size_t ia,
-        const pns::planetContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::planetContent_t,  size_t ib
     ) {}
 
 
@@ -270,8 +259,7 @@ public:
     virtual inline void afterStarCollisionAsteroid(
         AEngine::Ptr whose,
         const pns::starContent_t,      size_t ia,
-        const pns::asteroidContent_t,  size_t ib,
-        const pns::deltaElement_t&
+        const pns::asteroidContent_t,  size_t ib
     ) {}
 
 
@@ -321,8 +309,7 @@ public:
     */
     virtual inline void afterStarDestroy(
         AEngine::Ptr whose,
-        const pns::starContent_t,  size_t ia,
-        pns::deltaElement_t&  delta
+        const pns::starContent_t,  size_t ia
     ) {}
 
 

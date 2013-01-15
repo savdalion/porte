@@ -1519,8 +1519,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_STAR) {
                 notifyAndCompleteEventAsteroidCollisionStar(
                     asteroid,  currentI,
-                    star,      event.pi.ii,
-                    delta
+                    star,      event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1531,8 +1530,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_PLANET) {
                 notifyAndCompleteEventAsteroidCollisionPlanet(
                     asteroid,  currentI,
-                    planet,    event.pi.ii,
-                    delta
+                    planet,    event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1543,8 +1541,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_ASTEROID) {
                 notifyAndCompleteEventAsteroidCollisionAsteroid(
                     asteroid,  currentI,
-                    asteroid,  event.pi.ii,
-                    delta
+                    asteroid,  event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1690,8 +1687,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_STAR) {
                 notifyAndCompleteEventPlanetCollisionStar(
                     planet,  currentI,
-                    star,    event.pi.ii,
-                    delta
+                    star,    event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1702,8 +1698,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_PLANET) {
                 notifyAndCompleteEventPlanetCollisionPlanet(
                     planet,  currentI,
-                    planet,  event.pi.ii,
-                    delta
+                    planet,  event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1714,8 +1709,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_ASTEROID) {
                 notifyAndCompleteEventPlanetCollisionAsteroid(
                     planet,    currentI,
-                    asteroid,  event.pi.ii,
-                    delta
+                    asteroid,  event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1830,8 +1824,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_STAR) {
                 notifyAndCompleteEventStarCollisionStar(
                     star,  currentI,
-                    star,  event.pi.ii,
-                    delta
+                    star,  event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1842,8 +1835,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_PLANET) {
                 notifyAndCompleteEventStarCollisionPlanet(
                     star,    currentI,
-                    planet,  event.pi.ii,
-                    delta
+                    planet,  event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );
@@ -1854,8 +1846,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             if (event.pi.ge == pns::GE_ASTEROID) {
                 notifyAndCompleteEventStarCollisionAsteroid(
                     star,      currentI,
-                    asteroid,  event.pi.ii,
-                    delta
+                    asteroid,  event.pi.ii
                 );
                 // # Отработанное событие надо забыть.
                 forgetEvent( &event );

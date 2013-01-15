@@ -34,8 +34,7 @@ inline void ListenerStarSystem< E >::notifyAndCompletePulse() {
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar(
     pns::asteroidContent_t a,  size_t ia,
-    const pns::starContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::starContent_t b,  size_t ib
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -54,7 +53,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterAsteroidCollisionStar(
-        etr->whose,  a, ia,  b, ib,  delta
+        etr->whose,  a, ia,  b, ib
     ); } }
 }
 
@@ -65,8 +64,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionPlanet(
     pns::asteroidContent_t a,  size_t ia,
-    const pns::planetContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::planetContent_t b,  size_t ib
 ) {
 }
 
@@ -77,8 +75,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionPlan
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAsteroid(
     pns::asteroidContent_t a,  size_t ia,
-    const pns::asteroidContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::asteroidContent_t b,  size_t ib
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -97,7 +94,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAste
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterAsteroidCollisionAsteroid(
-        etr->whose,  a, ia,  b, ib,  delta
+        etr->whose,  a, ia,  b, ib
     ); } }
 }
 
@@ -439,7 +436,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCrushN(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterAsteroidCrushN(
-        etr->whose,  a, ia,  delta,  n,  deltaVelocity,  deltaTemperature
+        etr->whose,  a, ia,  n,  deltaVelocity,  deltaTemperature
     ); } }
 }
 
@@ -473,7 +470,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidDestroy(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterAsteroidDestroy(
-        etr->whose,  a, ia,  delta
+        etr->whose,  a, ia
     ); } }
 }
 
@@ -483,8 +480,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidDestroy(
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
     pns::planetContent_t a,  size_t ia,
-    const pns::starContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::starContent_t b,  size_t ib
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -503,7 +499,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterPlanetCollisionStar(
-        etr->whose,  a, ia,  b, ib,  delta
+        etr->whose,  a, ia,  b, ib
     ); } }
 }
 
@@ -513,8 +509,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionPlanet(
     pns::planetContent_t a,  size_t ia,
-    const pns::planetContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::planetContent_t b,  size_t ib
 ) {
 }
 
@@ -524,8 +519,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionPlanet
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionAsteroid(
     pns::planetContent_t a,  size_t ia,
-    const pns::asteroidContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::asteroidContent_t b,  size_t ib
 ) {
 }
 
@@ -674,7 +668,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetDestroy(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterPlanetDestroy(
-        etr->whose,  a, ia,  delta
+        etr->whose,  a, ia
     ); } }
 }
 
@@ -684,8 +678,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetDestroy(
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
     pns::starContent_t a,  size_t ia,
-    const pns::starContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::starContent_t b,  size_t ib
 ) {
 }
 
@@ -695,8 +688,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
     pns::starContent_t a,  size_t ia,
-    const pns::planetContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::planetContent_t b,  size_t ib
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -715,7 +707,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterStarCollisionPlanet(
-        etr->whose,  a, ia,  b, ib,  delta
+        etr->whose,  a, ia,  b, ib
     ); } }
 }
 
@@ -725,8 +717,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
 template< class E >
 inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid(
     pns::starContent_t a,  size_t ia,
-    const pns::asteroidContent_t b,  size_t ib,
-    pns::deltaElement_t& delta
+    const pns::asteroidContent_t b,  size_t ib
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
@@ -752,7 +743,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterStarCollisionAsteroid(
-        etr->whose,  a, ia,  b, ib,  delta
+        etr->whose,  a, ia,  b, ib
     ); } }
 }
 
@@ -941,7 +932,7 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarDestroy(
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
     ) { if ( etr ) { etr->listener.lock()->afterStarDestroy(
-        etr->whose,  a, ia,  delta
+        etr->whose,  a, ia
     ); } }
 }
 
@@ -958,7 +949,7 @@ inline void ListenerStarSystem< E >::afterChangeCountAsteroid(
     std::endl;
 #endif
 
-    // @todo Передать дальше.
+    // @todo Передать дальше. Реализовать в notify*().
 }
 
 
@@ -975,7 +966,7 @@ inline void ListenerStarSystem< E >::afterChangeCountPlanet(
     std::endl;
 #endif
 
-    // @todo Передать дальше.
+    // @todo Передать дальше. Реализовать в notify*().
 }
 
 
@@ -992,7 +983,7 @@ inline void ListenerStarSystem< E >::afterChangeCountStar(
     std::endl;
 #endif
 
-    // @todo Передать дальше.
+    // @todo Передать дальше. Реализовать в notify*().
 }
 
 
