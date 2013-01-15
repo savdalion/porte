@@ -163,6 +163,18 @@ public:
 
 
 
+    /**
+    * Планета уничтожена.
+    */
+    virtual inline void afterPlanetDestroy(
+        AEngine::Ptr whose,
+        const pns::planetContent_t,  size_t ia,
+        pns::deltaElement_t&  delta
+    ) {}
+
+
+
+
     virtual inline void afterStarCollisionStar(
         AEngine::Ptr whose,
         const pns::starContent_t,  size_t ia,
@@ -188,6 +200,15 @@ public:
         const pns::starContent_t,      size_t ia,
         const pns::asteroidContent_t,  size_t ib,
         const pns::deltaElement_t&
+    ) {}
+
+
+
+
+    virtual inline void afterStarChangeMass(
+        AEngine::Ptr whose,
+        const pns::starContent_t,  size_t ia,
+        const pns::mass_t& deltaMass
     ) {}
 
 

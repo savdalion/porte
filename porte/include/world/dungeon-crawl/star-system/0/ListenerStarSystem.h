@@ -138,6 +138,14 @@ public:
 
 
 
+    void notifyAndCompleteEventPlanetDestroy(
+        pns::planetContent_t,  size_t ia,
+        pns::deltaElement_t& delta
+    );
+
+
+
+
     void notifyAndCompleteEventStarCollisionStar(
         pns::starContent_t,  size_t ia,
         const pns::starContent_t,  size_t ib,
@@ -160,6 +168,14 @@ public:
         pns::starContent_t,  size_t ia,
         const pns::asteroidContent_t,  size_t ib,
         pns::deltaElement_t&
+    );
+
+
+
+
+    void notifyAndCompleteEventStarChangeMass(
+        pns::starContent_t,  size_t ia,
+        const pns::mass_t& deltaMass
     );
 
 

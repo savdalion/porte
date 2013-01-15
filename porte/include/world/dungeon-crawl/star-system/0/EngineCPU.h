@@ -83,8 +83,8 @@ private:
 
 
     /**
-    * –аспредел€ет запомненные наблюдателем событи€ между участниками
-    * (элементами звЄздной системы).
+    * –аспредел€ет запомненные наблюдателем событи€ (где участники воздействуют
+    * друг на друга) между участниками (элементами звЄздной системы).
     *
     * @see observer_t
     */
@@ -109,9 +109,29 @@ private:
     );
 
 
-    void dealEventCollision( pns::eventTwo_t*,  pns::aboutAsteroid_t*,  pns::aboutStar_t* );
+    void dealEventCollision(
+        pns::eventTwo_t*,
+        pns::aboutAsteroid_t*,
+        pns::aboutStar_t*
+    );
 
-    void dealEventCollision( pns::eventTwo_t*,  pns::aboutStar_t*,  pns::aboutAsteroid_t* );
+    void dealEventCollision(
+        pns::eventTwo_t*,
+        pns::aboutPlanet_t*,
+        pns::aboutStar_t*
+    );
+
+    void dealEventCollision(
+        pns::eventTwo_t*,
+        pns::aboutStar_t*,
+        pns::aboutAsteroid_t*
+    );
+
+    void dealEventCollision(
+        pns::eventTwo_t*,
+        pns::aboutStar_t*,
+        pns::aboutPlanet_t*
+    );
 
 
 

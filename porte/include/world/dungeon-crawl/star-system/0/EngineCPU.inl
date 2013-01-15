@@ -382,15 +382,16 @@ inline void EngineCPU::planetImpactIn(
         const bool hasCollision =
             !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
         if ( hasCollision ) {
-            const pns::event_t event = {
+            const pns::eventTwo_t eventTwo = {
                 // uid события
                 pns::E_COLLISION,
-                // pi второй участник события
-                { pns::GE_STAR, k, ask.uid }
+                // участники события
+                { pns::GE_PLANET,  currentI,  ap->uid },
+                { pns::GE_STAR,    k,         ask.uid }
             };
-            pns::planetMemorizeEvent( &ap->memoryEvent, event );
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_PLANET, ap->uid, event, &topology );
+            pns::printEventTwo( eventTwo, &topology );
 #endif
         }
 
@@ -670,10 +671,21 @@ inline void EngineCPU::dealEventCollision( pns::eventTwo_t* eventTwo ) {
             }
             break;
 
+        case pns::GE_PLANET:
+            switch ( geB ) {
+                case pns::GE_STAR:
+                    dealEventCollision( eventTwo,  &planet[ iA ],  &star[ iB ] );
+                    break;
+            }
+            break;
+
         case pns::GE_STAR:
             switch ( geB ) {
                 case pns::GE_ASTEROID:
                     dealEventCollision( eventTwo,  &star[ iA ],  &asteroid[ iB ] );
+                    break;
+                case pns::GE_PLANET:
+                    dealEventCollision( eventTwo,  &star[ iA ],  &planet[ iB ] );
                     break;
             }
             break;
@@ -942,32 +954,92 @@ inline void EngineCPU::dealEventCollision(
 
 
 inline void EngineCPU::dealEventCollision(
+    pns::eventTwo_t*     eventTwo,
+    pns::aboutPlanet_t*  ap,
+    pns::aboutStar_t*    as
+) {
+    // разбиваем событие на части и передаём участникам
+
+    // I Планета столкнулась со звездой
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_COLLISION,
+            // другой участник события
+            eventTwo->piB
+        };
+        pns::planetMemorizeEvent( &ap->memoryEvent, event );
+    }
+
+    // II Звезда столкнулась с планетой
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_COLLISION,
+            // другой участник события
+            eventTwo->piA
+        };
+        pns::starMemorizeEvent( &as->memoryEvent, event );
+    }
+
+    // III Планета уничтожена
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_DESTROY,
+            // другой участник события - не важен для этого события
+            {}
+        };
+        pns::planetMemorizeEvent( &ap->memoryEvent, event );
+    }
+
+    // IV Звезда увеличила свою массу
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_MASS,
+            // другой участник события - не важен для этого события
+            {},
+            // характеристика
+            { ap->mass.base, ap->mass.knoll }
+        };
+        pns::starMemorizeEvent( &as->memoryEvent, event );
+    }
+
+    // # Отработанное событие наблюдатель забывает.
+    forgetEventTwo( eventTwo );
+}
+
+
+
+
+inline void EngineCPU::dealEventCollision(
     pns::eventTwo_t*       eventTwo,
     pns::aboutStar_t*      as,
     pns::aboutAsteroid_t*  aa
 ) {
     // разбиваем событие на части и передаём участникам
 
-    // I Звезда столкнулась с астероидом
-    const pns::event_t eventStar = {
-        // uid события
-        pns::E_COLLISION,
-        // другой участник события
-        eventTwo->piB
-    };
-    pns::starMemorizeEvent( &as->memoryEvent, eventStar );
+    // воспользуемся тем, что событие - симметрично
+    pns::eventTwo_t et = *eventTwo;
+    std::swap( et.piA, et.piB );
+    dealEventCollision( &et, aa, as );
+}
 
-    // II Астероид столкнулся со звездой
-    const pns::event_t eventAsteroid = {
-        // uid события
-        pns::E_COLLISION,
-        // другой участник события
-        eventTwo->piA
-    };
-    pns::asteroidMemorizeEvent( &aa->memoryEvent, eventAsteroid );
 
-    // # Отработанное событие наблюдатель забывает.
-    forgetEventTwo( eventTwo );
+
+
+inline void EngineCPU::dealEventCollision(
+    pns::eventTwo_t*     eventTwo,
+    pns::aboutStar_t*    as,
+    pns::aboutPlanet_t*  ap
+) {
+    // разбиваем событие на части и передаём участникам
+
+    // воспользуемся тем, что событие - симметрично
+    pns::eventTwo_t et = *eventTwo;
+    std::swap( et.piA, et.piB );
+    dealEventCollision( &et, ap, as );
 }
 
 
@@ -1279,7 +1351,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
                 continue;
             }
 
-            // планета столкнулась с другой планетой
+            // планета столкнулась с планетой
             if (event.pi.ge == pns::GE_PLANET) {
                 notifyAndCompleteEventPlanetCollisionPlanet(
                     planet,  currentI,
@@ -1291,7 +1363,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
                 continue;
             }
 
-            // планета столкнулась с астероидом
+            // планета столкнулась с другим астероидом
             if (event.pi.ge == pns::GE_ASTEROID) {
                 notifyAndCompleteEventPlanetCollisionAsteroid(
                     planet,    currentI,
@@ -1305,8 +1377,22 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         } // if (event.uid == pns::E_COLLISION)
 
-        // @todo ...
-    }
+
+        // @todo Добавить события по аналогии с астероидом.
+
+
+        // планета уничтожена
+        if (event.uid == pns::E_DESTROY) {
+            notifyAndCompleteEventPlanetDestroy(
+                planet,  currentI,
+                delta
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+    } // for (int k = ap->memoryEvent.waldo - 1; ...
 
 
     // все события отработаны, cбрасываем валдо
@@ -1385,8 +1471,24 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         } // if (event.uid == pns::E_COLLISION)
 
-        // @todo ...
-    }
+
+        // @todo Добавить события по аналогии с астероидом.
+
+
+        // масса звезды изменилась
+        if (event.uid == pns::E_CHANGE_MASS) {
+            const pns::mass_t deltaMass =
+                { event.fReal[ 0 ],  event.fReal[ 1 ] };
+            notifyAndCompleteEventStarChangeMass(
+                star,  currentI,
+                deltaMass
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+    } // for (int k = as->memoryEvent.waldo - 1; ...
 
 
     // все события отработаны, cбрасываем валдо

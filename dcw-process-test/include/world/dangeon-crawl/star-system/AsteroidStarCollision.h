@@ -43,7 +43,7 @@ protected:
 
         // Звезда
         // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-    #if 1
+#if 1
         {
             static const pns::uid_t uid = 1;
             static const pns::aboutStar_t star = {
@@ -71,7 +71,7 @@ protected:
             tsc[ countStar ] = star;
             ++countStar;
         }
-    #endif
+#endif
 
         // завершаем список звёзд пустотой
         static const pns::aboutStar_t STAR_END_LIST = {};

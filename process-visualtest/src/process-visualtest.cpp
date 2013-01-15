@@ -105,6 +105,18 @@ int main( int argc, char** argv ) {
     // 'timestep' влияет на точность рассчётов (больше - ниже).
     // Может быть задействована вместе с 'PULSE'.
     static const double timestep = MINUTE * 5;
+
+    // # Учитываем инициал. движка звёздной системы, а именно - 'timestep'.
+    // 'PULSE' влияет на кол-во отрисовок (больше пульс - меньше кадров).
+    // Может быть задействована вместе с 'timestep'.
+    // Движок честно считает 'PULSE' кадров с шагом 'timestep' и только
+    // после - показывает картинку. Др. словами, реальное время отображаемых
+    // кадров = timestep * PULSE.
+    // @example timestep = HOUR,  PULSE = 365 * 24 - Земля будет оставаться
+    //          почти неподвижной, т.к. её период обращения ~ 365 дней.
+    static const int PULSE = 2 * 60 * 24;
+
+
     // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
     //   слушатель событий другим движкам.
     std::shared_ptr< pes::Engine >  engine( new pes::Engine( timestep ) );
@@ -137,39 +149,61 @@ int main( int argc, char** argv ) {
     auto& tsc = topology.star.content;
     size_t countStar = 0;
 
+    const pns::real_t massStarI    = 1.9891e30 * 5.0;
+    const pns::real_t radiusStarI  = 6.9551e8 * 2.0;
+    const typelib::CoordT< pns::real_t >
+        coordStarI( radiusStarI * 100.0 / 2.0,  0,  0 );
+
+    const pns::real_t massStarII   = 1.9891e30;
+    const pns::real_t radiusStarII = 6.9551e8;
+    const typelib::CoordT< pns::real_t >
+        coordStarII( -radiusStarI * 200.0,  0,  0 );
+
+    const auto absOrbitalSpeedStarI = typelib::compute::physics::orbitalSpeed(
+        massStarI,  massStarII,  (coordStarI - coordStarII).distance()
+    );
+    const typelib::VectorT< pns::real_t >
+        orbitalSpeedStarI( 0, -absOrbitalSpeedStarI, 0 );
+
+    const auto absOrbitalSpeedStarII = typelib::compute::physics::orbitalSpeed(
+        massStarII,  massStarI,  (coordStarII - coordStarI).distance()
+    );
+    const typelib::VectorT< pns::real_t >
+        orbitalSpeedStarII( 0, absOrbitalSpeedStarII, 0 );
+
 #if 1
     // Звезда I
     // центр
     // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
 #if 1
     {
-        static const pns::uid_t uid = 1;
-        static const pns::aboutStar_t star = {
+        const pns::uid_t uid = 1;
+        const pns::aboutStar_t star = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 1.9891e30, 0.0 },
+            { massStarI, 0.0 },
             // radius
-            6.9551e8,
+            radiusStarI,
             // kernelTemperature,
-            13.5e6,
+            13.5e6 * 2.0,
             // surfaceTemperature,
-            1.5e6,
+            1.5e6 * 2.0,
             // coord
-            { 0, 0, 0 },
+            { coordStarI.x, coordStarI.y, coordStarI.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
-            { 0, 0, 0 }
+            { orbitalSpeedStarI.x, orbitalSpeedStarI.y, orbitalSpeedStarI.z }
         };
         tsc[ countStar ] = star;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_STAR, uid };
+        const pns::uidElement_t uide = { pns::GE_STAR, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countStar;
@@ -179,38 +213,35 @@ int main( int argc, char** argv ) {
     // Звезда II
     // слева
     // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
-#if 0
+#if 1
     {
-        static const pns::uid_t uid = 2;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
-            1.9891e30,  1.9891e30 + 1.9891e30,  (6.9551e8 * 70.0) * 2.0
-        ) / 1.9;
-        static const pns::aboutStar_t star = {
+        const pns::uid_t uid = 2;
+        const pns::aboutStar_t star = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 1.9891e30, 0.0 },
+            { massStarII, 0.0 },
             // radius
-            6.9551e8,
+            radiusStarII,
             // kernelTemperature,
             13.5e6,
             // surfaceTemperature,
             1.5e6,
             // coord
-            { -6.9551e8 * 70.0, 0, 0 },
+            { coordStarII.x, coordStarII.y, coordStarII.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
-            { 0, -orbitalSpeed, 0 }
+            { orbitalSpeedStarII.x, orbitalSpeedStarII.y, orbitalSpeedStarII.z }
         };
         tsc[ countStar ] = star;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_STAR, uid };
+        const pns::uidElement_t uide = { pns::GE_STAR, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countStar;
@@ -222,11 +253,11 @@ int main( int argc, char** argv ) {
     // @source Солнце > http://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5
 #if 0
     {
-        static const pns::uid_t uid = 3;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
+        const pns::uid_t uid = 3;
+        const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
             1.9891e30,  1.9891e30 + 1.9891e30,  (6.9551e8 * 70.0) * 2.0
         ) / 1.9;
-        static const pns::aboutStar_t star = {
+        const pns::aboutStar_t star = {
             // uid
             uid,
             // live
@@ -251,7 +282,7 @@ int main( int argc, char** argv ) {
         tsc[ countStar ] = star;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_STAR, uid };
+        const pns::uidElement_t uide = { pns::GE_STAR, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countStar;
@@ -273,35 +304,46 @@ int main( int argc, char** argv ) {
     // #! При добавлении новых звёзд (Звезда I == Солнце), для каждой планеты
     //    следует отрегулировать скорость.
 
-#if 0
+#if 1
     // Меркурий
     // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%80%D0%BA%D1%83%D1%80%D0%B8%D0%B9_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
-#if 0
+#if 1
     {
-        static const pns::uid_t uid = 1;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
-            3.33022e23,  1.9891e30 + 1.9891e30,  0.4600121e11
-        );
-        static const pns::aboutPlanet_t planet = {
+        const pns::uid_t uid = 1;
+        const pns::real_t mass = 3.33022e23;
+        const auto coord = coordStarI +
+            typelib::CoordT< pns::real_t >( 0.4600121e11, 0, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarI,  (coord - coordStarI).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarI +
+            typelib::VectorT< pns::real_t >( 0, absOrbitalSpeed, 0 );
+        const pns::aboutPlanet_t planet = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 3.33022e23, 0.0 },
+            { mass, 0.0 },
             // radius
             2.4397e6,
             // coord
-            { 0.4600121e11, 0, 0 },
+            { coord.x, coord.y, coord.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
             //{ 0, 47870, 0 }
-            { 0, orbitalSpeed, 0 }
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
         };
         tpc[ countPlanet ] = planet;
+
+        // заявка на сбор статистики
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        starSystem->addOrderStatistics( uide, 50 );
+
         ++countPlanet;
     }
 #endif
@@ -310,33 +352,39 @@ int main( int argc, char** argv ) {
     // @source http://ru.wikipedia.org/wiki/%D0%92%D0%B5%D0%BD%D0%B5%D1%80%D0%B0_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
 #if 1
     {
-        static const pns::uid_t uid = 2;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
-            4.8685e24,  1.9891e30 + 1.9891e30,  1.07476259e11
-        );
-        static const pns::aboutPlanet_t planet = {
+        const pns::uid_t uid = 2;
+        const pns::real_t mass = 4.8685e24;
+        const auto coord = coordStarI +
+            typelib::CoordT< pns::real_t >( 0, 1.07476259e11, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarI,  (coord - coordStarI).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarI +
+            typelib::VectorT< pns::real_t >( -absOrbitalSpeed, 0, 0 );
+        const pns::aboutPlanet_t planet = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 4.8685e24, 0.0 },
+            { mass, 0.0 },
             // radius
             6.0518e6,
             // coord
-            { 0, 1.07476259e11, 0 },
+            { coord.x, coord.y, coord.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
             //{ 0, 35020, 0 }
-            { orbitalSpeed, 0, 0 }
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
         };
         tpc[ countPlanet ] = planet;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
@@ -347,28 +395,34 @@ int main( int argc, char** argv ) {
     // @source http://ru.wikipedia.org/wiki/%D0%97%D0%B5%D0%BC%D0%BB%D1%8F
 #if 1
     {
-        static const pns::uid_t uid = 3;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
-            5.9736e24,  1.9891e30 + 1.9891e30,  1.49598261e11
-        );
-        static const pns::aboutPlanet_t planet = {
+        const pns::uid_t uid = 3;
+        const pns::real_t mass = 5.9736e24;
+        const auto coord = coordStarI +
+            typelib::CoordT< pns::real_t >( 0, -1.49598261e11, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarI,  (coord - coordStarI).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarI +
+            typelib::VectorT< pns::real_t >( absOrbitalSpeed, 0, 0 );
+        const pns::aboutPlanet_t planet = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 5.9736e24, 0.0 },
+            { mass, 0.0 },
             // radius
             6.3568e6,
             // coord
-            { 0, -1.49598261e11, 0 },
+            { coord.x, coord.y, coord.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
             //{ 0, 29783, 0 },
-            { -orbitalSpeed, 0, 0 },
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z },
             // axilTilt
             23.44,
             // rotationPeriod
@@ -377,7 +431,7 @@ int main( int argc, char** argv ) {
         tpc[ countPlanet ] = planet;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
@@ -392,33 +446,127 @@ int main( int argc, char** argv ) {
     // @source http://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D1%81_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
 #if 1
     {
-        static const pns::uid_t uid = 4;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
-            0.64185e24,  1.9891e30 + 1.9891e30,  2.06655e11
-        );
-        static const pns::aboutPlanet_t planet = {
+        const pns::uid_t uid = 4;
+        const pns::real_t mass = 0.64185e24;
+        const auto coord = coordStarI +
+            typelib::CoordT< pns::real_t >( 2.06655e11, 0, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarI,  (coord - coordStarI).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarI +
+            typelib::VectorT< pns::real_t >( 0, absOrbitalSpeed, 0 );
+        const pns::aboutPlanet_t planet = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 0.64185e24, 0.0 },
+            { mass, 0.0 },
             // radius
             3.3895e6,
             // coord
-            { 2.06655e11, 0, 0 },
+            { coord.x, coord.y, coord.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
             //{ 0, 24130, 0 }
-            { 0, orbitalSpeed, 0 }
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
         };
         tpc[ countPlanet ] = planet;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        starSystem->addOrderStatistics( uide, 50 );
+
+        ++countPlanet;
+    }
+#endif
+
+
+    // Юпитер
+    // @source http://ru.wikipedia.org/wiki/%D0%AE%D0%BF%D0%B8%D1%82%D0%B5%D1%80_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+#if 1
+    {
+        const pns::uid_t uid = 5;
+        const pns::real_t mass = 1.8986e27;
+        const auto coord = coordStarI +
+            typelib::CoordT< pns::real_t >( 7.785472e11 / 3, 0, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarI,  (coord - coordStarI).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarI +
+            typelib::VectorT< pns::real_t >( 0, absOrbitalSpeed, 0 );
+        const pns::aboutPlanet_t planet = {
+            // uid
+            uid,
+            // live
+            true,
+            // mass
+            { mass, 0.0 },
+            // radius
+            69.91e6,
+            // coord
+            { coord.x, coord.y, coord.z },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            //{ 0, 13070, 0 }
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
+        };
+        tpc[ countPlanet ] = planet;
+
+        // заявка на сбор статистики
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        starSystem->addOrderStatistics( uide, 50 );
+
+        ++countPlanet;
+    }
+#endif
+
+
+    // Сатурн
+    // @source http://ru.wikipedia.org/wiki/%D0%A1%D0%B0%D1%82%D1%83%D1%80%D0%BD_%28%D0%BF%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0%29
+#if 1
+    {
+        const pns::uid_t uid = 6;
+        const pns::real_t mass = 5.6846e26;
+        const auto coord = coordStarI +
+            typelib::CoordT< pns::real_t >( 0, -1.43344937e12 / 3, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarI,  (coord - coordStarI).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarI +
+            typelib::VectorT< pns::real_t >( absOrbitalSpeed, 0, 0 );
+        const pns::aboutPlanet_t planet = {
+            // uid
+            uid,
+            // live
+            true,
+            // mass
+            { mass, 0.0 },
+            // radius
+            54.36e6,
+            // coord
+            { coord.x, coord.y, coord.z },
+            // rotation
+            { 0, 0, 0 },
+            // force
+            { 0, 0, 0 },
+            // velocity
+            //{ 0, 9690, 0 }
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
+        };
+        tpc[ countPlanet ] = planet;
+
+        // заявка на сбор статистики
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
@@ -429,32 +577,38 @@ int main( int argc, char** argv ) {
     // Экз
 #if 1
     {
-        static const pns::uid_t uid = 11;
-        static const auto orbitalSpeed = typelib::compute::physics::orbitalSpeed(
-            1.1e24,  1.9891e30 + 1.9891e30,  4.4e11
-        ) * 0.6;
-        static const pns::aboutPlanet_t planet = {
+        const pns::uid_t uid = 11;
+        const pns::real_t mass = 1.1e24;
+        const auto coord = coordStarII +
+            typelib::CoordT< pns::real_t >( 0, 0.5e11, 0 );
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                mass,  massStarII,  (coord - coordStarII).distance()
+            );
+        const auto orbitalSpeed = orbitalSpeedStarII +
+            typelib::VectorT< pns::real_t >( absOrbitalSpeed, 0, 0 );
+        const pns::aboutPlanet_t planet = {
             // uid
             uid,
             // live
             true,
             // mass
-            { 1.1e24, 0.0 },
+            { mass, 0.0 },
             // radius
             5.5e6,
             // coord
-            { -4.4e11, 0, 0 },
+            { coord.x, coord.y, coord.z },
             // rotation
             { 0, 0, 0 },
             // force
             { 0, 0, 0 },
             // velocity
-            { 0, orbitalSpeed, 0 }
+            { orbitalSpeed.x, orbitalSpeed.y, orbitalSpeed.z }
         };
         tpc[ countPlanet ] = planet;
 
         // заявка на сбор статистики
-        static const pns::uidElement_t uide = { pns::GE_PLANET, uid };
+        const pns::uidElement_t uide = { pns::GE_PLANET, uid };
         starSystem->addOrderStatistics( uide, 50 );
 
         ++countPlanet;
@@ -477,7 +631,7 @@ int main( int argc, char** argv ) {
         "Количество астероидов превышает зарезервированный для них объём. См. ASTEROID_COUNT." );
     size_t countAsteroid = 0;
 
-#if 1
+#if 0
     auto& tac = topology.asteroid.content;
     {
         // не случайный генератор случ. чисел: полезно каждый
@@ -630,17 +784,6 @@ int main( int argc, char** argv ) {
     pnios::VolumeVTKVisual  visual( o );
     visual << *engine->portulan();
     
-
-    // # Учитываем инициал. движка звёздной системы, а именно - 'timestep'.
-    // 'PULSE' влияет на кол-во отрисовок (больше пульс - меньше кадров).
-    // Может быть задействована вместе с 'timestep'.
-    // Движок честно считает 'PULSE' кадров с шагом 'timestep' и только
-    // после - показывает картинку. Др. словами, реальное время отображаемых
-    // кадров = timestep * PULSE.
-    // @example timestep = HOUR,  PULSE = 365 * 24 - Земля будет оставаться
-    //          почти неподвижной, т.к. её период обращения ~ 365 дней.
-    static const int PULSE = 60 * 12;
-
     // запускаем мир
     static const int needStep = 0;
     static const bool closeWindow = true;

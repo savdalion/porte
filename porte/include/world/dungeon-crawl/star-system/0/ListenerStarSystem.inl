@@ -21,9 +21,9 @@ inline void ListenerStarSystem< E >::notifyAndCompletePulse() {
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterPulse( etr->whose );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterPulse(
+        etr->whose
+    ); } }
 
 }
 
@@ -60,11 +60,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionStar
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterAsteroidCollisionStar(
-            etr->whose,  a, ia,  b, ib,  delta
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterAsteroidCollisionStar(
+        etr->whose,  a, ia,  b, ib,  delta
+    ); } }
 }
 
 
@@ -105,11 +103,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCollisionAste
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterAsteroidCollisionAsteroid(
-            etr->whose,  a, ia,  b, ib,  delta
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterAsteroidCollisionAsteroid(
+        etr->whose,  a, ia,  b, ib,  delta
+    ); } }
 }
 
 
@@ -139,11 +135,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidChangeTempera
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterAsteroidChangeTemperature(
-            etr->whose,  a, ia,  deltaTemperature
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterAsteroidChangeTemperature(
+        etr->whose,  a, ia,  deltaTemperature
+    ); } }
 }
 
 
@@ -175,11 +169,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidChangeVelocit
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterAsteroidChangeVelocity(
-            etr->whose,  a, ia,  deltaVelocity
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterAsteroidChangeVelocity(
+        etr->whose,  a, ia,  deltaVelocity
+    ); } }
 }
 
 
@@ -371,11 +363,9 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventAsteroidCrushN(
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterAsteroidCrushN(
-            etr->whose,  a, ia,  delta,  n,  deltaVelocity,  deltaTemperature
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterAsteroidCrushN(
+        etr->whose,  a, ia,  delta,  n,  deltaVelocity,  deltaTemperature
+    ); } }
 }
 
 
@@ -395,24 +385,17 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionStar(
 		a[ ia ].uid << " + " << b[ ib ].uid <<
     std::endl;
 
-    pns::aboutPlanet_t&      ap = a[ ia ];
-    const pns::aboutStar_t&  as = b[ ib ];
-
-    // # Звезда поглощает планету.
-    //as.mass += ap.mass;
-    pns::excludePlanet( &ap );
-    --delta.planet.count;
+    // # Это событие является обобщением других событий.
+    //   См. Engine::dealEventCollision().
 
 
     // отправляем *своё* событие другим слушателям
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterPlanetCollisionStar(
-            etr->whose,  a, ia,  b, ib,  delta
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterPlanetCollisionStar(
+        etr->whose,  a, ia,  b, ib,  delta
+    ); } }
 }
 
 
@@ -440,40 +423,46 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetCollisionAstero
 
 
 
+
 template< class E >
-inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
-    pns::starContent_t a,  size_t ia,
-    const pns::starContent_t b,  size_t ib,
+inline void ListenerStarSystem< E >::notifyAndCompleteEventPlanetDestroy(
+    pns::planetContent_t a,  size_t ia,
     pns::deltaElement_t& delta
 ) {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
     // отрабатываем своё событие
-    std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionStar() " <<
-		a[ ia ].uid << " + " << b[ ib ].uid <<
+    std::cout << "ListenerStarSystem::notifyAndCompleteEventPlanetDestroy() " <<
+		a[ ia ].uid <<
     std::endl;
 
-    pns::aboutStar_t&        asA = a[ ia ];
-    const pns::aboutStar_t&  asB = b[ ib ];
 
-    // # @todo ? Звезда с большей массой поглощает звезду с меньшей.
-    // # Звезда A поглощает звезду B.
-    asA.mass.base  += asB.mass.base;
-    asA.mass.knoll += asB.mass.knoll;
-    //pns::excludeStar( &asB );
-    --delta.star.count;
+    pns::aboutPlanet_t&  ap = a[ ia ];
+
+    // уничтожаем планету
+    pns::excludePlanet( &ap );
+    --delta.planet.count;
 
 
     // отправляем *своё* событие другим слушателям
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterStarCollisionStar(
-            etr->whose,  a, ia,  b, ib,  delta
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterPlanetDestroy(
+        etr->whose,  a, ia,  delta
+    ); } }
+}
+
+
+
+
+template< class E >
+inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionStar(
+    pns::starContent_t a,  size_t ia,
+    const pns::starContent_t b,  size_t ib,
+    pns::deltaElement_t& delta
+) {
 }
 
 
@@ -485,6 +474,25 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionPlanet(
     const pns::planetContent_t b,  size_t ib,
     pns::deltaElement_t& delta
 ) {
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    std::cout << "ListenerStarSystem::notifyAndCompleteEventStarCollisionPlanet() " <<
+		a[ ia ].uid << " + " << b[ ib ].uid <<
+    std::endl;
+
+    // # Это событие является обобщением других событий.
+    //   См. Engine::dealEventCollision().
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterStarCollisionPlanet(
+        etr->whose,  a, ia,  b, ib,  delta
+    ); } }
 }
 
 
@@ -519,11 +527,50 @@ inline void ListenerStarSystem< E >::notifyAndCompleteEventStarCollisionAsteroid
     // @see #Соглашение об отправке чужих событий в starsystem::Listener.
     for (auto etr = StoreListenerStarSystem::begin();
          etr; etr = StoreListenerStarSystem::next()
-    ) { if ( etr ) {
-        etr->listener.lock()->afterStarCollisionAsteroid(
-            etr->whose,  a, ia,  b, ib,  delta
-        );
-    } }
+    ) { if ( etr ) { etr->listener.lock()->afterStarCollisionAsteroid(
+        etr->whose,  a, ia,  b, ib,  delta
+    ); } }
+}
+
+
+
+
+
+template< class E >
+inline void ListenerStarSystem< E >::notifyAndCompleteEventStarChangeMass(
+    pns::starContent_t a,  size_t ia,
+    const pns::mass_t& deltaMass
+) {
+    // @todo fine Переписать блок проверки / печати / отправки события
+    //       через макросы > http://codenet.ru/progr/cpp/Macros.php
+    assert( mEngine &&
+        "Движок не указан. Должны были позаботиться наследники." );
+
+    // отрабатываем своё событие
+    std::cout << "ListenerStarSystem::notifyAndCompleteEventStarChangeMass() " <<
+		a[ ia ].uid <<
+    std::endl;
+
+
+    pns::aboutStar_t&  as = a[ ia ];
+
+    // масса может быть значительно меньше массы звезды
+    const auto ks = as.mass.base / deltaMass.base;
+    if (ks > 1e9) {
+        as.mass.knoll += deltaMass.base + deltaMass.knoll;
+    } else {
+        as.mass.base  += deltaMass.base;
+        as.mass.knoll += deltaMass.knoll;
+    }
+
+
+    // отправляем *своё* событие другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterStarChangeMass(
+        etr->whose,  a, ia,  deltaMass
+    ); } }
 }
 
 
