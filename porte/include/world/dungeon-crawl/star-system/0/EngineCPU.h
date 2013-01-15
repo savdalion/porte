@@ -83,18 +83,25 @@ private:
 
 
     /**
-    * Распределяет запомненные наблюдателем события (где участники воздействуют
-    * друг на друга) между участниками (элементами звёздной системы).
+    * Распределяет запомненные наблюдателем события (где неск. участников
+    * взаимодействуют друг с другом) между участниками.
+    * Задача: дать каждому участнику такие события, которые он может выполнить
+    * независимо от других участников.
     *
     * @see observer_t
     */
-    void dealEvent();
+    void dealEventTwo();
 
     void dealEventCollision( pns::eventTwo_t* );
 
 
-    void dealEventCollision( pns::eventTwo_t*,  pns::aboutAsteroid_t*,  pns::aboutAsteroid_t* );
+    void dealEventCollision(
+        pns::eventTwo_t*,
+        pns::aboutAsteroid_t*,
+        pns::aboutAsteroid_t*
+    );
 
+    // вспом. метод для dealEventCollision()
     void dealEventCollision(
         pns::aboutAsteroid_t*  a,
         const typelib::VectorT< pns::real_t >&  rva,  

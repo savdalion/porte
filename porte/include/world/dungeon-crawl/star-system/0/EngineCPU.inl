@@ -120,7 +120,7 @@ inline void EngineCPU::pulse() {
 
 
     // (2) уведомим всех участников событий
-    dealEvent();
+    dealEventTwo();
 
 
     // (3) корректно и *независимо* отработаем события каждым участником,
@@ -789,7 +789,7 @@ inline void EngineCPU::starImpactIn(
 
 
 
-inline void EngineCPU::dealEvent() {
+inline void EngineCPU::dealEventTwo() {
 
     assert( !mPortulan.expired() );
 
