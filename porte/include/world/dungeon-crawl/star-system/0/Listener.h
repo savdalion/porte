@@ -133,6 +133,48 @@ public:
 
 
 
+    /**
+    * На астероид действует сила.
+    */
+    virtual inline void afterAsteroidImpactForce(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        const pns::real_t force[ 3 ],  pns::real_t absForce
+    ) {}
+
+
+
+
+    virtual inline void afterAsteroidChangeCoord(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
+    ) {}
+
+
+
+
+    virtual inline void afterAsteroidChangeVelocity(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
+    ) {}
+
+
+
+
+    /**
+    * Астероид уничтожен.
+    */
+    virtual inline void afterAsteroidDestroy(
+        AEngine::Ptr whose,
+        const pns::asteroidContent_t,  size_t ia,
+        pns::deltaElement_t&  delta
+    ) {}
+
+
+
+
     virtual inline void afterPlanetCollisionStar(
         AEngine::Ptr whose,
         const pns::planetContent_t,  size_t ia,
@@ -235,10 +277,52 @@ public:
 
 
 
+    /**
+    * На звезду действует сила.
+    */
+    virtual inline void afterStarImpactForce(
+        AEngine::Ptr whose,
+        const pns::starContent_t,  size_t ia,
+        const pns::real_t force[ 3 ],  pns::real_t absForce
+    ) {}
+
+
+
+
+    virtual inline void afterStarChangeCoord(
+        AEngine::Ptr whose,
+        const pns::starContent_t,  size_t ia,
+        const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
+    ) {}
+
+
+
+
     virtual inline void afterStarChangeMass(
         AEngine::Ptr whose,
         const pns::starContent_t,  size_t ia,
         const pns::mass_t& deltaMass
+    ) {}
+
+
+
+
+    virtual inline void afterStarChangeVelocity(
+        AEngine::Ptr whose,
+        const pns::starContent_t,  size_t ia,
+        const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
+    ) {}
+
+
+
+
+    /**
+    * Звезда уничтожена.
+    */
+    virtual inline void afterStarDestroy(
+        AEngine::Ptr whose,
+        const pns::starContent_t,  size_t ia,
+        pns::deltaElement_t&  delta
     ) {}
 
 

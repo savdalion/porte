@@ -221,15 +221,16 @@ inline void EngineCPU::asteroidImpactIn(
         const bool hasCollision =
             !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
         if ( hasCollision ) {
-            const pns::event_t event = {
+            const pns::eventTwo_t eventTwo = {
                 // uid события
                 pns::E_COLLISION,
-                // pi второй участник события
-                { pns::GE_PLANET, k, apk.uid }
+                // участники события
+                { pns::GE_ASTEROID,  currentI,  aa->uid },
+                { pns::GE_PLANET,    k,         apk.uid }
             };
-            pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_ASTEROID, currentI, event, &topology );
+            pns::printEventTwo( eventTwo, &topology );
 #endif
         }
 
@@ -270,6 +271,7 @@ inline void EngineCPU::asteroidImpactIn(
     } // for (size_t k = 0 ...
 
 
+    /* - Переписано ч/з события. См. ниже.
     // запоминаем силу
     aa->force[ 0 ] = force[ 0 ];
     aa->force[ 1 ] = force[ 1 ];
@@ -297,6 +299,80 @@ inline void EngineCPU::asteroidImpactIn(
     aa->coord[ 0 ] += aa->velocity[ 0 ] * timestep();
     aa->coord[ 1 ] += aa->velocity[ 1 ] * timestep();
     aa->coord[ 2 ] += aa->velocity[ 2 ] * timestep();
+    */
+
+    // воздействие силы
+    const auto absForce = sqrt(
+        force[ 0 ] * force[ 0 ] +
+        force[ 1 ] * force[ 1 ] +
+        force[ 2 ] * force[ 2 ]
+    );
+    pns::real_t nf[ 3 ] = { force[ 0 ],  force[ 1 ],  force[ 2 ] };
+    if (absForce > 0.0) {
+        const auto inv = 1.0 / absForce;
+        nf[ 0 ] *= inv;  nf[ 1 ] *= inv;  nf[ 2 ] *= inv;
+    }
+    const auto absAcceleration = absForce / pns::massAsteroid( *aa );
+    const auto absDeltaVelocity = absAcceleration * timestep();
+    const pns::real_t velocity[ 3 ] = {
+        nf[ 0 ] * absDeltaVelocity,
+        nf[ 1 ] * absDeltaVelocity,
+        nf[ 2 ] * absDeltaVelocity
+    };
+    if (absForce >= MIN_IMPACT_FORCE_PORTE) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_IMPACT_FORCE,
+            // pi второй участник события - здесь не важен
+            {},
+            // характеристика
+            { force[ 0 ],  force[ 1 ],  force[ 2 ],  absForce }
+        };
+        pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
+
+        // под действием силы возникают и другие события
+        // изменение скорости
+        if (absDeltaVelocity >= MIN_CHANGE_VELOCITY_PORTE) {
+            const pns::event_t event = {
+                // uid события
+                pns::E_CHANGE_VELOCITY,
+                // pi второй участник события - здесь не важен
+                {},
+                // характеристика
+                { velocity[ 0 ],  velocity[ 1 ],  velocity[ 2 ],  absDeltaVelocity }
+            };
+            pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
+        }
+
+    } // if (absForce >= MIN_IMPACT_FORCE)
+
+
+    // изменение координат
+    // тело уже может обладать скоростью
+    // # 0.01 - изменение на 1 см.
+    // координаты меняет скорость
+    const pns::real_t coord[ 3 ] = {
+        (aa->velocity[ 0 ] + velocity[ 0 ]) * timestep(),
+        (aa->velocity[ 1 ] + velocity[ 1 ]) * timestep(),
+        (aa->velocity[ 2 ] + velocity[ 2 ]) * timestep()
+    };
+    const auto absDeltaCoord = sqrt(
+        coord[ 0 ] * coord[ 0 ] +
+        coord[ 1 ] * coord[ 1 ] +
+        coord[ 2 ] * coord[ 2 ]
+    );
+    if (absDeltaCoord >= MIN_CHANGE_DISTANCE_PORTE) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_COORD,
+            // pi второй участник события - здесь не важен
+            {},
+            // характеристика
+            { coord[ 0 ],  coord[ 1 ],  coord[ 2 ],  absDeltaCoord }
+        };
+        pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
+    }
+
 }
 
 
@@ -349,15 +425,16 @@ inline void EngineCPU::planetImpactIn(
         const bool hasCollision =
             !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
         if ( hasCollision ) {
-            const pns::event_t event = {
+            const pns::eventTwo_t eventTwo = {
                 // uid события
                 pns::E_COLLISION,
-                // pi второй участник события
-                { pns::GE_PLANET, k, apk.uid }
+                // участники события
+                { pns::GE_PLANET,  currentI,  ap->uid },
+                { pns::GE_PLANET,  k,         apk.uid }
             };
-            pns::planetMemorizeEvent( &ap->memoryEvent, event );
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_PLANET, ap->uid, event, &topology );
+            pns::printEventTwo( eventTwo, &topology );
 #endif
         }
 
@@ -589,21 +666,23 @@ inline void EngineCPU::starImpactIn(
         const bool hasCollision =
             !forceGravityBodyAImpactIn( force,  a, b, noForceDistance );
         if ( hasCollision ) {
-            const pns::event_t event = {
+            const pns::eventTwo_t eventTwo = {
                 // uid события
                 pns::E_COLLISION,
-                // pi второй участник события
-                { pns::GE_STAR, k, ask.uid }
+                // участники события
+                { pns::GE_STAR,  currentI,  as->uid },
+                { pns::GE_STAR,  k,         ask.uid }
             };
-            pns::starMemorizeEvent( &as->memoryEvent, event );
+            pns::observerMemorizeEventTwo( &observer.memoryEventTwo, eventTwo );
 #ifdef _DEBUG
-            pns::printEvent( pns::GE_STAR, as->uid, event, &topology );
+            pns::printEventTwo( eventTwo, &topology );
 #endif
         }
 
     } // for (size_t k = 0 ...
 
 
+    /* - Переписано ч/з события. См. ниже.
     // запоминаем силу
     as->force[ 0 ] = force[ 0 ];
     as->force[ 1 ] = force[ 1 ];
@@ -631,6 +710,80 @@ inline void EngineCPU::starImpactIn(
     as->coord[ 0 ] += as->velocity[ 0 ] * timestep();
     as->coord[ 1 ] += as->velocity[ 1 ] * timestep();
     as->coord[ 2 ] += as->velocity[ 2 ] * timestep();
+    */
+
+    // воздействие силы
+    const auto absForce = sqrt(
+        force[ 0 ] * force[ 0 ] +
+        force[ 1 ] * force[ 1 ] +
+        force[ 2 ] * force[ 2 ]
+    );
+    pns::real_t nf[ 3 ] = { force[ 0 ],  force[ 1 ],  force[ 2 ] };
+    if (absForce > 0.0) {
+        const auto inv = 1.0 / absForce;
+        nf[ 0 ] *= inv;  nf[ 1 ] *= inv;  nf[ 2 ] *= inv;
+    }
+    const auto absAcceleration = absForce / pns::massStar( *as );
+    const auto absDeltaVelocity = absAcceleration * timestep();
+    const pns::real_t velocity[ 3 ] = {
+        nf[ 0 ] * absDeltaVelocity,
+        nf[ 1 ] * absDeltaVelocity,
+        nf[ 2 ] * absDeltaVelocity
+    };
+    if (absForce >= MIN_IMPACT_FORCE_PORTE) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_IMPACT_FORCE,
+            // pi второй участник события - здесь не важен
+            {},
+            // характеристика
+            { force[ 0 ],  force[ 1 ],  force[ 2 ],  absForce }
+        };
+        pns::starMemorizeEvent( &as->memoryEvent, event );
+
+        // под действием силы возникают и другие события
+        // изменение скорости
+        if (absDeltaVelocity >= MIN_CHANGE_VELOCITY_PORTE) {
+            const pns::event_t event = {
+                // uid события
+                pns::E_CHANGE_VELOCITY,
+                // pi второй участник события - здесь не важен
+                {},
+                // характеристика
+                { velocity[ 0 ],  velocity[ 1 ],  velocity[ 2 ],  absDeltaVelocity }
+            };
+            pns::starMemorizeEvent( &as->memoryEvent, event );
+        }
+
+    } // if (absForce >= MIN_IMPACT_FORCE)
+
+
+    // изменение координат
+    // тело уже может обладать скоростью
+    // # 0.01 - изменение на 1 см.
+    // координаты меняет скорость
+    const pns::real_t coord[ 3 ] = {
+        (as->velocity[ 0 ] + velocity[ 0 ]) * timestep(),
+        (as->velocity[ 1 ] + velocity[ 1 ]) * timestep(),
+        (as->velocity[ 2 ] + velocity[ 2 ]) * timestep()
+    };
+    const auto absDeltaCoord = sqrt(
+        coord[ 0 ] * coord[ 0 ] +
+        coord[ 1 ] * coord[ 1 ] +
+        coord[ 2 ] * coord[ 2 ]
+    );
+    if (absDeltaCoord >= MIN_CHANGE_DISTANCE_PORTE) {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_COORD,
+            // pi второй участник события - здесь не важен
+            {},
+            // характеристика
+            { coord[ 0 ],  coord[ 1 ],  coord[ 2 ],  absDeltaCoord }
+        };
+        pns::starMemorizeEvent( &as->memoryEvent, event );
+    }
+
 }
 
 
@@ -1021,6 +1174,30 @@ inline void EngineCPU::dealEventCollision(
     };
     pns::starMemorizeEvent( &as->memoryEvent, eventStar );
 
+    // III Астероид уничтожен
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_DESTROY,
+            // другой участник события - не важен для этого события
+            {}
+        };
+        pns::asteroidMemorizeEvent( &aa->memoryEvent, event );
+    }
+
+    // IV Звезда увеличила свою массу
+    {
+        const pns::event_t event = {
+            // uid события
+            pns::E_CHANGE_MASS,
+            // другой участник события - не важен для этого события
+            {},
+            // характеристика
+            { aa->mass.base, aa->mass.knoll }
+        };
+        pns::starMemorizeEvent( &as->memoryEvent, event );
+    }
+
     // # Отработанное событие наблюдатель забывает.
     forgetEventTwo( eventTwo );
 }
@@ -1099,6 +1276,9 @@ inline void EngineCPU::dealEventCollision(
     pns::eventTwo_t et = *eventTwo;
     std::swap( et.piA, et.piB );
     dealEventCollision( &et, aa, as );
+
+    // # Отработанное событие наблюдатель забывает.
+    forgetEventTwo( eventTwo );
 }
 
 
@@ -1115,6 +1295,9 @@ inline void EngineCPU::dealEventCollision(
     pns::eventTwo_t et = *eventTwo;
     std::swap( et.piA, et.piB );
     dealEventCollision( &et, ap, as );
+
+    // # Отработанное событие наблюдатель забывает.
+    forgetEventTwo( eventTwo );
 }
 
 
@@ -1283,6 +1466,52 @@ inline void EngineCPU::notifyAndCompleteEvent(
             continue;
         }
 
+
+        // воздействие силы
+        if (event.uid == pns::E_IMPACT_FORCE) {
+            const pns::real_t force[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absForce = event.fReal[ 3 ];
+            notifyAndCompleteEventAsteroidImpactForce(
+                asteroid,  currentI,
+                force,  absForce
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // изменение координат
+        if (event.uid == pns::E_CHANGE_COORD) {
+            const pns::real_t deltaCoord[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absDeltaCoord = event.fReal[ 3 ];
+            notifyAndCompleteEventAsteroidChangeCoord(
+                asteroid,  currentI,
+                deltaCoord,  absDeltaCoord
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // изменение скорости
+        if (event.uid == pns::E_CHANGE_VELOCITY) {
+            const pns::real_t deltaVelocity[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absDeltaVelocity = event.fReal[ 3 ];
+            notifyAndCompleteEventAsteroidChangeVelocity(
+                asteroid,  currentI,
+                deltaVelocity,  absDeltaVelocity
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
         // астероид столкнулся с другим элементом звёздной системы
         if (event.uid == pns::E_COLLISION) {
 
@@ -1325,21 +1554,6 @@ inline void EngineCPU::notifyAndCompleteEvent(
         } // if (event.uid == pns::E_COLLISION)
 
 
-        // у астероида изменилась скорость
-        if (event.uid == pns::E_CHANGE_VELOCITY) {
-            const pns::real_t deltaVelocity[ 3 ] = {
-                event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ]
-            };
-            notifyAndCompleteEventAsteroidChangeVelocity(
-                asteroid,  currentI,
-                deltaVelocity
-            );
-            // # Отработанное событие надо забыть.
-            forgetEvent( &event );
-            continue;
-        }
-
-
         // у астероида изменилась температура
         if (event.uid == pns::E_CHANGE_TEMPERATURE) {
             const pns::real_t deltaTemperature = event.fReal[ 0 ];
@@ -1372,6 +1586,18 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
 
         // @todo ...
+
+
+        // астероид уничтожен
+        if (event.uid == pns::E_DESTROY) {
+            notifyAndCompleteEventAsteroidDestroy(
+                asteroid,  currentI,
+                delta
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
 
     } // for (int k = aa->memoryEvent.waldo - 1; ...
 
@@ -1551,6 +1777,52 @@ inline void EngineCPU::notifyAndCompleteEvent(
             continue;
         }
 
+
+        // воздействие силы
+        if (event.uid == pns::E_IMPACT_FORCE) {
+            const pns::real_t force[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absForce = event.fReal[ 3 ];
+            notifyAndCompleteEventStarImpactForce(
+                star,  currentI,
+                force,  absForce
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // изменение координат
+        if (event.uid == pns::E_CHANGE_COORD) {
+            const pns::real_t deltaCoord[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absDeltaCoord = event.fReal[ 3 ];
+            notifyAndCompleteEventStarChangeCoord(
+                star,  currentI,
+                deltaCoord,  absDeltaCoord
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // изменение скорости
+        if (event.uid == pns::E_CHANGE_VELOCITY) {
+            const pns::real_t deltaVelocity[ 3 ] =
+                { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
+            const pns::real_t absDeltaVelocity = event.fReal[ 3 ];
+            notifyAndCompleteEventStarChangeVelocity(
+                star,  currentI,
+                deltaVelocity,  absDeltaVelocity
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
         // звезда столкнулась с другим элементом звёздной системы
         if (event.uid == pns::E_COLLISION) {
 
@@ -1603,6 +1875,18 @@ inline void EngineCPU::notifyAndCompleteEvent(
             notifyAndCompleteEventStarChangeMass(
                 star,  currentI,
                 deltaMass
+            );
+            // # Отработанное событие надо забыть.
+            forgetEvent( &event );
+            continue;
+        }
+
+
+        // звезда уничтожена
+        if (event.uid == pns::E_DESTROY) {
+            notifyAndCompleteEventStarDestroy(
+                star,  currentI,
+                delta
             );
             // # Отработанное событие надо забыть.
             forgetEvent( &event );

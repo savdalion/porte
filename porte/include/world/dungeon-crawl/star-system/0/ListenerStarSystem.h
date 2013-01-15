@@ -84,6 +84,22 @@ public:
 
 
 
+    void notifyAndCompleteEventAsteroidImpactForce(
+        pns::asteroidContent_t,  size_t ia,
+        const pns::real_t force[ 3 ],  pns::real_t absForce
+    );
+
+
+
+
+    void notifyAndCompleteEventAsteroidChangeCoord(
+        pns::asteroidContent_t,  size_t ia,
+        const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
+    );
+
+
+
+
     void notifyAndCompleteEventAsteroidChangeTemperature(
         pns::asteroidContent_t,  size_t ia,
         const pns::real_t deltaTemperature
@@ -94,7 +110,7 @@ public:
 
     void notifyAndCompleteEventAsteroidChangeVelocity(
         pns::asteroidContent_t,  size_t ia,
-        const pns::real_t deltaVelocity[ 3 ]
+        const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
     );
 
 
@@ -106,6 +122,14 @@ public:
         size_t n,
         const pns::real_t  deltaVelocity[ 3 ],
         const pns::real_t  deltaTemperature
+    );
+
+
+
+
+    void notifyAndCompleteEventAsteroidDestroy(
+        pns::asteroidContent_t,  size_t ia,
+        pns::deltaElement_t& delta
     );
 
 
@@ -197,9 +221,41 @@ public:
 
 
 
+    void notifyAndCompleteEventStarImpactForce(
+        pns::starContent_t,  size_t ia,
+        const pns::real_t force[ 3 ],  pns::real_t absForce
+    );
+
+
+
+
+    void notifyAndCompleteEventStarChangeCoord(
+        pns::starContent_t,  size_t ia,
+        const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
+    );
+
+
+
+
     void notifyAndCompleteEventStarChangeMass(
         pns::starContent_t,  size_t ia,
         const pns::mass_t& deltaMass
+    );
+
+
+
+
+    void notifyAndCompleteEventStarChangeVelocity(
+        pns::starContent_t,  size_t ia,
+        const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
+    );
+
+
+
+
+    void notifyAndCompleteEventStarDestroy(
+        pns::starContent_t,  size_t ia,
+        pns::deltaElement_t& delta
     );
 
 
