@@ -29,6 +29,7 @@
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineND.h" />
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\Listener.h" />
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\ListenerStarSystem.h" />
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.h" />
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\StoreListenerStarSystem.h" />
     <ClInclude Include="porte.h" />
     <ClInclude Include="porte\include\Engine.h" />
@@ -50,6 +51,7 @@
     <None Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\EngineND.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\ListenerStarSystem.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.inl" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl" />

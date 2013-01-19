@@ -28,4 +28,24 @@
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 
+
+#else
+
+/* - @todo ? Не работает на CPU Intel i5.
+#pragma OPENCL EXTENSION cl_intel_printf : enable
+#ifdef cl_khr_fp64
+    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#elif defined(cl_amd_fp64)
+    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#else
+    #error "Double precision floating point not supported by OpenCL implementation."
+#endif
+*/
+
+#pragma EXTENSION cl_khr_fp64 : require
+#pragma EXTENSION cl_intel_printf : require
+// @todo ? Даже включение всех расширений не включает двойную точность для CPU Intel i5.
+#pragma OPENCL EXTENSION all : enable
+
+
 #endif

@@ -43,7 +43,7 @@ public:
     /**
     * # Просто заботимся, чтобы слушатели получили это событие.
     */
-    void notifyAndCompletePulse();
+    void completePulse();
 
 
 
@@ -57,7 +57,7 @@ public:
     *   участник должен был получить аналогичное (обратное) событие и
     *   отработает (отработал) его самостоятельно, меняя *своё* состояние.
     */
-    void notifyAndCompleteEventAsteroidCollisionStar(
+    void completeEventAsteroidCollisionStar(
         pns::asteroidContent_t,  size_t ia,
         const pns::starContent_t,  size_t ib
     );
@@ -65,7 +65,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidCollisionPlanet(
+    void completeEventAsteroidCollisionPlanet(
         pns::asteroidContent_t,  size_t ia,
         const pns::planetContent_t,  size_t ib
     );
@@ -73,7 +73,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidCollisionAsteroid(
+    void completeEventAsteroidCollisionAsteroid(
         pns::asteroidContent_t,  size_t ia,
         const pns::asteroidContent_t,  size_t ib
     );
@@ -81,7 +81,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidImpactForce(
+    void completeEventAsteroidImpactForce(
         pns::asteroidContent_t,  size_t ia,
         const pns::real_t force[ 3 ],  pns::real_t absForce
     );
@@ -89,7 +89,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidChangeCoord(
+    void completeEventAsteroidChangeCoord(
         pns::asteroidContent_t,  size_t ia,
         const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
     );
@@ -97,7 +97,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidChangeTemperature(
+    void completeEventAsteroidChangeTemperature(
         pns::asteroidContent_t,  size_t ia,
         const pns::real_t deltaTemperature
     );
@@ -105,7 +105,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidChangeVelocity(
+    void completeEventAsteroidChangeVelocity(
         pns::asteroidContent_t,  size_t ia,
         const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
     );
@@ -113,7 +113,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidCrushN(
+    void completeEventAsteroidCrushN(
         pns::asteroidContent_t,  size_t ia,
         pns::deltaElement_t& delta,
         size_t n,
@@ -124,7 +124,7 @@ public:
 
 
 
-    void notifyAndCompleteEventAsteroidDestroy(
+    void completeEventAsteroidDestroy(
         pns::asteroidContent_t,  size_t ia,
         pns::deltaElement_t& delta
     );
@@ -132,7 +132,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetCollisionStar(
+    void completeEventPlanetCollisionStar(
         pns::planetContent_t,  size_t ia,
         const pns::starContent_t,  size_t ib
     );
@@ -140,7 +140,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetCollisionPlanet(
+    void completeEventPlanetCollisionPlanet(
         pns::planetContent_t,  size_t ia,
         const pns::planetContent_t,  size_t ib
     );
@@ -148,7 +148,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetCollisionAsteroid(
+    void completeEventPlanetCollisionAsteroid(
         pns::planetContent_t,  size_t ia,
         const pns::asteroidContent_t,  size_t ib
     );
@@ -156,7 +156,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetImpactForce(
+    void completeEventPlanetImpactForce(
         pns::planetContent_t,  size_t ia,
         const pns::real_t force[ 3 ],  pns::real_t absForce
     );
@@ -164,7 +164,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetChangeCoord(
+    void completeEventPlanetChangeCoord(
         pns::planetContent_t,  size_t ia,
         const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
     );
@@ -172,7 +172,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetChangeVelocity(
+    void completeEventPlanetChangeVelocity(
         pns::planetContent_t,  size_t ia,
         const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
     );
@@ -180,7 +180,7 @@ public:
 
 
 
-    void notifyAndCompleteEventPlanetDestroy(
+    void completeEventPlanetDestroy(
         pns::planetContent_t,  size_t ia,
         pns::deltaElement_t& delta
     );
@@ -188,7 +188,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarCollisionStar(
+    void completeEventStarCollisionStar(
         pns::starContent_t,  size_t ia,
         const pns::starContent_t,  size_t ib
     );
@@ -196,7 +196,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarCollisionPlanet(
+    void completeEventStarCollisionPlanet(
         pns::starContent_t,  size_t ia,
         const pns::planetContent_t,  size_t ib
     );
@@ -204,7 +204,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarCollisionAsteroid(
+    void completeEventStarCollisionAsteroid(
         pns::starContent_t,  size_t ia,
         const pns::asteroidContent_t,  size_t ib
     );
@@ -212,7 +212,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarImpactForce(
+    void completeEventStarImpactForce(
         pns::starContent_t,  size_t ia,
         const pns::real_t force[ 3 ],  pns::real_t absForce
     );
@@ -220,7 +220,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarChangeCoord(
+    void completeEventStarChangeCoord(
         pns::starContent_t,  size_t ia,
         const pns::real_t deltaCoord[ 3 ],  pns::real_t absDeltaCoord
     );
@@ -228,7 +228,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarChangeMass(
+    void completeEventStarChangeMass(
         pns::starContent_t,  size_t ia,
         const pns::mass_t& deltaMass
     );
@@ -236,7 +236,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarChangeVelocity(
+    void completeEventStarChangeVelocity(
         pns::starContent_t,  size_t ia,
         const pns::real_t deltaVelocity[ 3 ],  pns::real_t absDeltaVelocity
     );
@@ -244,7 +244,7 @@ public:
 
 
 
-    void notifyAndCompleteEventStarDestroy(
+    void completeEventStarDestroy(
         pns::starContent_t,  size_t ia,
         pns::deltaElement_t& delta
     );

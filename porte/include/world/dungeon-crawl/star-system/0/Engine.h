@@ -6,8 +6,10 @@
     #include "EngineOpenCL.h"
 #elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )
     #include "EngineND.h"
-#else
+#elif defined( CPU_STARSYSTEM_L0_ENGINE_PORTE )
     #include "EngineCPU.h"
+#else
+    #include "EngineHybrid.h"
 #endif
 
 
@@ -30,8 +32,10 @@ class Engine :
     public EngineOpenCL
 #elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )
     public EngineND
-#else
+#elif defined( CPU_STARSYSTEM_L0_ENGINE_PORTE )
     public EngineCPU
+#else
+    public EngineHybrid
 #endif
 {
 public:
@@ -44,11 +48,13 @@ public:
     // @todo Добавить 'extent' для всех движков ниже.
     explicit inline Engine( real_t timestep ) :
 #if defined( OPENCL_STARSYSTEM_L0_ENGINE_PORTE )
-        EngineOpenCL( p, timestep )
+    EngineOpenCL( p, timestep )
 #elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )
-        EngineND( p, extent, timestep )
+    EngineND( p, extent, timestep )
+#elif defined( CPU_STARSYSTEM_L0_ENGINE_PORTE )
+    EngineCPU( timestep )
 #else
-        EngineCPU( timestep )
+    EngineHybrid( timestep )
 #endif
     {
     }

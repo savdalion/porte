@@ -66,6 +66,7 @@ static const double HALF_YEAR  = YEAR   / 2.0;
 * Пример процесса изменения планеты.
 */
 int main( int argc, char** argv ) {
+#if 0
 
     using namespace porte;
     using namespace porte::visualtest;
@@ -806,6 +807,8 @@ int main( int argc, char** argv ) {
 
     EZLOGGERVLSTREAM( axter::log_always ) << "Porte / process-visualtest -> END" << std::endl;
 
+#endif
+
     std::cout << std::endl << "^" << std::endl;
     //std::cin.ignore();
 
@@ -837,6 +840,7 @@ inline void wrapPlanet(
     std::shared_ptr< pes::Engine >  ess,
     const pns::aboutPlanet_t&  pss
 ) {
+#if 0
     assert( heap );
 
     namespace tc = typelib::constant;
@@ -1126,4 +1130,5 @@ inline void wrapPlanet(
     } // while
 #endif
 
+#endif
 }

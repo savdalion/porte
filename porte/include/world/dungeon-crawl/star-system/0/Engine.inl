@@ -31,22 +31,22 @@ inline Engine::real_t Engine::extent() {
 
     for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
         const auto body = asteroid[ i ];
-        if ( pns::presentAsteroid( body ) ) {
-            pushDistance( body.coord );
+        if ( pns::presentAsteroid( &body ) ) {
+            pushDistance( body.today.coord );
         }
     }
 
     for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
         const auto body = planet[ i ];
-        if ( pns::presentPlanet( body ) ) {
-            pushDistance( body.coord );
+        if ( pns::presentPlanet( &body ) ) {
+            pushDistance( body.today.coord );
         }
     }
 
     for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
         const auto body = star[ i ];
-        if ( pns::presentStar( body ) ) {
-            pushDistance( body.coord );
+        if ( pns::presentStar( &body ) ) {
+            pushDistance( body.today.coord );
         }
     }
 

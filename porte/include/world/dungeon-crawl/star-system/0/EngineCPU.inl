@@ -83,6 +83,28 @@ inline void EngineCPU::pulse() {
     auto& star     = topology.star.content;
 
     // рассчитываем воздействия на тела звёздной системы
+    // # Все элементы звёздной системы работают по единой схеме.
+    // # Каждый элемент звёздной системы генерирует свой набор событий.
+    // # Испускаемые элементом события хранятся в памяти событий у самого
+    //   элемента.
+    // # Конкретные события (могут быть отработаны самим элементом) и общие
+    //   события (требуют для отработки уведомить второго участника) хранятся
+    //   в разных линейках памяти.
+    // # Чтобы избежать дублирования симметричных общих событий (например,
+    //   столкновений), принимаем:
+    //   симметр. общее событие регистрируется *только* первым по алфавиту
+    //   элементом, остальные участники просматривают такие события и создают
+    //   на их основе конкретные (свои) события. Побочный эффект: меньше
+    //   загрузка памяти общих событий, ускорение обработки.
+    // #? Элемент может заполнить всю память конкретных событий и только
+    //   часть памяти с общими. Ограничение на заполнение памяти с общими
+    //   событиями связано с тем, что память будет дозаполнена общими событиями
+    //   от других элементов.
+    // # Пройдя все свои возможные события *или* заполнив память
+    //   событий, элемент ожидает синхронизации с другими элементами.
+    // # После синхронизации
+
+
     // # Реализуем т.о., чтобы минимальными усилиями перенести на OpenCL.
     //   Для этого (1) запомним события с двумя и более участниками в
     //   памяти наблюдателя (observer_t), чтобы (2) после уведомить всех
@@ -90,41 +112,39 @@ inline void EngineCPU::pulse() {
     //   события каждым участником.
 
     // (1) запомним события с двумя и более участниками в памяти наблюдателя
+    //     и, если события простые, в памяти каждого участника
 
     // воздействие на астероиды
     for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
         auto& e = asteroid[ i ];
-        if ( pns::absentAsteroid( e ) ) {
-            break;
+        if ( pns::presentAsteroid( e ) ) {
+            asteroidImpactIn( &e, i );
         }
-        asteroidImpactIn( &e, i );
     }
 
     // воздействие на планеты
     for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
         auto& e = planet[ i ];
-        if ( pns::absentPlanet( e ) ) {
-            break;
+        if ( pns::presentPlanet( e ) ) {
+            planetImpactIn( &e, i );
         }
-        planetImpactIn( &e, i );
     }
 
     // воздействие на звёзды
     for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
         auto& e = star[ i ];
-        if ( pns::absentStar( e ) ) {
-            break;
+        if ( pns::presentStar( e ) ) {
+            starImpactIn( &e, i );
         }
-        starImpactIn( &e, i );
     }
 
 
-    // (2) уведомим всех участников событий
+    // (2) распределим события между участниками
     dealEventTwo();
 
 
     // (3) корректно и *независимо* отработаем события каждым участником,
-    //     уведомляем слушателей
+    //     уведомим слушателей
     notifyAndCompleteEvent();
 
 
@@ -132,7 +152,7 @@ inline void EngineCPU::pulse() {
     mLive.inc( mTimestep );
 
     // пульс пройден
-    notifyAndCompletePulse();
+    completePulse();
 
 
     // собираем статистику для элементов портулана
@@ -320,7 +340,7 @@ inline void EngineCPU::asteroidImpactIn(
         nf[ 2 ] * absDeltaVelocity
     };
     if (absForce >= MIN_IMPACT_FORCE_PORTE) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_IMPACT_FORCE,
             // pi второй участник события - здесь не важен
@@ -333,7 +353,7 @@ inline void EngineCPU::asteroidImpactIn(
         // под действием силы возникают и другие события
         // изменение скорости
         if (absDeltaVelocity >= MIN_CHANGE_VELOCITY_PORTE) {
-            const pns::event_t event = {
+            const pns::eventTwo_t event = {
                 // uid события
                 pns::E_CHANGE_VELOCITY,
                 // pi второй участник события - здесь не важен
@@ -362,7 +382,7 @@ inline void EngineCPU::asteroidImpactIn(
         coord[ 2 ] * coord[ 2 ]
     );
     if (absDeltaCoord >= MIN_CHANGE_DISTANCE_PORTE) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_COORD,
             // pi второй участник события - здесь не важен
@@ -530,7 +550,7 @@ inline void EngineCPU::planetImpactIn(
         nf[ 2 ] * absDeltaVelocity
     };
     if (absForce >= MIN_IMPACT_FORCE_PORTE) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_IMPACT_FORCE,
             // pi второй участник события - здесь не важен
@@ -543,7 +563,7 @@ inline void EngineCPU::planetImpactIn(
         // под действием силы возникают и другие события
         // изменение скорости
         if (absDeltaVelocity >= MIN_CHANGE_VELOCITY_PORTE) {
-            const pns::event_t event = {
+            const pns::eventTwo_t event = {
                 // uid события
                 pns::E_CHANGE_VELOCITY,
                 // pi второй участник события - здесь не важен
@@ -572,7 +592,7 @@ inline void EngineCPU::planetImpactIn(
         coord[ 2 ] * coord[ 2 ]
     );
     if (absDeltaCoord >= MIN_CHANGE_DISTANCE_PORTE) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_COORD,
             // pi второй участник события - здесь не важен
@@ -731,7 +751,7 @@ inline void EngineCPU::starImpactIn(
         nf[ 2 ] * absDeltaVelocity
     };
     if (absForce >= MIN_IMPACT_FORCE_PORTE) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_IMPACT_FORCE,
             // pi второй участник события - здесь не важен
@@ -744,7 +764,7 @@ inline void EngineCPU::starImpactIn(
         // под действием силы возникают и другие события
         // изменение скорости
         if (absDeltaVelocity >= MIN_CHANGE_VELOCITY_PORTE) {
-            const pns::event_t event = {
+            const pns::eventTwo_t event = {
                 // uid события
                 pns::E_CHANGE_VELOCITY,
                 // pi второй участник события - здесь не важен
@@ -773,7 +793,7 @@ inline void EngineCPU::starImpactIn(
         coord[ 2 ] * coord[ 2 ]
     );
     if (absDeltaCoord >= MIN_CHANGE_DISTANCE_PORTE) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_COORD,
             // pi второй участник события - здесь не важен
@@ -1042,7 +1062,7 @@ inline void EngineCPU::dealEventCollision(
     // Астероид A столкнулся с астероидом B
     // # Изменения касаются только элемента A.
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_COLLISION,
             // другой участник события
@@ -1073,7 +1093,7 @@ inline void EngineCPU::dealEventCollision(
             static const size_t SEED = 12345;
             static typelib::Random< size_t >  genN( 5, 10, SEED );
             const size_t n = genN.next();
-            const pns::event_t event = {
+            const pns::eventTwo_t event = {
                 // uid события
                 pns::E_CRUSH_N,
                 // другой участник события - не важен для этого события
@@ -1099,7 +1119,7 @@ inline void EngineCPU::dealEventCollision(
             static const size_t SEED = 12345;
             static typelib::Random< size_t >  genN( 2, 5, SEED );
             const size_t n = genN.next();
-            const pns::event_t event = {
+            const pns::eventTwo_t event = {
                 // uid события
                 pns::E_CRUSH_N,
                 // другой участник события - не важен для этого события
@@ -1122,7 +1142,7 @@ inline void EngineCPU::dealEventCollision(
     // # Проверку, что скорость изменилась достаточно, чтобы зафиксировать
     //   событие E_CHANGE_VELOCITY, сделали до вызова этого метода.
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_VELOCITY,
             // другой участник события - не важен для этого события
@@ -1134,7 +1154,7 @@ inline void EngineCPU::dealEventCollision(
     }
     // меняется температура астероида
     if (deltaTemperatureAAfter >= 1.0) {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_TEMPERATURE,
             // другой участник события - не важен для этого события
@@ -1157,7 +1177,7 @@ inline void EngineCPU::dealEventCollision(
     // разбиваем событие на части и передаём участникам
 
     // I Астероид столкнулся со звездой
-    const pns::event_t eventAsteroid = {
+    const pns::eventTwo_t eventAsteroid = {
         // uid события
         pns::E_COLLISION,
         // другой участник события
@@ -1166,7 +1186,7 @@ inline void EngineCPU::dealEventCollision(
     pns::asteroidMemorizeEvent( &aa->memoryEvent, eventAsteroid );
 
     // II Звезда столкнулась с астероидом
-    const pns::event_t eventStar = {
+    const pns::eventTwo_t eventStar = {
         // uid события
         pns::E_COLLISION,
         // другой участник события
@@ -1176,7 +1196,7 @@ inline void EngineCPU::dealEventCollision(
 
     // III Астероид уничтожен
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_DESTROY,
             // другой участник события - не важен для этого события
@@ -1187,7 +1207,7 @@ inline void EngineCPU::dealEventCollision(
 
     // IV Звезда увеличила свою массу
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_MASS,
             // другой участник события - не важен для этого события
@@ -1214,7 +1234,7 @@ inline void EngineCPU::dealEventCollision(
 
     // I Планета столкнулась со звездой
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_COLLISION,
             // другой участник события
@@ -1225,7 +1245,7 @@ inline void EngineCPU::dealEventCollision(
 
     // II Звезда столкнулась с планетой
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_COLLISION,
             // другой участник события
@@ -1236,7 +1256,7 @@ inline void EngineCPU::dealEventCollision(
 
     // III Планета уничтожена
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_DESTROY,
             // другой участник события - не важен для этого события
@@ -1247,7 +1267,7 @@ inline void EngineCPU::dealEventCollision(
 
     // IV Звезда увеличила свою массу
     {
-        const pns::event_t event = {
+        const pns::eventTwo_t event = {
             // uid события
             pns::E_CHANGE_MASS,
             // другой участник события - не важен для этого события
@@ -1386,59 +1406,100 @@ inline void EngineCPU::notifyAndCompleteEvent() {
     //   ждут подписчики.
     pns::deltaElement_t delta = {};
 
-    // события у астероидов
-    for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
-        auto& e = asteroid[ i ];
-        if ( pns::presentAsteroid( e ) ) {
-            notifyAndCompleteEvent( &e, i, delta );
-        }
-    }
 
-    // события у планет
-    for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
-        auto& e = planet[ i ];
-        if ( pns::presentPlanet( e ) ) {
-            notifyAndCompleteEvent( &e, i, delta );
-        }
-    }
-
-    // события у звёзд
-    for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
-        auto& e = star[ i ];
-        if ( pns::presentStar( e ) ) {
-            notifyAndCompleteEvent( &e, i, delta );
-        }
+    // уведомляем слушателей до отработки событий
+    {
+        // @todo ...
     }
 
 
-    // оптимизируем списки, уведомляем подписчиков о прочих изменениях
+    // отрабатываем события...
+    // # Каждый элемент способен отработать свои события независимо,
+    //   не обращаясь за инфо к другим элементам и тем более не меняя
+    //   др. элементы.
+    {
+        // ...астероидов
+        for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
+            auto& e = asteroid[ i ];
+            if ( pns::presentAsteroid( e ) ) {
+                completeEvent( &e, i, delta );
+            }
+        }
+
+        // ...планет
+        for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
+            auto& e = planet[ i ];
+            if ( pns::presentPlanet( e ) ) {
+                completeEvent( &e, i, delta );
+            }
+        }
+
+        // ..звёзд
+        for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
+            auto& e = star[ i ];
+            if ( pns::presentStar( e ) ) {
+                completeEvent( &e, i, delta );
+            }
+        }
+    }
+
+
+    // уведомляем слушателей после отработки событий
+    // # Отработка событий выше может пометить элемент как "не живой". Поэтому
+    //   просматриваем все элементы, руководствуясь только содержимым их
+    //   памяти.
+    Сделать признак "Событие отработано"?
+    Как быстрее?
+    {
+        for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
+            auto& e = asteroid[ i ];
+            notifyAfterCompleteEvent( e );
+        }
+
+        // ...планет
+        for (size_t i = 0; i < pns::PLANET_COUNT; ++i) {
+            auto& e = planet[ i ];
+            notifyAfterCompleteEvent( e );
+        }
+
+        // ..звёзд
+        for (size_t i = 0; i < pns::STAR_COUNT; ++i) {
+            auto& e = star[ i ];
+            notifyAfterCompleteEvent( e );
+        }
+    }
+
+
+    // оптимизируем структуры, уведомляем о прочих изменениях
     // #! Оптимизация должна быть после всех уведомлений / отработок.
     //    Иначе можем получить искажённую картину, т.к. порядок отработки
     //    событий не определён.
     // @see #Соглашения в начале метода.
-    if (delta.asteroid.count != 0) {
-        pns::optimizeCountAsteroid( asteroid );
-        const size_t n = pns::countAsteroid( asteroid, true );
-        afterChangeCountAsteroid( n, delta.asteroid.count );
-    }
+    {
+        if (delta.asteroid.count != 0) {
+            pns::optimizeCountAsteroid( asteroid );
+            const size_t n = pns::countAsteroid( asteroid, true );
+            afterChangeCountAsteroid( n, delta.asteroid.count );
+        }
 
-    if (delta.planet.count != 0) {
-        pns::optimizeCountPlanet( planet );
-        const size_t n = pns::countPlanet( planet, true );
-        afterChangeCountPlanet( n, delta.planet.count );
-    }
+        if (delta.planet.count != 0) {
+            pns::optimizeCountPlanet( planet );
+            const size_t n = pns::countPlanet( planet, true );
+            afterChangeCountPlanet( n, delta.planet.count );
+        }
 
-    if (delta.star.count != 0) {
-        pns::optimizeCountStar( star );
-        const size_t n = pns::countStar( star, true );
-        afterChangeCountStar( n, delta.star.count );
+        if (delta.star.count != 0) {
+            pns::optimizeCountStar( star );
+            const size_t n = pns::countStar( star, true );
+            afterChangeCountStar( n, delta.star.count );
+        }
     }
 }
 
 
 
 
-inline void EngineCPU::notifyAndCompleteEvent(
+inline void EngineCPU::completeEvent(
     pns::aboutAsteroid_t*  aa,
     size_t                 currentI,
     pns::deltaElement_t&   delta
@@ -1460,7 +1521,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
         if (k < 0) {
             k = pns::ASTEROID_EVENT_COUNT - 1;
         }
-        pns::event_t& event = aa->memoryEvent.content[ k ];
+        pns::eventTwo_t& event = aa->memoryEvent.content[ k ];
         if (event.uid == pns::E_NONE) {
             // нам не интересны пустые события
             continue;
@@ -1472,7 +1533,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t force[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absForce = event.fReal[ 3 ];
-            notifyAndCompleteEventAsteroidImpactForce(
+            completeEventAsteroidImpactForce(
                 asteroid,  currentI,
                 force,  absForce
             );
@@ -1487,7 +1548,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t deltaCoord[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absDeltaCoord = event.fReal[ 3 ];
-            notifyAndCompleteEventAsteroidChangeCoord(
+            completeEventAsteroidChangeCoord(
                 asteroid,  currentI,
                 deltaCoord,  absDeltaCoord
             );
@@ -1502,7 +1563,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t deltaVelocity[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absDeltaVelocity = event.fReal[ 3 ];
-            notifyAndCompleteEventAsteroidChangeVelocity(
+            completeEventAsteroidChangeVelocity(
                 asteroid,  currentI,
                 deltaVelocity,  absDeltaVelocity
             );
@@ -1517,7 +1578,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // астероид столкнулся со звездой
             if (event.pi.ge == pns::GE_STAR) {
-                notifyAndCompleteEventAsteroidCollisionStar(
+                completeEventAsteroidCollisionStar(
                     asteroid,  currentI,
                     star,      event.pi.ii
                 );
@@ -1528,7 +1589,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // астероид столкнулся с планетой
             if (event.pi.ge == pns::GE_PLANET) {
-                notifyAndCompleteEventAsteroidCollisionPlanet(
+                completeEventAsteroidCollisionPlanet(
                     asteroid,  currentI,
                     planet,    event.pi.ii
                 );
@@ -1539,7 +1600,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // астероид столкнулся с другим астероидом
             if (event.pi.ge == pns::GE_ASTEROID) {
-                notifyAndCompleteEventAsteroidCollisionAsteroid(
+                completeEventAsteroidCollisionAsteroid(
                     asteroid,  currentI,
                     asteroid,  event.pi.ii
                 );
@@ -1554,7 +1615,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
         // у астероида изменилась температура
         if (event.uid == pns::E_CHANGE_TEMPERATURE) {
             const pns::real_t deltaTemperature = event.fReal[ 0 ];
-            notifyAndCompleteEventAsteroidChangeTemperature(
+            completeEventAsteroidChangeTemperature(
                 asteroid,  currentI,
                 deltaTemperature
             );
@@ -1571,7 +1632,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
                 event.fReal[ 1 ],  event.fReal[ 2 ],  event.fReal[ 3 ]
             };
             const pns::real_t deltaTemperature = event.fReal[ 4 ];
-            notifyAndCompleteEventAsteroidCrushN(
+            completeEventAsteroidCrushN(
                 asteroid,  currentI,
                 delta,
                 n,  deltaVelocity,  deltaTemperature
@@ -1587,7 +1648,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         // астероид уничтожен
         if (event.uid == pns::E_DESTROY) {
-            notifyAndCompleteEventAsteroidDestroy(
+            completeEventAsteroidDestroy(
                 asteroid,  currentI,
                 delta
             );
@@ -1606,7 +1667,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
 
 
-inline void EngineCPU::notifyAndCompleteEvent(
+inline void EngineCPU::completeEvent(
     pns::aboutPlanet_t*   ap,
     size_t                currentI,
     pns::deltaElement_t&  delta
@@ -1628,7 +1689,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
         if (k < 0) {
             k = pns::PLANET_EVENT_COUNT - 1;
         }
-        pns::event_t& event = ap->memoryEvent.content[ k ];
+        pns::eventTwo_t& event = ap->memoryEvent.content[ k ];
         if (event.uid == pns::E_NONE) {
             // нам не интересны пустые события
             continue;
@@ -1640,7 +1701,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t force[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absForce = event.fReal[ 3 ];
-            notifyAndCompleteEventPlanetImpactForce(
+            completeEventPlanetImpactForce(
                 planet,  currentI,
                 force,  absForce
             );
@@ -1655,7 +1716,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t deltaCoord[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absDeltaCoord = event.fReal[ 3 ];
-            notifyAndCompleteEventPlanetChangeCoord(
+            completeEventPlanetChangeCoord(
                 planet,  currentI,
                 deltaCoord,  absDeltaCoord
             );
@@ -1670,7 +1731,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t deltaVelocity[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absDeltaVelocity = event.fReal[ 3 ];
-            notifyAndCompleteEventPlanetChangeVelocity(
+            completeEventPlanetChangeVelocity(
                 planet,  currentI,
                 deltaVelocity,  absDeltaVelocity
             );
@@ -1685,7 +1746,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // планета столкнулась со звездой
             if (event.pi.ge == pns::GE_STAR) {
-                notifyAndCompleteEventPlanetCollisionStar(
+                completeEventPlanetCollisionStar(
                     planet,  currentI,
                     star,    event.pi.ii
                 );
@@ -1696,7 +1757,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // планета столкнулась с планетой
             if (event.pi.ge == pns::GE_PLANET) {
-                notifyAndCompleteEventPlanetCollisionPlanet(
+                completeEventPlanetCollisionPlanet(
                     planet,  currentI,
                     planet,  event.pi.ii
                 );
@@ -1707,7 +1768,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // планета столкнулась с другим астероидом
             if (event.pi.ge == pns::GE_ASTEROID) {
-                notifyAndCompleteEventPlanetCollisionAsteroid(
+                completeEventPlanetCollisionAsteroid(
                     planet,    currentI,
                     asteroid,  event.pi.ii
                 );
@@ -1724,7 +1785,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         // планета уничтожена
         if (event.uid == pns::E_DESTROY) {
-            notifyAndCompleteEventPlanetDestroy(
+            completeEventPlanetDestroy(
                 planet,  currentI,
                 delta
             );
@@ -1743,7 +1804,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
 
 
-inline void EngineCPU::notifyAndCompleteEvent(
+inline void EngineCPU::completeEvent(
     pns::aboutStar_t*     as,
     size_t                currentI,
     pns::deltaElement_t&  delta
@@ -1765,7 +1826,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
         if (k < 0) {
             k = pns::STAR_EVENT_COUNT - 1;
         }
-        pns::event_t& event = as->memoryEvent.content[ k ];
+        pns::eventTwo_t& event = as->memoryEvent.content[ k ];
         if (event.uid == pns::E_NONE) {
             // нам не интересны пустые события
             continue;
@@ -1777,7 +1838,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t force[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absForce = event.fReal[ 3 ];
-            notifyAndCompleteEventStarImpactForce(
+            completeEventStarImpactForce(
                 star,  currentI,
                 force,  absForce
             );
@@ -1792,7 +1853,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t deltaCoord[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absDeltaCoord = event.fReal[ 3 ];
-            notifyAndCompleteEventStarChangeCoord(
+            completeEventStarChangeCoord(
                 star,  currentI,
                 deltaCoord,  absDeltaCoord
             );
@@ -1807,7 +1868,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
             const pns::real_t deltaVelocity[ 3 ] =
                 { event.fReal[ 0 ],  event.fReal[ 1 ],  event.fReal[ 2 ] };
             const pns::real_t absDeltaVelocity = event.fReal[ 3 ];
-            notifyAndCompleteEventStarChangeVelocity(
+            completeEventStarChangeVelocity(
                 star,  currentI,
                 deltaVelocity,  absDeltaVelocity
             );
@@ -1822,7 +1883,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // звезда столкнулась с другой звездой
             if (event.pi.ge == pns::GE_STAR) {
-                notifyAndCompleteEventStarCollisionStar(
+                completeEventStarCollisionStar(
                     star,  currentI,
                     star,  event.pi.ii
                 );
@@ -1833,7 +1894,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // звезда столкнулась с планетой
             if (event.pi.ge == pns::GE_PLANET) {
-                notifyAndCompleteEventStarCollisionPlanet(
+                completeEventStarCollisionPlanet(
                     star,    currentI,
                     planet,  event.pi.ii
                 );
@@ -1844,7 +1905,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
             // звезда столкнулась с астероидом
             if (event.pi.ge == pns::GE_ASTEROID) {
-                notifyAndCompleteEventStarCollisionAsteroid(
+                completeEventStarCollisionAsteroid(
                     star,      currentI,
                     asteroid,  event.pi.ii
                 );
@@ -1863,7 +1924,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
         if (event.uid == pns::E_CHANGE_MASS) {
             const pns::mass_t deltaMass =
                 { event.fReal[ 0 ],  event.fReal[ 1 ] };
-            notifyAndCompleteEventStarChangeMass(
+            completeEventStarChangeMass(
                 star,  currentI,
                 deltaMass
             );
@@ -1875,7 +1936,7 @@ inline void EngineCPU::notifyAndCompleteEvent(
 
         // звезда уничтожена
         if (event.uid == pns::E_DESTROY) {
-            notifyAndCompleteEventStarDestroy(
+            completeEventStarDestroy(
                 star,  currentI,
                 delta
             );
@@ -1891,6 +1952,42 @@ inline void EngineCPU::notifyAndCompleteEvent(
     as->memoryEvent.waldo = 0;
 }
 
+
+
+
+inline void EngineCPU::notifyAfterCompleteEvent(
+    const pns::aboutAsteroid_t&  aa
+) {
+    // отправляем свои события другим слушателям
+    // @see #Соглашение об отправке чужих событий в starsystem::Listener.
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterPulse(
+        etr->whose
+    ); } }
+
+    for (auto etr = StoreListenerStarSystem::begin();
+         etr; etr = StoreListenerStarSystem::next()
+    ) { if ( etr ) { etr->listener.lock()->afterAsteroidCollisionStar(
+        etr->whose,  a, ia,  b, ib
+    ); } }
+}
+
+
+
+
+inline void EngineCPU::notifyAfterCompleteEvent(
+    const pns::aboutPlanet_t&  ap
+) {
+}
+
+
+
+
+inline void EngineCPU::notifyAfterCompleteEvent(
+    const pns::aboutStar_t&  as
+) {
+}
 
 
 

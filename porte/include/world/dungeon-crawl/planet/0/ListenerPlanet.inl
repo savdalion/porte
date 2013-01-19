@@ -12,7 +12,7 @@ namespace pes = porte::world::dungeoncrawl::starsystem::l0;
 
 
 template< class E >
-inline void ListenerPlanet< E >::notifyAndCompletePulse() {
+inline void ListenerPlanet< E >::completePulse() {
     assert( mEngine &&
         "Движок не указан. Должны были позаботиться наследники." );
 
@@ -124,20 +124,20 @@ inline void ListenerPlanet< E >::updatePlanetFromStarSystem(
         assert( (as.mass >= 0.0)
             && "Масса звезды не может быть меньше 0. Возможно, ошибка при инициализации списка звёзд." );
         */
-        if ( pns::absentStar( as ) ) {
+        if ( pns::absentStar( &as ) ) {
             // # Звёзд больше нет.
             // добавляем свой признак - пустой radius
             ais[ i ] = ZERO_AIS;
             break;
         }
         const pnp::aboutIlluminanceStar_t newAIS = {
-            static_cast< cl_float >( as.radius ),
-            static_cast< cl_float >( as.surfaceTemperature ),
-            static_cast< cl_float >( as.luminosity ),
+            static_cast< cl_float >( as.today.radius ),
+            static_cast< cl_float >( as.today.surfaceTemperature ),
+            static_cast< cl_float >( as.today.luminosity ),
             {
-                static_cast< cl_float >( as.coord[ 0 ] ),
-                static_cast< cl_float >( as.coord[ 1 ] ),
-                static_cast< cl_float >( as.coord[ 2 ] )
+                static_cast< cl_float >( as.today.coord[ 0 ] ),
+                static_cast< cl_float >( as.today.coord[ 1 ] ),
+                static_cast< cl_float >( as.today.coord[ 2 ] )
             }
         };
         ais[ i ] = newAIS;

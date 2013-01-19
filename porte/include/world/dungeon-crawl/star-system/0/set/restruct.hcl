@@ -27,6 +27,10 @@ typedef int     cl_int;
 typedef uint    cl_uint;
 typedef ulong   cl_ulong;
 typedef ushort  cl_ushort;
+typedef float   cl_float;
+typedef double  cl_double;
+
+#define nullptr  0
 
 
 // #! Важен порядок подключения. Иначе при компиляции ядра рискуем получить

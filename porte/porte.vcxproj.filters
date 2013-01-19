@@ -87,6 +87,9 @@
     <ClInclude Include="include\porte\Pulse.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="porte\include\Engine.inl">
@@ -135,6 +138,9 @@
       <Filter>Заголовочные файлы</Filter>
     </None>
     <None Include="include\world\dungeon-crawl\planet\0\ListenerPlanet.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
   </ItemGroup>

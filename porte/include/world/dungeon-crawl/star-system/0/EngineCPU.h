@@ -190,13 +190,18 @@ private:
 
 
     /**
-    * Просматривает события движка, информирует слушателей.
-    * notifyAndCompleteEvent() с параметрами вызывается для конкретного элемента.
+    * Отрабатывает события, информирует слушателей.
+    * completeEvent() с параметрами вызывается для конкретного элемента.
     */
     void notifyAndCompleteEvent();
-    void notifyAndCompleteEvent( pns::aboutAsteroid_t*,  size_t currentI,  pns::deltaElement_t& );
-    void notifyAndCompleteEvent( pns::aboutPlanet_t*,    size_t currentI,  pns::deltaElement_t& );
-    void notifyAndCompleteEvent( pns::aboutStar_t*,      size_t currentI,  pns::deltaElement_t& );
+
+    void completeEvent( pns::aboutAsteroid_t*,  size_t currentI,  pns::deltaElement_t& );
+    void completeEvent( pns::aboutPlanet_t*,    size_t currentI,  pns::deltaElement_t& );
+    void completeEvent( pns::aboutStar_t*,      size_t currentI,  pns::deltaElement_t& );
+
+    void notifyAfterCompleteEvent( const pns::aboutAsteroid_t& );
+    void notifyAfterCompleteEvent( const pns::aboutPlanet_t& );
+    void notifyAfterCompleteEvent( const pns::aboutStar_t& );
 
 
 

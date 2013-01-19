@@ -52,12 +52,13 @@ static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
 
 /**
 * Включает движок звёздной системы на работу через OpenCL. Иначе,
-* подключается движок расчётов на CPU.
+* подключается движок расчётов на CPU или гибридный.
 *
 * #! OpenCL не работает с double на NVIDIA GeForce 8800GTS.
 *//* - Подключается в main-проектах. См. 'process-visualtest'.
 //#define OPENCL_STARSYSTEM_L0_ENGINE_PORTE
-#define ND_STARSYSTEM_L0_ENGINE_PORTE
+//#define ND_STARSYSTEM_L0_ENGINE_PORTE
+#define CPU_STARSYSTEM_L0_ENGINE_PORTE
 */
 
 
