@@ -71,13 +71,17 @@ public:
     * @param extentPortulan Протяжённость портулана. Если не указана,
     *        вычисляется с помощью extent().
     */
-    virtual inline void incarnate( std::shared_ptr< portulan_t >  p,  real_t extentPortulan = 0 ) {
+    virtual inline void incarnate(
+        std::shared_ptr< portulan_t >  p,
+        real_t extentPortulan = 0
+    ) {
         assert( p && "Портулан не указан." );
         assert( (extentPortulan >= 0)
             && "Протяжённость портулана не может быть меньше 0." );
 
         mPortulan = p;
-        mExtent = typelib::empty( extentPortulan ) ? extent() : extentPortulan;
+        mExtent = typelib::empty( extentPortulan ) ?
+            extent() : extentPortulan;
     }
 
 

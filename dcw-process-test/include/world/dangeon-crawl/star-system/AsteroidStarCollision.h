@@ -56,7 +56,7 @@ protected:
                 // kernelTemperature,
                 13.5e6,
                 // surfaceTemperature,
-                1.5e6,
+                5780 + typelib::constant::physics::CK,
                 // coord
                 { 0, 0, 0 },
                 // rotation
@@ -119,14 +119,17 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     size_t countAsteroid = 0;
 
     // для позиционирования астероидов
-    static const pns::real_t asteroidOrbit = 1.49598261e11 / 10;
+    static const pns::real_t asteroidOrbit = 1.49598261e11 / 50;
 
 #if 1
     {
         const pns::uid_t uid = 1;
-        const pns::real_t rx = 10e3;
-        const pns::real_t ry = 12e3;
-        const pns::real_t rz = 15e3;
+        // # Размер астероида сдлаем таким, чтобы масса звезды увеличилась
+        //   вне зависимости от теряемой из-за излучения массы.
+        //   См. реализацию ядра OpenCL direct() для звезды.
+        const pns::real_t rx = 30e3;
+        const pns::real_t ry = 50e3;
+        const pns::real_t rz = 40e3;
         const pns::real_t density = 5000.0;
         const pns::real_t mass =
             typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
@@ -151,7 +154,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // size
             { rx, ry, rz },
             // coord
-            { d, 0, 0 },
+            { pns::convertCoord1( d ),  pns::convertCoord1( 0 ),  pns::convertCoord1( 0 ) },
             // rotation
             { 0, 0, 0 },
             // force, absForce
@@ -185,7 +188,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // uid
             uid,
             // @test
-            0, 0, 0, 0,
+            0, 0, 0,
             // today
             today,
             // future
@@ -227,10 +230,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int needStep = 24 * 2;
+    static const int needStep = 20;
     static const bool closeWindow = true;
     static const bool showPulse = true;
-    visual.wait< 1000, PULSE, needStep, closeWindow, showPulse >( engine().get() );
+    visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
 
 
     // проверяем результат

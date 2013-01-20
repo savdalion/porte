@@ -32,7 +32,12 @@ inline Engine::real_t Engine::extent() {
     for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
         const auto body = asteroid[ i ];
         if ( pns::presentAsteroid( &body ) ) {
-            pushDistance( body.today.coord );
+            const real_t c[ 3 ] = {
+                pns::coord1( &body.today.coord[ 0 ] ),
+                pns::coord1( &body.today.coord[ 1 ] ),
+                pns::coord1( &body.today.coord[ 2 ] )
+            };
+            pushDistance( c );
         }
     }
 

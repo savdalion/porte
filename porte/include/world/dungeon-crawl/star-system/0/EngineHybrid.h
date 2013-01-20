@@ -48,39 +48,28 @@ public:
 
 
 
+    /**
+    * @virtual EngineWithoutBooster
+    */
+    virtual void incarnate(
+        std::shared_ptr< portulan_t >  p,
+        real_t extentPortulan = 0
+    );
+
+
+
+
 protected:
     /**
     * @virtual EngineWithoutBooster
     */
     virtual void pulse( int n );
-    void pulse();
 
 
 
 
 private:
-    bool emitEvent();
-
-
-
-
-    /**
-    *  ака€ сила действует на тело A со стороны B -> в 'force'.
-    *
-    * @return false ≈сли тела столкнулись (определ€етс€ параметром
-    *         'noForceDistance' - сила гравитации не учитываетс€).
-    *         true  ≈сли тело A и B наход€тс€ на дистанции, превышающей
-    *         'noForceDistance'.
-    *
-    * @param noForceDistance –ассто€ние, на котором силы будут отключены. “.о.
-    *        избегаем резкого скачка скоростей.
-    */
-    static bool forceGravityBodyAImpactIn(
-        real_t force[ 3 ],
-        const pns::aboutBody_t& a,
-        const pns::aboutBody_t& b,
-        real_t noForceDistance
-    );
+    void emitEvent( int n );
 
 
 
@@ -136,6 +125,11 @@ private:
     const size_t memsizePlanet;
     const size_t memsizeStar;
 
+    cl_mem aboutStarSystemCL;
+    cl_mem asteroidCL;
+    cl_mem planetCL;
+    cl_mem starCL;
+
 
     cl_int errorCL;
 
@@ -182,4 +176,4 @@ cl_int getPlatformIDCPU( cl_platform_id* clSelectedPlatformID );
 
 
 #include "EngineHybrid.inl"
-#include "prepareOpenCL.inl"
+#include "prepareEngineHybrid.inl"

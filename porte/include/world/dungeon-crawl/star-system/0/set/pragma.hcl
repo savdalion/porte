@@ -1,5 +1,14 @@
+// # Т.к. не все видеокарты поддерживают 'double' для OpenCL и не все CPU
+//   на сегодня корректно отрабатывают двойную точность (на CPU Intel i5 под
+//   Windows мне не удалось подключить расширение cl_khr_fp64), я отказался
+//   от работы с типом 'double' в пользу составных чисел, где требуется
+//   большая точность.
+// @see world::dungeoncrawl::starsystem::l0:: coordOne_t, mass_t
+#if 0
+
 // Потребность в директивах для разных версий OpenCL...
 // #! При работе через OpenCL 1.1 на CPU - ошибка на прагмах ниже.
+// @see http://khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/preprocessorDirectives.html
 #if __OPENCL_VERSION__ == 100
 
 /* @todo В звёздной системе работать с двойной точностью.
@@ -42,10 +51,14 @@
 #endif
 */
 
-#pragma EXTENSION cl_khr_fp64 : require
-#pragma EXTENSION cl_intel_printf : require
+/* - нет ошибки, но нет и включения.
+#pragma EXTENSION cl_khr_fp64 : enable
+#pragma EXTENSION cl_intel_printf : enable
+*/
 // @todo ? Даже включение всех расширений не включает двойную точность для CPU Intel i5.
-#pragma OPENCL EXTENSION all : enable
+//#pragma OPENCL EXTENSION all : enable
 
+
+#endif
 
 #endif

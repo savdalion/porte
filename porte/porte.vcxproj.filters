@@ -122,9 +122,6 @@
     <None Include="include\world\dungeon-crawl\star-system\0\EngineCPU.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
-    <None Include="include\world\dungeon-crawl\star-system\0\prepareOpenCL.inl">
-      <Filter>Заголовочные файлы</Filter>
-    </None>
     <None Include="include\world\dungeon-crawl\star-system\0\EngineND.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
@@ -141,6 +138,9 @@
       <Filter>Заголовочные файлы</Filter>
     </None>
     <None Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.inl">
+      <Filter>Заголовочные файлы</Filter>
+    </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\prepareEngineHybrid.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
   </ItemGroup>

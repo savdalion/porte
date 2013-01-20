@@ -412,12 +412,6 @@ inline std::string EngineOpenCL::commonConstantCLKernel() {
         // лечим точность для float
         << std::fixed
 
-#ifdef PERMIT_DOUBLE_ENGINE_PORTE
-        // используем double вместо float
-        // @see pns::real_t
-        << " -D PERMIT_DOUBLE_ENGINE_PORTE"
-#endif
-
         // body
         << " -D BODY_COUNT=" << pns::BODY_COUNT
 

@@ -65,20 +65,6 @@ static const std::string L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTULAN =
 
 
 /**
-* Разрешает использовать тип 'double' в движках PORTE.
-* Без этой директивы движки стараются поместиться в 'float'.
-* 
-* #! Не все видеокарты поддерживают 'double' для OpenCL.
-*
-* @see typedef real_t
-* @see portulan::PERMIT_DOUBLE_ENGINE_PORTULAN
-*/
-#define PERMIT_DOUBLE_ENGINE_PORTE
-
-
-
-
-/**
 * Граничные значения, при которых будут отрабатываться соотв. события движка.
 */
 static const auto MIN_IMPACT_FORCE_PORTE = 1.0f;

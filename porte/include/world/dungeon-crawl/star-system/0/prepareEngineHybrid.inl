@@ -22,7 +22,9 @@ inline void EngineHybrid::prepareEmitEvent() {
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "set/emit-event/emit" )
+        ( "set/emit-event/begin" )
+        ( "set/emit-event/direct" )
+        ( "set/emit-event/relative" )
         ( "set/emit-event/fix" )
     ;
     static const std::vector< std::string >  includeHCL;

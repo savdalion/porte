@@ -49,16 +49,16 @@ static void wrapPlanet( heap_t*,  std::shared_ptr< pes::Engine >,  const pns::ab
 /**
 * # Время - измерение, проходящее сквозь все портуланы. Указывается в секундах.
 */
-static const double SECOND     = 1.0;
-static const double MINUTE     = SECOND * 60.0;
-static const double HOUR       = MINUTE * 60.0;
-static const double DAY        = HOUR   * 24.0;
-static const double HALF_DAY   = DAY    / 2.0;
-static const double WEEK       = DAY    * 7.0;
-static const double MONTH      = DAY    * 30.0;
-static const double HALF_MONTH = MONTH  / 2.0;
-static const double YEAR       = DAY    * 365.0;
-static const double HALF_YEAR  = YEAR   / 2.0;
+static const float SECOND     = 1.0f;
+static const float MINUTE     = SECOND * 60.0f;
+static const float HOUR       = MINUTE * 60.0f;
+static const float DAY        = HOUR   * 24.0f;
+static const float HALF_DAY   = DAY    / 2.0f;
+static const float WEEK       = DAY    * 7.0f;
+static const float MONTH      = DAY    * 30.0f;
+static const float HALF_MONTH = MONTH  / 2.0f;
+static const float YEAR       = DAY    * 365.0f;
+static const float HALF_YEAR  = YEAR   / 2.0f;
 
 
 /**
@@ -105,7 +105,7 @@ int main( int argc, char** argv ) {
     //   другие движки, подписывая их на события друг друга. См. wrapPlanet().
     // 'timestep' влияет на точность рассчётов (больше - ниже).
     // Может быть задействована вместе с 'PULSE'.
-    static const double timestep = MINUTE * 5;
+    static const float timestep = MINUTE * 5.0f;
 
     // # Учитываем инициал. движка звёздной системы, а именно - 'timestep'.
     // 'PULSE' влияет на кол-во отрисовок (больше пульс - меньше кадров).
@@ -191,7 +191,7 @@ int main( int argc, char** argv ) {
             // kernelTemperature,
             13.5e6 * 2.0,
             // surfaceTemperature,
-            1.5e6 * 2.0,
+            (5780 + typelib::constant::physics::CK) * 2.0,
             // coord
             { coordStarI.x, coordStarI.y, coordStarI.z },
             // rotation
@@ -230,7 +230,7 @@ int main( int argc, char** argv ) {
             // kernelTemperature,
             13.5e6,
             // surfaceTemperature,
-            1.5e6,
+            5780 + typelib::constant::physics::CK,
             // coord
             { coordStarII.x, coordStarII.y, coordStarII.z },
             // rotation
@@ -272,7 +272,7 @@ int main( int argc, char** argv ) {
             // kernelTemperature,
             13.5e6,
             // surfaceTemperature,
-            1.5e6,
+            5780 + typelib::constant::physics::CK,
             // coord
             { 6.9551e8 * 70.0, 0, 0 },
             // rotation

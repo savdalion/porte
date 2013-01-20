@@ -2073,7 +2073,7 @@ inline void EngineCPU::harvestStatisticsForOptimizeTimestep() {
     for (auto itr = point.cbegin(); itr != point.cend(); ++itr) {
         for (auto jtr = itr; jtr != point.cend(); ++jtr) {
             if (itr != jtr) {
-                const double distance = itr->coord.distance( jtr->coord );
+                const auto distance = itr->coord.distance( jtr->coord );
                 if (distance < mStatistics.distance[ 0 ]) {
                     mStatistics.distance[ 0 ] = distance;
                 } else if (distance > mStatistics.distance[ 1 ]) {

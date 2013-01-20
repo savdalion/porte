@@ -13,7 +13,7 @@
 // Декларируем типы OpenCL чтобы подключаемые структуры на C++
 // не уродовать if-def'ами.
 
-// @see pragma.hcl
+/* - @see pragma.hcl
 // Увы, не все видеокарты поддерживают 'double' для OpenCL.
 // #! Типы данных должны быть согласованы с OpenCL HOST.
 // # double4 поддерживается не всеми устройствами OpenCL. Не используем.
@@ -22,13 +22,16 @@ typedef double  real_t;
 #else
 typedef float   real_t;
 #endif
+*/
+typedef float   real_t;
+typedef float2  real2_t;
+typedef float4  real4_t;
 
 typedef int     cl_int;
 typedef uint    cl_uint;
 typedef ulong   cl_ulong;
 typedef ushort  cl_ushort;
 typedef float   cl_float;
-typedef double  cl_double;
 
 #define nullptr  0
 

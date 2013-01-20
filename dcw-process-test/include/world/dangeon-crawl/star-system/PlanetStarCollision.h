@@ -58,7 +58,7 @@ protected:
                 // kernelTemperature,
                 13.5e6,
                 // surfaceTemperature,
-                1.5e6,
+                5780 + typelib::constant::physics::CK,
                 // coord
                 { 0, 0, 0 },
                 // rotation

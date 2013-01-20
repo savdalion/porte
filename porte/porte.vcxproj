@@ -47,7 +47,7 @@
     <None Include="include\world\dungeon-crawl\planet\0\prepare.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\Engine.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\EngineCPU.inl" />
-    <None Include="include\world\dungeon-crawl\star-system\0\prepareOpenCL.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\prepareEngineHybrid.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\EngineND.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\ListenerStarSystem.inl" />
