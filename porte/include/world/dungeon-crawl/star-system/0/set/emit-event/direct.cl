@@ -37,9 +37,9 @@ inline void asteroidDirectEmitEvent(
     // # Проверяем все идущие ниже по алфавиту элементы.
     //   См. соглашение в теле EngineHybrid::pulse().
     const real4_t coordA = (real4_t)(
-        coord1( &aai->today.coord[ 0 ] ),
-        coord1( &aai->today.coord[ 1 ] ),
-        coord1( &aai->today.coord[ 2 ] ),
+        convertFromBigValue( aai->today.coord.x ),
+        convertFromBigValue( aai->today.coord.y ),
+        convertFromBigValue( aai->today.coord.z ),
         0
     );
     const real_t maxSideA =
@@ -91,8 +91,10 @@ inline void asteroidDirectEmitEvent(
                 real4_t velocityAAfter, velocityBAfter;
                 speedCollisionVector(
                     &velocityAAfter,  &velocityBAfter,
-                    massA,  (real4_t)( aai->today.velocity[ 0 ], aai->today.velocity[ 1 ], aai->today.velocity[ 2 ], 0 ),
-                    massB,  (real4_t)( ask->today.velocity[ 0 ], ask->today.velocity[ 1 ], ask->today.velocity[ 2 ], 0 ),
+                    massA,
+                    (real4_t)( aai->today.velocity[ 0 ], aai->today.velocity[ 1 ], aai->today.velocity[ 2 ], 0 ),
+                    massB,
+                    (real4_t)( ask->today.velocity[ 0 ], ask->today.velocity[ 1 ], ask->today.velocity[ 2 ], 0 ),
                     0.9
                 );
                 const real_t velocity1AfterA = squareLengthVector( (real4_t)(

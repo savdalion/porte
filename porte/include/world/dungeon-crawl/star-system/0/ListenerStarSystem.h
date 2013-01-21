@@ -230,7 +230,7 @@ public:
 
     void completeEventStarChangeMass(
         pns::starContent_t,  size_t ia,
-        const pns::mass_t& deltaMass
+        const pns::real4_t& deltaMass
     );
 
 

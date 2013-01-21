@@ -1921,6 +1921,7 @@ inline void EngineCPU::completeEvent(
 
 
         // масса звезды изменилась
+        /*
         if (event.uid == pns::E_CHANGE_MASS) {
             const pns::mass_t deltaMass =
                 { event.fReal[ 0 ],  event.fReal[ 1 ] };
@@ -1932,6 +1933,7 @@ inline void EngineCPU::completeEvent(
             forgetEvent( &event );
             continue;
         }
+        */
 
 
         // звезда уничтожена

@@ -269,6 +269,24 @@ inline void EngineHybrid::emitEvent( int n ) {
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid };
 
 
+    // @test
+    const auto tss = sizeof( pns::aboutStarSystem_t );
+    const auto ta = sizeof( pns::aboutAsteroid_t );
+    const auto tp = sizeof( pns::aboutPlanet_t );
+    const auto ts = sizeof( pns::aboutStar_t );
+
+    const auto tca = sizeof( pns::characteristicAsteroid_t );
+    const auto tc = sizeof( pns::coord_t );
+    const auto tr1 = sizeof( pns::real_t );
+    const auto tr2 = sizeof( pns::real2_t );
+    const auto tr4 = sizeof( pns::real4_t );
+    const auto tb = sizeof( bool );
+
+    const auto te2 = sizeof( pns::eventTwo_t );
+    const auto tpe = sizeof( pns::pointerElement_t );
+    const auto te = sizeof( enum pns::EVENT );
+
+
     // выполним 'n' пульсов
     // # Параметры для ядер уже подготовлены в incarnate().
     for (int p = 0; p < n; ++p) {
@@ -478,24 +496,6 @@ inline void EngineHybrid::emitEvent( int n ) {
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    /* @test
-    const auto ta = sizeof( pns::aboutAsteroid_t );
-    const auto tp = sizeof( pns::aboutPlanet_t );
-    const auto ts = sizeof( pns::aboutStar_t );
-    const auto tss = sizeof( pns::aboutStarSystem_t );
-
-    const auto tca = sizeof( pns::characteristicAsteroid_t );
-    const auto tm = sizeof( pns::mass_t );
-    const auto tr = sizeof( pns::real_t );
-
-    const auto tc1 = sizeof( pns::coordOne_t );
-    const auto tb = sizeof( bool );
-
-    const auto te2 = sizeof( pns::eventTwo_t );
-    const auto tpe = sizeof( pns::pointerElement_t );
-    const auto te = sizeof( enum pns::EVENT );
-    */
 }
 
 
@@ -746,13 +746,17 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
         << " -D STAR_COUNT=" << pns::STAR_COUNT
         << " -D EMITTER_EVENT_COUNT=" << pns::EMITTER_EVENT_COUNT
         << " -D MAX_FEATURE_EVENT=" << pns::MAX_FEATURE_EVENT
-        << " -D COORD_ONE_BASE=" << pns::COORD_ONE_BASE
+
+        << std::scientific
+        << " -D BIG_VALUE_BASE_0=" << pns::BIG_VALUE_BASE_0
+        << " -D BIG_VALUE_BASE_1=" << pns::BIG_VALUE_BASE_1
+        << " -D BIG_VALUE_BASE_2=" << pns::BIG_VALUE_BASE_2
+        << " -D BIG_VALUE_BASE_3=" << pns::BIG_VALUE_BASE_3
 
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION
 
         // физические и геометрические константы
-        << std::scientific
         << " -D PI=" << typelib::constant::pi
         << " -D SPEED_LIGHT=" << typelib::constant::physics::c
         << " -D CK_TEMPERATURE=" << typelib::constant::physics::CK

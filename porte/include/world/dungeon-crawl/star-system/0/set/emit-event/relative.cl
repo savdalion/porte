@@ -42,9 +42,9 @@ inline void asteroidRelativeEmitEvent(
     real4_t gfA = (real4_t)( 0 );
 
     const real4_t coordA = (real4_t)(
-        coord1( &aai->today.coord[ 0 ] ),
-        coord1( &aai->today.coord[ 1 ] ),
-        coord1( &aai->today.coord[ 2 ] ),
+        convertFromBigValue( aai->today.coord.x ),
+        convertFromBigValue( aai->today.coord.y ),
+        convertFromBigValue( aai->today.coord.z ),
         0
     );
     const real_t massA = massAsteroid( aai );

@@ -46,11 +46,13 @@ protected:
 #if 1
         {
             static const pns::uid_t uid = 1;
+            const pns::real4_t mass = pns::convertToBigValue( 1.9891e30 );
+
             static const pns::characteristicStar_t today = {
                 // live
                 true,
                 // mass
-                { 1.9891e30, 0.0 },
+                mass,
                 // radius
                 6.9551e8,
                 // kernelTemperature,
@@ -131,8 +133,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         const pns::real_t ry = 50e3;
         const pns::real_t rz = 40e3;
         const pns::real_t density = 5000.0;
-        const pns::real_t mass =
-            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
+        const pns::real4_t mass = pns::convertToBigValue(
+            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
+            density
+        );
 
         const pns::real_t albedo = 0.6;
 
@@ -146,15 +150,19 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
                     luminosityStar(), d, albedo
                 );
 
+        const pns::real4_t x = pns::convertToBigValue( d );
+        const pns::real4_t y = pns::convertToBigValue( 0 );
+        const pns::real4_t z = pns::convertToBigValue( 0 );
+
         const pns::characteristicAsteroid_t today = {
             // live
             true,
             // mass
-            { mass, 0.0 },
+            mass,
             // size
             { rx, ry, rz },
             // coord
-            { pns::convertCoord1( d ),  pns::convertCoord1( 0 ),  pns::convertCoord1( 0 ) },
+            { x, y, z },
             // rotation
             { 0, 0, 0 },
             // force, absForce
@@ -187,8 +195,6 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         static const pns::aboutAsteroid_t asteroid = {
             // uid
             uid,
-            // @test
-            0, 0, 0,
             // today
             today,
             // future
@@ -224,13 +230,17 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     
 
     // делаем снимок мира (см. SetUp() и выше)
-    const auto massStar = topology()->star.content[ 0 ].today.mass;
-    const auto allMassAsteroid = topology()->asteroid.content[ 0 ].today.mass;
+    const auto massStar = pns::convertFromBigValue< double >(
+        topology()->star.content[ 0 ].today.mass
+    );
+    const auto allMassAsteroid = pns::convertFromBigValue< double >(
+        topology()->asteroid.content[ 0 ].today.mass
+    );
 
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int needStep = 20;
+    static const int needStep = 10;
     static const bool closeWindow = true;
     static const bool showPulse = true;
     visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
@@ -241,8 +251,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
     {
-        const auto actual = topology()->star.content[ 0 ].today.mass;
-        EXPECT_TRUE( pns::gtMass( &actual, &massStar ) );
+        const auto actual = pns::convertFromBigValue< double >(
+            topology()->star.content[ 0 ].today.mass
+        );
+        EXPECT_GT( actual, massStar );
     }
 
 #endif

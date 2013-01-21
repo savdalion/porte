@@ -28,6 +28,8 @@ inline void asteroidFixEmitEvent(
     }
 #endif
 
+    const real4_t x = aai->today.coord.x;
+
 
     // меняем характеристики э. в зависимости от событий
     // # Не игнорируем ни единого события: ведь они почему-то
@@ -47,13 +49,13 @@ inline void asteroidFixEmitEvent(
                 break;
 
             case E_CHANGE_COORD :
-                addCoord1( &aai->today.coord[ 0 ],  e->fReal[ 0 ] );
-                addCoord1( &aai->today.coord[ 1 ],  e->fReal[ 1 ] );
-                addCoord1( &aai->today.coord[ 2 ],  e->fReal[ 2 ] );
+                aai->today.coord.x += convertToBigValue( e->fReal[ 0 ] );
+                aai->today.coord.y += convertToBigValue( e->fReal[ 1 ] );
+                aai->today.coord.z += convertToBigValue( e->fReal[ 2 ] );
                 break;
 
             case E_CHANGE_MASS :
-                addMass( &aai->today.mass,  e->fReal[ 1 ] );
+                aai->today.mass += convertToBigValue( e->fReal[ 1 ] );
                 break;
 
             case E_CHANGE_TEMPERATURE :
@@ -145,11 +147,6 @@ inline void starFixEmitEvent(
                 break;
 
             case E_CHANGE_COORD :
-                /* - @todo
-                addCoord1( &asi->today.coord[ 0 ],  e->fReal[ 0 ] );
-                addCoord1( &asi->today.coord[ 1 ],  e->fReal[ 1 ] );
-                addCoord1( &asi->today.coord[ 2 ],  e->fReal[ 2 ] );
-                */
                 asi->today.coord[ 0 ] += e->fReal[ 0 ];
                 asi->today.coord[ 1 ] += e->fReal[ 1 ];
                 asi->today.coord[ 2 ] += e->fReal[ 2 ];
@@ -161,10 +158,10 @@ inline void starFixEmitEvent(
                     printf( "fix() Change mass star %d on %e kg.", asi->uid, e->fReal[ 1 ] );
                 }
 #endif
-                addMass( &asi->today.mass,  e->fReal[ 1 ] );
+                asi->today.mass += convertToBigValue( e->fReal[ 1 ] );
 #ifdef __DEBUG
                 if (e->fReal[ 1 ] > 0) {
-                    printf( " Mass star is %e kg.\n", massStar( asi ) );
+                    printf( " Mass star is ~ %e kg.\n", massStar( asi ) );
                 }
 #endif
                 break;

@@ -831,7 +831,7 @@ inline void ListenerStarSystem< E >::completeEventStarChangeCoord(
 template< class E >
 inline void ListenerStarSystem< E >::completeEventStarChangeMass(
     pns::starContent_t a,  size_t ia,
-    const pns::mass_t& deltaMass
+    const pns::real4_t& deltaMass
 ) {
     // @todo fine Переписать блок проверки / печати / отправки события
     //       через макросы > http://codenet.ru/progr/cpp/Macros.php
