@@ -51,21 +51,6 @@
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\Engine.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineCPU.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineND.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\star-system\0\Listener.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\star-system\0\ListenerStarSystem.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="include\world\dungeon-crawl\planet\0\Listener.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
@@ -78,9 +63,6 @@
     <ClInclude Include="include\world\dungeon-crawl\planet\0\StoreListenerPlanet.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\world\dungeon-crawl\star-system\0\StoreListenerStarSystem.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="include\porte\AEngine.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
@@ -88,6 +70,18 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\ListenerAsteroid.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\StoreListenerAsteroid.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\ListenerStar.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\world\dungeon-crawl\star-system\0\StoreListenerStar.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
@@ -116,19 +110,7 @@
     <None Include="include\world\dungeon-crawl\planet\0\init.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
-    <None Include="include\world\dungeon-crawl\star-system\0\EngineOpenCL.inl">
-      <Filter>Заголовочные файлы</Filter>
-    </None>
-    <None Include="include\world\dungeon-crawl\star-system\0\EngineCPU.inl">
-      <Filter>Заголовочные файлы</Filter>
-    </None>
-    <None Include="include\world\dungeon-crawl\star-system\0\EngineND.inl">
-      <Filter>Заголовочные файлы</Filter>
-    </None>
     <None Include="include\world\dungeon-crawl\star-system\0\Engine.inl">
-      <Filter>Заголовочные файлы</Filter>
-    </None>
-    <None Include="include\world\dungeon-crawl\star-system\0\ListenerStarSystem.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
     <None Include="include\porte\StoreListener.inl">

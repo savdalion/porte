@@ -21,8 +21,8 @@ inline void StoreListener< L >::addListener(
     AEngine::Ptr whose,  AEngine::Ptr who
 ) {
     assert( lp    && "Не указан слушатель." );
-    assert( whose && "Не указан движок, которого слушают." );
-    assert( who   && "Не указан движок, который слушает." );
+    //assert( whose && "Не указан движок, которого слушают." );
+    //assert( who   && "Не указан движок, который слушает." );
 
     // проверяем, что этого слушателя ещё нет в списке
     for (auto ftr = mListener.begin(); ftr != mListener.end(); ++ftr) {
@@ -56,6 +56,14 @@ inline void StoreListener< L >::removeListener( const std::shared_ptr< L >  lp )
 
 
 template< class L >
+inline bool StoreListener< L >::empty() const {
+    return mListener.empty();
+}
+
+
+
+
+template< class L >
 inline typename StoreListener< L >::store_t* StoreListener< L >::begin() {
     itr = mListener.begin();
     if (itr == mListener.end()) {
@@ -64,6 +72,13 @@ inline typename StoreListener< L >::store_t* StoreListener< L >::begin() {
 
     // возвращаем первого или ищем след. живого слушателя
     const ListenerWPtr f = itr->listener;
+#ifdef _DEBUG
+    if ( f.expired() ) {
+        assert( false
+            && "Слушатель потерян без явного вызова removeListener()." );
+    }
+#endif
+
     return f.expired() ? next() : &( *itr );
 }
 
@@ -79,7 +94,9 @@ inline typename StoreListener< L >::store_t* StoreListener< L >::next() {
             // удаляем потерявшегося слушателя
             itr = mListener.erase( itr );
 #ifdef _DEBUG
-            std::cout << "(?) Слушатель был потерян без вызова removeListener()." << std::endl;
+            //std::cout << "(?) Слушатель потерян без явного вызова removeListener()." << std::endl;
+            assert( false
+                && "Слушатель потерян без явного вызова removeListener()." );
 #endif
         } else {
             ++itr;

@@ -24,17 +24,16 @@ inline void asteroidBeginEmitEvent(
     __global emitterEvent_t* ee = &aai->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
+        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
     }
 #endif
 
 
     // обнуляем события
-    /* - Нет. Достаточно обнулить вальдо.
+    // @todo optimize Достаточно обнулить вальдо.
     for (int w = ee->waldo; w > 0; --w) {
         ee->content[ w ].uid = E_NONE;
     }
-    */
 
     // обнуляем вальдо
     ee->waldo = 0;
@@ -58,17 +57,16 @@ inline void starBeginEmitEvent(
     __global emitterEvent_t* ee = &asi->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Star %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
+        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
     }
 #endif
 
 
     // обнуляем события
-    /* - Нет. Достаточно обнулить вальдо.
+    // @todo optimize Достаточно обнулить вальдо.
     for (int w = ee->waldo; w > 0; --w) {
         ee->content[ w ].uid = E_NONE;
     }
-    */
 
     // обнуляем вальдо
     ee->waldo = 0;

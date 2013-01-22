@@ -20,15 +20,13 @@ inline void asteroidFixEmitEvent(
     __global aboutStar_t*      as,
     const real_t               timestep
 ) {
-    __global aboutAsteroid_t* aai = &aa[ i ];
-    __global const emitterEvent_t* ee = &aai->emitterEvent;
+    __global aboutAsteroid_t* element = &aa[ i ];
+    __global const emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
+        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
     }
 #endif
-
-    const real4_t x = aai->today.coord.x;
 
 
     // меняем характеристики э. в зависимости от событий
@@ -41,31 +39,59 @@ inline void asteroidFixEmitEvent(
         switch ( uid ) {
             case E_NONE :
                 // пустая ячейка, пустое событие
+                // # В идеале не должно встречаться.
+#ifdef __DEBUG
+                printf( "(?) fix() Empty event for asteroid %d. Decrease perfomance.\n", element->uid );
+#endif
                 break;
 
             case E_COLLISION :
                 // # Составное событие.
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_CHANGE_COORD :
-                aai->today.coord.x += convertToBigValue( e->fReal[ 0 ] );
-                aai->today.coord.y += convertToBigValue( e->fReal[ 1 ] );
-                aai->today.coord.z += convertToBigValue( e->fReal[ 2 ] );
+                element->today.coord.x += convertToBigValue( e->fReal[ 0 ] );
+                element->today.coord.y += convertToBigValue( e->fReal[ 1 ] );
+                element->today.coord.z += convertToBigValue( e->fReal[ 2 ] );
                 break;
 
             case E_CHANGE_MASS :
-                aai->today.mass += convertToBigValue( e->fReal[ 1 ] );
+                element->today.mass += convertToBigValue( e->fReal[ 1 ] );
                 break;
 
             case E_CHANGE_TEMPERATURE :
-                aai->today.temperature += e->fReal[ 1 ];
+                element->today.temperature += e->fReal[ 1 ];
                 break;
 
             case E_CHANGE_VELOCITY :
-                aai->today.velocity[ 0 ] += e->fReal[ 0 ];
-                aai->today.velocity[ 1 ] += e->fReal[ 1 ];
-                aai->today.velocity[ 2 ] += e->fReal[ 2 ];
+                element->today.velocity[ 0 ] += e->fReal[ 0 ];
+                element->today.velocity[ 1 ] += e->fReal[ 1 ];
+                element->today.velocity[ 2 ] += e->fReal[ 2 ];
+                break;
+
+            case E_DECREASE_MASS :
+                // # Отрабатывается в E_CHANGE_MASS.
+                break;
+
+            case E_DECREASE_TEMPERATURE :
+                // # Отрабатывается в E_CHANGE_TEMPERATURE.
+                break;
+
+            case E_DECREASE_VELOCITY :
+                // # Отрабатывается в E_CHANGE_VELOCITY.
+                break;
+
+            case E_INCREASE_MASS :
+                // # Отрабатывается в E_CHANGE_MASS.
+                break;
+
+            case E_INCREASE_TEMPERATURE :
+                // # Отрабатывается в E_CHANGE_TEMPERATURE.
+                break;
+
+            case E_INCREASE_VELOCITY :
+                // # Отрабатывается в E_CHANGE_VELOCITY.
                 break;
 
             case E_CRUSH_N :
@@ -74,33 +100,40 @@ inline void asteroidFixEmitEvent(
 
             case E_DESTROY :
 #ifdef __DEBUG
-                printf( "fix() Destroy asteroid %d.\n", aai->uid );
+                printf( "fix() Destroy asteroid %d.\n", element->uid );
 #endif
-                aai->today.live = false;
+                element->today.live = false;
                 break;
 
             case E_GRAVITY :
                 // # Астероид слишком мал, чтобы гравитационно воздействовать
                 //   на другие элементы.
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_IMPACT_ACCELERATION :
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_IMPACT_FORCE :
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_RADIATION :
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_last :
-                // должны указать по требованию компилятора
+                // просто должны указать по требованию компилятора
+                // # Не должно встречаться.
                 break;
-        }
+
+            default :
+                // # Сюда попадать не должны.
+#ifdef __DEBUG
+                printf( "(!) fix() Undefined event for asteroid %d.\n", element->uid );
+#endif
+        } // switch
 
     } // for (int w = ...
 
@@ -120,11 +153,11 @@ inline void starFixEmitEvent(
     __global aboutStar_t*      as,
     const real_t               timestep
 ) {
-    __global aboutStar_t* asi = &as[ i ];
-    __global const emitterEvent_t* ee = &asi->emitterEvent;
+    __global aboutStar_t* element = &as[ i ];
+    __global const emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Star %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
+        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n", i, ee->waldo );
     }
 #endif
 
@@ -139,41 +172,69 @@ inline void starFixEmitEvent(
         switch ( uid ) {
             case E_NONE :
                 // пустая ячейка, пустое событие
+                // # В идеале не должно встречаться.
+#ifdef __DEBUG
+                printf( "(?) fix() Empty event for asteroid %d. Decrease perfomance.\n", element->uid );
+#endif
                 break;
 
             case E_COLLISION :
                 // # Составное событие.
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_CHANGE_COORD :
-                asi->today.coord[ 0 ] += e->fReal[ 0 ];
-                asi->today.coord[ 1 ] += e->fReal[ 1 ];
-                asi->today.coord[ 2 ] += e->fReal[ 2 ];
+                element->today.coord[ 0 ] += e->fReal[ 0 ];
+                element->today.coord[ 1 ] += e->fReal[ 1 ];
+                element->today.coord[ 2 ] += e->fReal[ 2 ];
                 break;
 
             case E_CHANGE_MASS :
 #ifdef __DEBUG
                 if (e->fReal[ 1 ] > 0) {
-                    printf( "fix() Change mass star %d on %e kg.", asi->uid, e->fReal[ 1 ] );
+                    printf( "fix() Change mass star %d on %e kg.", element->uid, e->fReal[ 1 ] );
                 }
 #endif
-                asi->today.mass += convertToBigValue( e->fReal[ 1 ] );
+                element->today.mass += convertToBigValue( e->fReal[ 1 ] );
 #ifdef __DEBUG
                 if (e->fReal[ 1 ] > 0) {
-                    printf( " Mass star is ~ %e kg.\n", massStar( asi ) );
+                    printf( " Mass star is ~ %e kg.\n", massStar( element ) );
                 }
 #endif
                 break;
 
             case E_CHANGE_TEMPERATURE :
-                asi->today.surfaceTemperature += e->fReal[ 1 ];
+                element->today.surfaceTemperature += e->fReal[ 1 ];
                 break;
 
             case E_CHANGE_VELOCITY :
-                asi->today.velocity[ 0 ] += e->fReal[ 0 ];
-                asi->today.velocity[ 1 ] += e->fReal[ 1 ];
-                asi->today.velocity[ 2 ] += e->fReal[ 2 ];
+                element->today.velocity[ 0 ] += e->fReal[ 0 ];
+                element->today.velocity[ 1 ] += e->fReal[ 1 ];
+                element->today.velocity[ 2 ] += e->fReal[ 2 ];
+                break;
+
+            case E_DECREASE_MASS :
+                // # Отрабатывается в E_CHANGE_MASS.
+                break;
+
+            case E_DECREASE_TEMPERATURE :
+                // # Отрабатывается в E_CHANGE_TEMPERATURE.
+                break;
+
+            case E_DECREASE_VELOCITY :
+                // # Отрабатывается в E_CHANGE_VELOCITY.
+                break;
+
+            case E_INCREASE_MASS :
+                // # Отрабатывается в E_CHANGE_MASS.
+                break;
+
+            case E_INCREASE_TEMPERATURE :
+                // # Отрабатывается в E_CHANGE_TEMPERATURE.
+                break;
+
+            case E_INCREASE_VELOCITY :
+                // # Отрабатывается в E_CHANGE_VELOCITY.
                 break;
 
             case E_CRUSH_N :
@@ -182,33 +243,43 @@ inline void starFixEmitEvent(
 
             case E_DESTROY :
 #ifdef __DEBUG
-                printf( "fix() Destroy star %d.\n", asi->uid );
+                printf( "fix() Destroy star %d.\n", element->uid );
 #endif
-                asi->today.live = false;
+                element->today.live = false;
                 break;
 
             case E_GRAVITY :
-                // # Гравитация звезды влияет только на элементы звёздной системы.
+                // # Гравитация звезды на себя не влияет, только на элементы
+                //   звёздной системы.
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_IMPACT_ACCELERATION :
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_IMPACT_FORCE :
-                // событие исключительно для слушателей
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_RADIATION :
                 // # Потеря массы при излучении уже было представлено как
                 //   отдельное событие в ядре direct() и будет отработано как
                 //   E_CHANGE_MASS.
+                // # Событие исключительно для слушателей.
                 break;
 
             case E_last :
-                // должны указать по требованию компилятора
+                // просто должны указать по требованию компилятора
+                // # Не должно встречаться.
                 break;
-        }
+
+            default :
+                // # Сюда попадать не должны.
+#ifdef __DEBUG
+                printf( "(!) fix() Undefined event for star %d.\n", element->uid );
+#endif
+        } // switch
 
     } // for (int w = ...
 

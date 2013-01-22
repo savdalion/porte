@@ -67,9 +67,166 @@ static const int PULSE = 60;
 
 
 /**
+* Слушатель для подсчёта кол-ва событий у элемента звёздной системы.
+*/
+template< class L >
+class CounterEventListener :
+    public L
+{
+public:
+    inline CounterEventListener() {
+    }
+
+
+    virtual inline ~CounterEventListener() {
+    }
+
+
+
+
+    /**
+    * @return Количество событий с заданным 'uid' события.
+    */
+    inline size_t countByUIDEvent(
+        enum pns::EVENT uid
+    ) const {
+        const auto ftr = storeCountByUIDEvent.find( uid );
+        return (ftr == storeCountByUIDEvent.cend()) ? 0 : ftr->second;
+    }
+
+
+
+
+    /**
+    * @return Количество событий с заданным 'uid' события, в которых первый
+    *         участник - с заданным 'uu' в качестве UID элемента.
+    */
+    inline size_t countByUIDEvent(
+        enum pns::EVENT uid,
+        pns::uid_t uu
+    ) const {
+        size_t n = 0;
+        for (auto itr = storeAll.cbegin(); itr != storeAll.cend(); ++itr) {
+            const pns::pointerElement_t& piA = itr->first;
+            const pns::eventTwo_t& e = itr->second;
+            if ( (piA.uu == uu) && (e.uid == uid) ) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+
+
+
+    /**
+    * @return Количество событий с заданным 'uid' события, в которых второй
+    *         участник - из группы элементов 'ge'.
+    */
+    inline size_t countByUIDEvent(
+        enum pns::EVENT uid,
+        enum pns::GROUP_ELEMENT ge
+    ) const {
+        size_t n = 0;
+        for (auto itr = storeAll.cbegin(); itr != storeAll.cend(); ++itr) {
+            const pns::eventTwo_t& e = itr->second;
+            const pns::pointerElement_t& piB = e.pi;
+            if ( (e.uid == uid) && (piB.ge == ge) ) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+
+
+
+    /**
+    * @return Количество событий с заданным 'uid' события, в которых второй
+    *         участник - из группы элементов 'ge' с заданным 'uu' в
+    *         качестве UID элемента.
+    */
+    inline size_t countByUIDEvent(
+        enum pns::EVENT uid,
+        enum pns::GROUP_ELEMENT ge,
+        pns::uid_t uu
+    ) const {
+        size_t n = 0;
+        for (auto itr = storeAll.cbegin(); itr != storeAll.cend(); ++itr) {
+            const pns::eventTwo_t& e = itr->second;
+            const pns::pointerElement_t& piB = e.pi;
+            if ( (e.uid == uid) && (piB.ge == ge) && (piB.uu == uu) ) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+
+
+
+private:
+    virtual inline void beforeEvent(
+        const pns::pointerElement_t& piA,
+        const pns::eventTwo_t& e
+    ) {
+        // соберём события
+        {
+            storeAll.push_back( std::make_pair( piA, e ) );
+        }
+        {
+            auto r = storeCountByUIDEvent.insert( std::make_pair( e.uid, 0 ) );
+            ++r.first->second;
+        }
+        {
+            auto r = storeCountByGroupElement.insert( std::make_pair( piA.ge, 0 ) );
+            ++r.first->second;
+        }
+        {
+            auto r = storeCountByUIDElement.insert( std::make_pair( piA.uu, 0 ) );
+            ++r.first->second;
+        }
+    }
+
+
+
+
+public:
+    /**
+    * Перечисление всех отловленных событий.
+    */
+    typedef std::pair< pns::pointerElement_t, pns::eventTwo_t >  all_t;
+    std::vector< all_t >  storeAll;
+
+    /**
+    * Количество событий по типам события.
+    */
+    std::map< enum pns::EVENT, size_t >  storeCountByUIDEvent;
+
+    /**
+    * Количество событий по группам элементов.
+    */
+    std::map< enum pns::GROUP_ELEMENT, size_t >  storeCountByGroupElement;
+
+    /**
+    * Количество событий по UID элементов.
+    */
+    std::map< pns::uid_t, size_t >  storeCountByUIDElement;
+};
+
+
+
+
+/**
 * Класс-родитель для тестов звёздной системы.
 */
 class StarSystemTest : public ::testing::Test {
+public:
+    typedef CounterEventListener< pes::ListenerAsteroid >
+        CounterEventListenerAsteroid;
+    typedef CounterEventListener< pes::ListenerStar >
+        CounterEventListenerStar;
+
 protected:
     inline StarSystemTest(
     ) :
@@ -80,8 +237,14 @@ protected:
         // # Движок оборачиваем в shared_ptr, т.к. он будет отдаваться как
         //   слушатель событий другим движкам.
         mEngine( new pes::Engine( TIMESTEP ) ),
-        mPortulan( new pns::Portulan() )
+        mPortulan( new pns::Portulan() ),
+        // создадим здесь слушателей событий, иначе они будут тиху удалены
+        // при попытке добавить их в тестах (из-за shared_ptr)
+        mListenerAsteroid( new CounterEventListenerAsteroid() ),
+        mListenerStar( new CounterEventListenerStar() )
     {
+        // # Нужные тестам слушатели подключаются к движкам в самих тестах.
+        // @example engine()->addListenerStar( listenerStar() );
     }
 
 
@@ -132,11 +295,70 @@ protected:
 
 
 
+    inline std::shared_ptr< CounterEventListenerAsteroid >  listenerAsteroid() {
+        return std::static_pointer_cast< CounterEventListenerAsteroid >(
+            mListenerAsteroid
+        );
+    }
+
+
+
+
+    inline std::shared_ptr< CounterEventListenerStar >  listenerStar() {
+        return std::static_pointer_cast< CounterEventListenerStar >(
+            mListenerStar
+        );
+    }
+
+
+
+
 private:
     std::shared_ptr< pes::Engine >    mEngine;
     std::shared_ptr< pns::Portulan >  mPortulan;
+
+    std::shared_ptr< pes::ListenerAsteroid >  mListenerAsteroid;
+    std::shared_ptr< pes::ListenerStar >      mListenerStar;
 };
 
 
 
 } // namespace
+
+
+
+
+
+
+
+
+
+namespace std {
+
+
+template< class L >
+inline std::ostream& operator<<(
+    std::ostream&  out,
+    const CounterEventListener< L >&  cel
+) {
+    out << "Count all events:  ";
+    out << cel.storeAll.size();
+    out << std::endl;
+
+    out << "Count events by UIDs of events:  ";
+    typelib::printPair( out, cel.storeCountByUIDEvent );
+    out << std::endl;
+
+    out << "Count events by groups of elements:  ";
+    typelib::printPair( out, cel.storeCountByGroupElement );
+    out << std::endl;
+
+    out << "Count events by UIDs of elements:  ";
+    typelib::printPair( out, cel.storeCountByUIDElement );
+    out << std::endl;
+
+    return out;
+}
+
+
+} // std

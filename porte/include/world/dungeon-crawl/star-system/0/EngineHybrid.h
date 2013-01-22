@@ -2,7 +2,8 @@
 
 #include "../../../../../configure.h"
 #include "../../../../porte/EngineWithoutBooster.h"
-#include "ListenerStarSystem.h"
+#include "StoreListenerAsteroid.h"
+#include "StoreListenerStar.h"
 #include <boost/assign.hpp>
 
 // # Все комментарии см. в planet::l0::Engine.
@@ -24,14 +25,16 @@ namespace porte {
 
 
 namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
-namespace pep = porte::world::dungeoncrawl::planet::l0;
 
 
 /**
 * Движок для моделирования звёздной системы.
 */
 class EngineHybrid :
-    public EngineWithoutBooster< pns::Portulan, pns::real_t >
+    public EngineWithoutBooster< pns::Portulan, pns::real_t >,
+    // # На события этого движка можно подписаться.
+    public StoreListenerAsteroid,
+    public StoreListenerStar
 {
 public:
     typedef std::shared_ptr< EngineHybrid >  Ptr;

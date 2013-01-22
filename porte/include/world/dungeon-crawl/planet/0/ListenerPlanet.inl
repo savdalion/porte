@@ -44,6 +44,7 @@ inline void ListenerPlanet< E >::completePulse() {
 
 
 
+/*
 template< class E >
 inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
 
@@ -98,6 +99,7 @@ inline void ListenerPlanet< E >::afterPulse( AEngine::Ptr whose ) {
     // это чужое событие - не отправляем дальше
     // @see #Соглашение об отправке событий в starsystem::Listener.
 }
+*/
 
 
 

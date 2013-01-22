@@ -248,10 +248,7 @@ inline void EngineHybrid::pulse( int n ) {
     emitEvent( n );
 
     // мир становится старше
-    mLive.inc( mTimestep );
-
-    // пульс пройден
-    // @todo completePulse();
+    mLive.add( n,  mTimestep * n );
 
     // собираем статистику для элементов портулана
     statistics();
@@ -269,7 +266,7 @@ inline void EngineHybrid::emitEvent( int n ) {
     static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid };
 
 
-    // @test
+    /* @test
     const auto tss = sizeof( pns::aboutStarSystem_t );
     const auto ta = sizeof( pns::aboutAsteroid_t );
     const auto tp = sizeof( pns::aboutPlanet_t );
@@ -285,11 +282,21 @@ inline void EngineHybrid::emitEvent( int n ) {
     const auto te2 = sizeof( pns::eventTwo_t );
     const auto tpe = sizeof( pns::pointerElement_t );
     const auto te = sizeof( enum pns::EVENT );
+    */
+
+
+    auto& topology = mPortulan.lock()->topology().topology();
+    auto& asteroid = topology.asteroid.content;
+    auto& planet   = topology.planet.content;
+    auto& star     = topology.star.content;
 
 
     // выполним 'n' пульсов
     // # Параметры для ядер уже подготовлены в incarnate().
     for (int p = 0; p < n; ++p) {
+
+    // # Перед началом каждого пульса и в конце него элементы -
+    //   упорядочены (оптимизированы). См. старания ниже.
 
     // Подготавливаем элементы к созданию событий
 #if 1
@@ -390,7 +397,7 @@ inline void EngineHybrid::emitEvent( int n ) {
         errorCL = clFinish( commandQueueCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-#if 0
+#if 1
         // @test промежуточный результат
         errorCL = clEnqueueReadBuffer(
             commandQueueCL,
@@ -429,11 +436,119 @@ inline void EngineHybrid::emitEvent( int n ) {
 #endif
 
 
-    // Уведомляем слушателей
+    // Уведомляем слушателей о событиях в звёздной системе
+    // Тут же собираем информацию о необходимости оптимизации списков
 #if 1
+    // события астероидов
+#if 1
+    bool needOptimizeAsteroid = false;
+    // обновляем данные на хосте
     {
-        // @todo ...
+        errorCL = clEnqueueReadBuffer(
+            commandQueueCL,
+            asteroidCL,
+            CL_TRUE,
+            0,
+            memsizeAsteroid,
+            asteroid,
+            0, nullptr, nullptr
+        );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
     }
+
+    // просматриваем события
+    for (size_t i = 0;
+        // # Здесь можем воспользоваться признаком "Пустой элемент -
+        //   дальше нет событий", т.к. элементы в начале каждого
+        //   пульса - упорядочены. См. соглашение в начале пульса.
+        (i < pns::ASTEROID_COUNT) && pns::presentAsteroid( &asteroid[ i ] );
+        ++i
+    ) {
+        const auto& element = asteroid[ i ];
+        const pns::emitterEvent_t& ee = element.emitterEvent;
+        for (int w = ee.waldo - 1; w >= 0; --w) {
+            const pns::eventTwo_t& e = ee.content[ w ];
+            const pns::pointerElement_t piA = {
+                pns::GE_ASTEROID,  i,  element.uid
+            };
+
+            // уведомляем подписчиков
+            for (auto etr = StoreListenerAsteroid::begin();
+                etr;  etr = StoreListenerAsteroid::next()
+            ) { if ( etr ) {
+                const auto& l = etr->listener.lock();
+                l->beforeEvent( piA, e );
+                // @todo Расписать события через 'switch', как в ядрах OpenCL.
+            } }
+
+            // смотрим, потребуются ли после этого события оптимизации
+            if (e.uid == pns::E_DESTROY) {
+                needOptimizeAsteroid = true;
+            }
+
+        } // for (int w = ...
+
+    } // for (size_t i = ...
+#endif
+
+    // события планет
+#if 1
+    bool needOptimizePlanet = false;
+    // @todo ...
+#endif
+
+    // события звёзд
+#if 1
+    bool needOptimizeStar = false;
+    // обновляем данные на хосте
+    {
+        errorCL = clEnqueueReadBuffer(
+            commandQueueCL,
+            starCL,
+            CL_TRUE,
+            0,
+            memsizeStar,
+            star,
+            0, nullptr, nullptr
+        );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    }
+
+    // просматриваем события
+    for (size_t i = 0;
+        // # Здесь можем воспользоваться признаком "Пустой элемент -
+        //   дальше нет событий", т.к. элементы в начале каждого
+        //   пульса - упорядочены. См. соглашение в начале пульса.
+        (i < pns::STAR_COUNT) && pns::presentStar( &star[ i ] );
+        ++i
+    ) {
+        const auto& element = star[ i ];
+        const pns::emitterEvent_t& ee = element.emitterEvent;
+        for (int w = ee.waldo - 1; w >= 0; --w) {
+            const pns::eventTwo_t& e = ee.content[ w ];
+            const pns::pointerElement_t piA = {
+                pns::GE_STAR,  i,  element.uid
+            };
+
+            // уведомляем подписчиков
+            for (auto etr = StoreListenerStar::begin();
+                etr;  etr = StoreListenerStar::next()
+            ) { if ( etr ) {
+                const auto& l = etr->listener.lock();
+                l->beforeEvent( piA, e );
+                // @todo Расписать события через 'switch', как в ядрах OpenCL.
+            } }
+
+            // смотрим, потребуются ли после этого события оптимизации
+            if (e.uid == pns::E_DESTROY) {
+                needOptimizeStar = true;
+            }
+
+        } // for (int w = ...
+
+    } // for (size_t i = ...
+#endif
+
 #endif
 
 
@@ -458,19 +573,142 @@ inline void EngineHybrid::emitEvent( int n ) {
     }
 #endif
 
+
+    // # Ядра используют признак "Встретился пустой элемент - дальше
+    //   можно не просматривать". Поэтому из-за событий, меняющих признак
+    //   "Элемент отсутствует" - см. pns::absent*() - требуется оптимизировать
+    //   список элементов для след. пульса.
+    // # Оптимизация должна быть после отработки событий, т.к. ядра могут
+    //   использовать i-индексы для доступа к дополнительной информации об
+    //   элементе. @todo ? Отказ от этого требования - возможность лишний раз
+    //   не обновлять информацию на хосте.
+    // оптимизация - ресурсоёмкая операция, стараемся не использовать
+#if 1
+
+    // оптимизация списка астероидов
+#if 1
+    // @todo optimize fine Оптимизировать в ядре OpenCL.
+    if ( needOptimizeAsteroid ) {
+        // обновим данные на хосте
+        {
+            errorCL = clEnqueueReadBuffer(
+                commandQueueCL,
+                asteroidCL,
+                CL_TRUE,
+                0,
+                memsizeAsteroid,
+                asteroid,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+
+        // оптимизируем
+        pns::optimizeCountAsteroid( asteroid );
+
+        // зальём данные на устройство
+        {
+            errorCL = clEnqueueWriteBuffer(
+                commandQueueCL,
+                asteroidCL,
+                CL_TRUE,
+                0,
+                memsizeAsteroid,
+                asteroid,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+    }
+#endif
+
+    // оптимизация списка планет
+#if 1
+    // @todo optimize fine Оптимизировать в ядре OpenCL.
+    if ( needOptimizePlanet ) {
+        // обновим данные на хосте
+        {
+            errorCL = clEnqueueReadBuffer(
+                commandQueueCL,
+                planetCL,
+                CL_TRUE,
+                0,
+                memsizePlanet,
+                planet,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+
+        // оптимизируем
+        pns::optimizeCountPlanet( planet );
+
+        // зальём данные на устройство
+        {
+            errorCL = clEnqueueWriteBuffer(
+                commandQueueCL,
+                planetCL,
+                CL_TRUE,
+                0,
+                memsizePlanet,
+                planet,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+    }
+#endif
+
+    // оптимизация списка звёзд
+#if 1
+    // @todo optimize fine Оптимизировать в ядре OpenCL.
+    if ( needOptimizeStar ) {
+        // обновим данные на хосте
+        {
+            errorCL = clEnqueueReadBuffer(
+                commandQueueCL,
+                starCL,
+                CL_TRUE,
+                0,
+                memsizeStar,
+                star,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+
+        // оптимизируем
+        pns::optimizeCountStar( star );
+
+        // зальём данные на устройство
+        {
+            errorCL = clEnqueueWriteBuffer(
+                commandQueueCL,
+                starCL,
+                CL_TRUE,
+                0,
+                memsizeStar,
+                star,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+    }
+#endif
+
+#endif
+
     } // for (int p = 0; p < n; ++p)
 
 
     // результат
-    auto& topology = mPortulan.lock()->topology().topology();
-
     errorCL = clEnqueueReadBuffer(
         commandQueueCL,
         asteroidCL,
         CL_TRUE,
         0,
         memsizeAsteroid,
-        topology.asteroid.content,
+        asteroid,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -481,7 +719,7 @@ inline void EngineHybrid::emitEvent( int n ) {
         CL_TRUE,
         0,
         memsizePlanet,
-        topology.planet.content,
+        planet,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -492,7 +730,7 @@ inline void EngineHybrid::emitEvent( int n ) {
         CL_TRUE,
         0,
         memsizeStar,
-        topology.star.content,
+        star,
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );

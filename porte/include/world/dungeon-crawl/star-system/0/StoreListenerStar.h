@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Listener.h"
+#include "ListenerStar.h"
 #include "../../../../porte/StoreListener.h"
 #include <list>
 #include <memory>
@@ -12,19 +12,20 @@ namespace porte {
             namespace starsystem {
                 namespace l0 {
 
-class Listener;
+class ListenerStar;
 
 
 /**
 * ”чит родител€ хранить слушателей событий.
 *
 * # «авели конкретный класс, чтобы решить неоднозначности
-*   при работе с StoreListener::addListener().
+*   при работе с StoreListener::addListener(), когда создаЄтс€
+*   один слушатель дл€ разных элементов.
 */
-class StoreListenerStarSystem : public StoreListener< Listener > {
+class StoreListenerStar : public StoreListener< ListenerStar > {
 public:
-    inline void addListenerStarSystem(
-        const std::shared_ptr< Listener >  lp,
+    inline void addListenerStar(
+        const std::shared_ptr< ListenerStar >  lp,
         AEngine::Ptr whose, AEngine::Ptr who
     ) {
         addListener( lp, whose, who );
@@ -33,7 +34,9 @@ public:
 
 
 
-    inline void removeListenerStarSystem( const std::shared_ptr< Listener >  lp ) {
+    inline void removeListenerStarS(
+        const std::shared_ptr< ListenerStar >  lp
+    ) {
         removeListener( lp );
     }
 };

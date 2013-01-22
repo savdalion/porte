@@ -12,7 +12,7 @@ namespace porte {
 * Учит родителя хранить слушателей событий класса L.
 * Предоставляет итератор по хранимым событиям.
 * Предоставляет возможность обнаружить, когда слушатель пропал
-* без вызова removeListener().
+* без необходимости явно вызывать removeListener().
 */
 template< class L >
 class StoreListener {
@@ -32,10 +32,17 @@ public:
     typedef std::list< store_t >  listener_t;
 
 
+
+
 public:
     StoreListener();
 
+
+
+
     ~StoreListener();
+
+
 
 
     /**
@@ -44,9 +51,25 @@ public:
     *   возможностям движков без необходимости передавать их в каждом
     *   событии.
     */
-    void addListener( const std::shared_ptr< L >,  AEngine::Ptr whose,  AEngine::Ptr who );
+    void addListener(
+        const std::shared_ptr< L >,
+        AEngine::Ptr whose,
+        AEngine::Ptr who
+    );
+
+
+
 
     void removeListener( const std::shared_ptr< L > );
+
+
+
+
+    /**
+    * @return Слушателей нет.
+    */
+    bool empty() const;
+
 
 
 
@@ -58,11 +81,13 @@ public:
 
 
 
+
     /**
     * @return Следующий существующий слушатель.
     *         nullptr, если слушателей нет.
     */
     store_t* next();
+
 
 
 

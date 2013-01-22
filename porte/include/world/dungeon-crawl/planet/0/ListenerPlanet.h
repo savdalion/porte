@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Listener.h"
-#include "../../star-system/0/Listener.h"
+//#include "../../star-system/0/Listener.h"
 #include <portulan/portulan.h>
 #include <portulan/include/world/dangeon-crawl/planet/0/set/illuminance.h>
 
@@ -28,9 +28,9 @@ namespace pes = ::porte::world::dungeoncrawl::starsystem::l0;
 template< class E >
 class ListenerPlanet :
     // слушаем планету
-    public Listener,
+    public Listener
     // слушаем звёздную систему
-    public pes::Listener
+    //public pes::Listener
 {
 protected:
     inline ListenerPlanet() :
@@ -51,7 +51,7 @@ public:
 
 
     /**
-    * Переносит неокоторые характеристики звёздной системы в область планеты.
+    * Переносит некоторые характеристики звёздной системы в область планеты.
     */
     void updatePlanetFromStarSystem( const pns::topology_t& );
 
@@ -66,7 +66,7 @@ public:
     *
     * # День сменяется ночью.
     */
-    virtual void afterPulse( AEngine::Ptr whose );
+    //virtual void afterPulse( AEngine::Ptr whose );
 
 
 

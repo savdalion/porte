@@ -2,15 +2,7 @@
 
 #include "../../../../../configure.h"
 
-#if defined( OPENCL_STARSYSTEM_L0_ENGINE_PORTE )
-    #include "EngineOpenCL.h"
-#elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )
-    #include "EngineND.h"
-#elif defined( CPU_STARSYSTEM_L0_ENGINE_PORTE )
-    #include "EngineCPU.h"
-#else
-    #include "EngineHybrid.h"
-#endif
+#include "EngineHybrid.h"
 
 
 
@@ -28,15 +20,7 @@ namespace pns = portulan::world::dungeoncrawl::starsystem::l0;
 * Движок для моделирования *звёздной системы*.
 */
 class Engine :
-#if defined( OPENCL_STARSYSTEM_L0_ENGINE_PORTE )
-    public EngineOpenCL
-#elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )
-    public EngineND
-#elif defined( CPU_STARSYSTEM_L0_ENGINE_PORTE )
-    public EngineCPU
-#else
     public EngineHybrid
-#endif
 {
 public:
     typedef std::shared_ptr< Engine >  Ptr;
@@ -45,17 +29,8 @@ public:
 
 
 public:
-    // @todo Добавить 'extent' для всех движков ниже.
     explicit inline Engine( real_t timestep ) :
-#if defined( OPENCL_STARSYSTEM_L0_ENGINE_PORTE )
-    EngineOpenCL( p, timestep )
-#elif defined( ND_STARSYSTEM_L0_ENGINE_PORTE )
-    EngineND( p, extent, timestep )
-#elif defined( CPU_STARSYSTEM_L0_ENGINE_PORTE )
-    EngineCPU( timestep )
-#else
-    EngineHybrid( timestep )
-#endif
+        EngineHybrid( timestep )
     {
     }
 

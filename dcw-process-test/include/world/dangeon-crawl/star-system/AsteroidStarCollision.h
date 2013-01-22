@@ -88,6 +88,11 @@ protected:
         // завершаем список звёзд пустотой
         static const pns::aboutStar_t STAR_END_LIST = {};
         tsc[ countStar ] = STAR_END_LIST;
+
+        
+        // добавим слушателей
+        engine()->addListenerAsteroid( listenerAsteroid(), nullptr, nullptr );
+        engine()->addListenerStar( listenerStar(), nullptr, nullptr );
     }
 
 
@@ -100,7 +105,6 @@ protected:
         );
     }
 };
-
 
 
 
@@ -142,7 +146,8 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
         const auto tsc = topology()->star.content;
         const pns::real_t radiusStar = tsc[ 0 ].today.radius;
-        const pns::real_t surfaceTemperatureStar = tsc[ 0 ].today.surfaceTemperature;
+        const pns::real_t surfaceTemperatureStar =
+            tsc[ 0 ].today.surfaceTemperature;
 
         const pns::real_t d = asteroidOrbit;
         const pns::real_t temperature =
@@ -245,16 +250,53 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     static const bool showPulse = true;
     visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
 
+    // сколько пульсов отработал движок
+    const auto PL = engine()->live().pulselive();
+
 
     // проверяем результат
     EXPECT_EQ( 1,  pns::countStar( topology()->star.content, true ) );
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
+    // состояние астероида
+    {
+        // события
+        const auto l = listenerAsteroid();
+        //std::cout << *l << std::endl;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_STAR ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_DESTROY ) ) << *l;
+        // астероид перемещается
+        EXPECT_LE( 1u,  l->countByUIDEvent( pns::E_CHANGE_COORD ) ) << *l;
+        // у астероида меняется скорость из-за действия гравитации звезды
+        EXPECT_LE( 1u,  l->countByUIDEvent( pns::E_CHANGE_VELOCITY ) ) << *l;
+        // причина изм. скорости - ускорение из-за воздействия силы
+        EXPECT_LE( 1u,  l->countByUIDEvent( pns::E_IMPACT_ACCELERATION ) ) << *l;
+        EXPECT_LE( 1u,  l->countByUIDEvent( pns::E_IMPACT_FORCE ) ) << *l;
+    }
+
+    // состояние звезды
     {
         const auto actual = pns::convertFromBigValue< double >(
             topology()->star.content[ 0 ].today.mass
         );
         EXPECT_GT( actual, massStar );
+
+        // события
+        const auto l = listenerStar();
+        //std::cout << *l << std::endl;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID ) ) << *l;
+        // масса звезды увеличивается из-за падения астероида
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_INCREASE_MASS ) ) << *l;
+        // звезда притягивает тела гравитацией
+        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_GRAVITY ) ) << *l;
+        // звезда каждый пульс излучает энергию
+        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_RADIATION ) ) << *l;
+        // масса звезды уменьшается каждый пульс из-за излучения
+        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_DECREASE_MASS ) ) << *l;
+        // изменение массы включает в себя её увеличение и уменьшения
+        EXPECT_EQ( 1 + PL,  l->countByUIDEvent( pns::E_CHANGE_MASS ) ) << *l;
     }
 
 #endif
@@ -266,10 +308,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
 
 
-#if 0
 
 TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
-#if 0
+#if 1
 
     // подготовка
 #if 1
@@ -282,25 +323,30 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
     ASSERT_LT( N_ASTEROID, pns::ASTEROID_COUNT ) <<
         "Количество астероидов превышает зарезервированный для них объём. См. ASTEROID_COUNT.";
     size_t countAsteroid = 0;
+    double allMassAsteroid = 0.0;
 
     // для позиционирования астероидов
-    static const pns::real_t asteroidOrbit = 1.49598261e11 / 10;
+    static const pns::real_t asteroidOrbit = 1.49598261e11 / 20;
 
     const auto tsc = topology()->star.content;
-    const pns::real_t radiusStar = tsc[ 0 ].radius;
-    const pns::real_t surfaceTemperatureStar = tsc[ 0 ].surfaceTemperature;
+    const pns::real_t radiusStar = tsc[ 0 ].today.radius;
+    const pns::real_t surfaceTemperatureStar =
+        tsc[ 0 ].today.surfaceTemperature;
 
 #if 1
-    std::array< pns::real_t, N_ASTEROID >  massAsteroid;
+    std::array< pns::real4_t, N_ASTEROID >  massAsteroid;
     for (size_t i = 0; i < N_ASTEROID; ++i) {
         const pns::uid_t uid = i + 1;
         const pns::real_t rx = 10e3 * (i + 1);
         const pns::real_t ry = 12e3 * (i + 1);
         const pns::real_t rz = 15e3 * (i + 1);
         const pns::real_t density = 5000.0;
-        const pns::real_t mass =
-            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) * density;
+        const pns::real4_t mass = pns::convertToBigValue(
+            typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
+            density
+        );
         massAsteroid[ i ] = mass;
+        allMassAsteroid += pns::convertFromBigValue< double >( mass );
 
         const pns::real_t albedo = 0.6;
 
@@ -311,22 +357,25 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
                     luminosityStar(), d, albedo
                 );
 
+        const pns::real4_t x = pns::convertToBigValue( d );
+        const pns::real4_t y = pns::convertToBigValue( 0 );
+        const pns::real4_t z = pns::convertToBigValue( 0 );
+
         const pns::aboutAsteroid_t asteroid = {
             // uid
             uid,
             // live
             true,
             // mass
-            { mass, 0.0 },
+            mass,
             // size
             { rx, ry, rz },
             // coord
-            { d,  0,  0 },
+            { x, y, z },
             // rotation
             { 0, 0, 0 },
             // force
-            { 0, 0, 0 },
-            0,
+            { 0, 0, 0 },  0,
             // velocity
             { 0, 0, 0 },
             // density
@@ -383,27 +432,73 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
     
 
     // делаем снимок мира (см. SetUp() и выше)
-    const auto massStar =
-        topology()->star.content[ 0 ].mass;
-    const pns::real_t allMassAsteroid =
-        std::accumulate( massAsteroid.cbegin(), massAsteroid.cend(), 0.0 );
+    const auto massStar = pns::convertFromBigValue< double >(
+        topology()->star.content[ 0 ].today.mass
+    );
 
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероиды успели упасть на звезду
-    static const int needStep = 24 * 3;
+    static const int needStep = 24;
     static const bool closeWindow = true;
     static const bool showPulse = true;
     visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
+
+    // сколько пульсов отработал движок
+    const auto PL = engine()->live().pulselive();
 
 
     // проверяем результат
     EXPECT_EQ( 1,  pns::countStar( topology()->star.content, true ) );
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
+    // состояние астероидов
     {
-        const auto actual = topology()->star.content[ 0 ].mass;
-        EXPECT_TRUE( pns::gtMass( &actual, &massStar ) );
+        // события
+        const auto l = listenerAsteroid();
+        //std::cout << *l << std::endl;
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_COLLISION ) ) << *l;
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_STAR ) ) << *l;
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_DESTROY ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_DESTROY, 1 ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_DESTROY, 2 ) ) << *l;
+        // астероиды перемещаются
+        EXPECT_LE( 2u,  l->countByUIDEvent( pns::E_CHANGE_COORD ) ) << *l;
+        // у астероидов меняется скорость из-за действия гравитации звезды
+        EXPECT_LE( 2u,  l->countByUIDEvent( pns::E_CHANGE_VELOCITY ) ) << *l;
+        // причина изм. скорости - ускорение из-за воздействия силы
+        EXPECT_LE( 2u,  l->countByUIDEvent( pns::E_IMPACT_ACCELERATION ) ) << *l;
+        EXPECT_LE( 2u,  l->countByUIDEvent( pns::E_IMPACT_FORCE ) ) << *l;
+    }
+
+    // состояние звезды
+    {
+        const auto actual = pns::convertFromBigValue< double >(
+            topology()->star.content[ 0 ].today.mass
+        );
+        EXPECT_GT( actual, massStar );
+
+        // события
+        const auto l = listenerStar();
+        //std::cout << *l << std::endl;
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_COLLISION ) ) << *l;
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID, 1 ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID, 2 ) ) << *l;
+        // масса звезды увеличивается из-за падения астероидов
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_INCREASE_MASS ) ) << *l;
+        // движок в некоторых случаях передаёт причины увеличения массы
+        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_INCREASE_MASS, pns::GE_ASTEROID ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_INCREASE_MASS, pns::GE_ASTEROID, 1 ) ) << *l;
+        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_INCREASE_MASS, pns::GE_ASTEROID, 2 ) ) << *l;
+        // звезда притягивает тела гравитацией
+        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_GRAVITY ) ) << *l;
+        // звезда каждый пульс излучает энергию
+        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_RADIATION ) ) << *l;
+        // масса звезды уменьшается каждый пульс из-за излучения
+        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_DECREASE_MASS ) ) << *l;
+        // изменение массы включает в себя её увеличения и уменьшения
+        EXPECT_EQ( 2 + PL,  l->countByUIDEvent( pns::E_CHANGE_MASS ) ) << *l;
     }
 
 #endif
@@ -415,7 +510,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
 
 
 
-
+/*
 TEST_F( AsteroidStarCollisionSST,  Asteroid500Star1 ) {
 #if 0
 
@@ -572,8 +667,6 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid500Star1 ) {
 
 #endif
 }
-
-#endif
-
+*/
 
 } // namespace

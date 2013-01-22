@@ -24,7 +24,7 @@ inline void asteroidRelativeEmitEvent(
     int w = aai->emitterEvent.waldo;
 #ifdef __DEBUG
     if ( !betweenInteger( w, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", aai->uid, w );
+        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", aai->uid, w );
     }
 #endif
 
@@ -55,6 +55,9 @@ inline void asteroidRelativeEmitEvent(
     // Гравитация от звёзд
     {
         for (uint k = 0;
+            // # Здесь можем воспользоваться признаком "Пустой элемент -
+            //   дальше нет событий", т.к. элементы в начале каждого
+            //   пульса - упорядочены. См. соглашение в начале пульса.
             (k < STAR_COUNT) && presentStar( &as[ k ] );
             ++k
         ) {
@@ -114,10 +117,11 @@ inline void asteroidRelativeEmitEvent(
         ++w;
     }
 
+
     // Действует ускорение
     // @todo optimize Не учитывать мизерные ускорения.
-    const real_t absAccelerationA = absForceA / massA;
     const real4_t accelerationA = gfA / massA;
+    const real_t absAccelerationA = absForceA / massA;  // = lengthVector( accelerationA )
     if (w < EMITTER_EVENT_COUNT) {
         eventTwo_t e = {
             // uid события
@@ -130,24 +134,10 @@ inline void asteroidRelativeEmitEvent(
         ++w;
     }
 
+
     // Меняется скорость
     // @todo optimize Не учитывать мизерные изменения.
-    const real_t absDeltaVelocityA = absAccelerationA * timestep;
     const real4_t deltaVelocityA = accelerationA * timestep;
-    if (w < EMITTER_EVENT_COUNT) {
-        eventTwo_t e = {
-            // uid события
-            E_CHANGE_VELOCITY,
-            // второй участник события - здесь не важен
-            {},
-            { deltaVelocityA.s0, deltaVelocityA.s1, deltaVelocityA.s2,  absDeltaVelocityA }
-        };
-        aai->emitterEvent.content[ w ] = e;
-        ++w;
-    }
-
-    // Меняются координаты
-    // @todo optimize Не учитывать мизерные изменения.
     const real4_t velocityA = (real4_t)(
         aai->today.velocity[ 0 ],
         aai->today.velocity[ 1 ],
@@ -155,15 +145,50 @@ inline void asteroidRelativeEmitEvent(
         0
     );
     const real_t absVelocityA = lengthVector( velocityA );
-    const real_t absDeltaCoordA = (absVelocityA + absDeltaVelocityA) * timestep;
-    const real4_t deltaCoordA = (velocityA + deltaVelocityA) * timestep;
+    const real4_t futureVelocityA = velocityA + deltaVelocityA;
+    const real_t absFutureVelocityA = lengthVector( futureVelocityA );
+    const real_t absDeltaVelocityA = absFutureVelocityA - absVelocityA;
+    // # Скорость могла остаться прежней. Бережём память э. для др. событий.
+    if ( !zero( absDeltaVelocityA ) ) {
+        // @todo optimize? Ниже - повторение. Убрать его - ускорит обработку?
+        // Общее событие об изменении скорости
+        if (w < EMITTER_EVENT_COUNT) {
+            eventTwo_t e = {
+                // uid события
+                E_CHANGE_VELOCITY,
+                // второй участник события - здесь не важен
+                {},
+                { deltaVelocityA.s0, deltaVelocityA.s1, deltaVelocityA.s2, absDeltaVelocityA }
+            };
+            aai->emitterEvent.content[ w ] = e;
+            ++w;
+        }
+
+        // Как изменилась скорость по отношению к текущей
+        if (w < EMITTER_EVENT_COUNT) {
+            eventTwo_t e = {
+                // uid события
+                (absDeltaVelocityA < 0) ? E_DECREASE_VELOCITY : E_INCREASE_VELOCITY,
+                // второй участник события - здесь не важен
+                {},
+                { deltaVelocityA.s0, deltaVelocityA.s1, deltaVelocityA.s2,  absDeltaVelocityA }
+            };
+            aai->emitterEvent.content[ w ] = e;
+            ++w;
+        }
+    } // if ( !zero( absDeltaVelocityA ) )
+
+
+    // Меняются координаты
+    // @todo optimize Не учитывать мизерные изменения.
+    const real4_t deltaCoordA = futureVelocityA * timestep;
     if (w < EMITTER_EVENT_COUNT) {
         eventTwo_t e = {
             // uid события
             E_CHANGE_COORD,
             // второй участник события - здесь не важен
             {},
-            { deltaCoordA.s0, deltaCoordA.s1, deltaCoordA.s2,  absDeltaCoordA }
+            { deltaCoordA.s0, deltaCoordA.s1, deltaCoordA.s2 }
         };
         aai->emitterEvent.content[ w ] = e;
         ++w;
@@ -192,7 +217,7 @@ inline void starRelativeEmitEvent(
     int w = asi->emitterEvent.waldo;
 #ifdef __DEBUG
     if ( !betweenInteger( w, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Star %d is not initialized or it memory is overfilled. Waldo = %i.\n", asi->uid, w );
+        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n", asi->uid, w );
     }
 #endif
 
@@ -207,6 +232,9 @@ inline void starRelativeEmitEvent(
     // Столкновение с астероидами
     {
         for (uint k = 0;
+            // # Здесь можем воспользоваться признаком "Пустой элемент -
+            //   дальше нет событий", т.к. элементы в начале каждого
+            //   пульса - упорядочены. См. соглашение в начале пульса.
             (k < ASTEROID_COUNT) && presentAsteroid( &aa[ k ] );
             ++k
         ) {
@@ -220,6 +248,7 @@ inline void starRelativeEmitEvent(
 #ifdef __DEBUG
                     printf( "relative() Star %d collision with asteroid %d.\n", asi->uid, aak->uid );
 #endif
+                    const pointerElement_t piB = { GE_ASTEROID, k, aak->uid };
                     if (w < EMITTER_EVENT_COUNT) {
                         const real_t kineticABefore = ewe->fReal[ 0 ];
                         const real_t kineticBBefore = ewe->fReal[ 1 ];
@@ -229,7 +258,7 @@ inline void starRelativeEmitEvent(
                             // uid события
                             E_COLLISION,
                             // второй участник события
-                            { GE_ASTEROID, k, aak->uid },
+                            piB,
                             {
                                 // энергии для события уже посчитаны, только
                                 // обменяем их местами
@@ -243,21 +272,38 @@ inline void starRelativeEmitEvent(
                     
                     // столкновение с астероидом повлечёт для звезды и др. события
 
-                    // Увеличение массы
+                    // Увеличение массы от падения астероида
+                    const real_t deltaMassBySecond = massAsteroid( aak );
+                    const real_t deltaMassByTimestep = deltaMassBySecond;
                     if (w < EMITTER_EVENT_COUNT) {
-                        const real_t deltaMassBySecond = massAsteroid( aak );
-                        const real_t deltaMassByTimestep = deltaMassBySecond;
                         eventTwo_t e = {
                             // uid события
                             E_CHANGE_MASS,
-                            // второй участник события - здесь не важен
-                            {},
+                            // второй участник события - почему бы и нет
+                            piB,
+                            // # Необходимо соблюдать порядок передачи
+                            //   параметров для одинаковых событий.
                             { deltaMassBySecond, deltaMassByTimestep }
                         };
                         asi->emitterEvent.content[ w ] = e;
                         ++w;
                     }
-                }
+
+                    if (w < EMITTER_EVENT_COUNT) {
+                        eventTwo_t e = {
+                            // uid события
+                            E_INCREASE_MASS,
+                            // второй участник события - почему бы и нет
+                            piB,
+                            // # Необходимо соблюдать порядок передачи
+                            //   параметров для одинаковых событий.
+                            { deltaMassBySecond, deltaMassByTimestep }
+                        };
+                        asi->emitterEvent.content[ w ] = e;
+                        ++w;
+                    }
+
+                } // if ( (ewe->uid == E_COLLISION) && ...
 
             } // for (int we = ...
 

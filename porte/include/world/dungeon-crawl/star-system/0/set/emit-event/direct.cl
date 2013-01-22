@@ -24,7 +24,7 @@ inline void asteroidDirectEmitEvent(
     int w = aai->emitterEvent.waldo;
 #ifdef __DEBUG
     if ( !betweenInteger( w, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", aai->uid, w );
+        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", aai->uid, w );
     }
 #endif
 
@@ -59,7 +59,11 @@ inline void asteroidDirectEmitEvent(
         // # –езервируем пам€ть, чтобы не переполнить еЄ.
         const int MAX_EVENT_IN_ONE_LOOP = 2;
         for (uint k = 0;
-            (k < STAR_COUNT) && presentStar( &as[ k ] ) && (w <= (EMITTER_EVENT_COUNT - MAX_EVENT_IN_ONE_LOOP));
+            // # «десь можем воспользоватьс€ признаком "ѕустой элемент -
+            //   дальше нет событий", т.к. элементы в начале каждого
+            //   пульса - упор€дочены. —м. соглашение в начале пульса.
+            (k < STAR_COUNT) && presentStar( &as[ k ] )
+         && (w <= (EMITTER_EVENT_COUNT - MAX_EVENT_IN_ONE_LOOP));
             ++k
         ) {
             __global const aboutStar_t* ask = &as[ k ];
@@ -109,6 +113,8 @@ inline void asteroidDirectEmitEvent(
                 const real_t deltaKineticB = kineticBBefore - kineticBAfter;
 
                 // при столкновении создаЄтс€ неск. событий
+                // #! ƒобавление сюда новых событий требует обновлени€
+                //    'MAX_EVENT_IN_ONE_LOOP' выше.
 
                 // —толкновение со звездой
                 {
@@ -142,6 +148,9 @@ inline void asteroidDirectEmitEvent(
                     ++w;
                 }
 
+                // #! ƒобавление сюда новых событий требует обновлени€
+                //    'MAX_EVENT_IN_ONE_LOOP' выше.
+
             } // if ( hasCollision )
 
         } // for (size_t k = 0 ...
@@ -171,7 +180,7 @@ inline void starDirectEmitEvent(
     int w = asi->emitterEvent.waldo;
 #ifdef __DEBUG
     if ( !betweenInteger( w, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", asi->uid, w );
+        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n", asi->uid, w );
     }
 #endif
 
@@ -225,6 +234,17 @@ inline void starDirectEmitEvent(
         eventTwo_t e = {
             // uid событи€
             E_CHANGE_MASS,
+            // второй участник событи€ - здесь не важен
+            {},
+            { deltaMassBySecond, deltaMassBySecond * timestep }
+        };
+        asi->emitterEvent.content[ w ] = e;
+        ++w;
+    }
+    if (w < EMITTER_EVENT_COUNT) {
+        eventTwo_t e = {
+            // uid событи€
+            E_DECREASE_MASS,
             // второй участник событи€ - здесь не важен
             {},
             { deltaMassBySecond, deltaMassBySecond * timestep }
