@@ -52,10 +52,10 @@ inline EngineHybrid::EngineHybrid(
 
 inline EngineHybrid::~EngineHybrid() {
     // освобождаем память, выделенную под параметры ядер
-    clReleaseMemObject( aboutStarSystemCL );
-    clReleaseMemObject( asteroidCL );
-    clReleaseMemObject( planetCL );
-    clReleaseMemObject( starCL );
+    if ( aboutStarSystemCL ) { clReleaseMemObject( aboutStarSystemCL ); }
+    if ( asteroidCL ) { clReleaseMemObject( asteroidCL ); }
+    if ( planetCL ) { clReleaseMemObject( planetCL ); }
+    if ( starCL ) { clReleaseMemObject( starCL ); };
 
     // удаляем собранные ядра
     for (auto itr = kernelCL.begin(); itr != kernelCL.end(); ++itr) {
@@ -64,6 +64,9 @@ inline EngineHybrid::~EngineHybrid() {
 #ifdef _DEBUG
     oclCheckError( errorCL, CL_SUCCESS );
 #endif
+
+    // при подготовке ядер создали список устройств, освобождаем
+    free( devicesCL );
 
     // освобождаем очередь команд и контекст
     clReleaseCommandQueue( commandQueueCL );
@@ -83,7 +86,7 @@ void EngineHybrid::incarnate(
     // Подготавливаем память под параметры для ядер OpenCL
     auto& topology = mPortulan.lock()->topology().topology();
 
-    clReleaseMemObject( aboutStarSystemCL );
+    if ( aboutStarSystemCL ) { clReleaseMemObject( aboutStarSystemCL ); }
     aboutStarSystemCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
@@ -95,7 +98,7 @@ void EngineHybrid::incarnate(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    clReleaseMemObject( asteroidCL );
+    if ( asteroidCL ) { clReleaseMemObject( asteroidCL ); }
     asteroidCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
@@ -107,7 +110,7 @@ void EngineHybrid::incarnate(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    clReleaseMemObject( planetCL );
+    if ( planetCL ) { clReleaseMemObject( planetCL ); }
     planetCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
@@ -119,7 +122,7 @@ void EngineHybrid::incarnate(
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    clReleaseMemObject( starCL );
+    if ( starCL ) { clReleaseMemObject( starCL ); };
     starCL = clCreateBuffer(
         gpuContextCL,
         // доп. память не выделяется
@@ -135,7 +138,25 @@ void EngineHybrid::incarnate(
     // Подготавливаем параметры для ядер
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/begin" ];
+        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/begin" ];
+
+        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    }
+    {
+        const cl_kernel kernel = kernelCL[ "set/emit-event/star/begin" ];
 
         errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -157,7 +178,25 @@ void EngineHybrid::incarnate(
 
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/direct" ];
+        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/direct" ];
+
+        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    }
+    {
+        const cl_kernel kernel = kernelCL[ "set/emit-event/star/direct" ];
 
         errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -179,7 +218,25 @@ void EngineHybrid::incarnate(
 
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/relative" ];
+        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/relative" ];
+
+        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    }
+    {
+        const cl_kernel kernel = kernelCL[ "set/emit-event/star/relative" ];
 
         errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -201,7 +258,25 @@ void EngineHybrid::incarnate(
 
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/fix" ];
+        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/fix" ];
+
+        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
+        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    }
+    {
+        const cl_kernel kernel = kernelCL[ "set/emit-event/star/fix" ];
 
         errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -301,17 +376,32 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Подготавливаем элементы к созданию событий
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/begin" ];
-        errorCL = clEnqueueNDRangeKernel(
-            commandQueueCL,
-            kernel,
-            GRID_WORK_DIM,
-            nullptr,
-            GRID_GLOBAL_WORK_SIZE,
-            nullptr,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/begin" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/star/begin" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -323,17 +413,32 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Излучаем свои события
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/direct" ];
-        errorCL = clEnqueueNDRangeKernel(
-            commandQueueCL,
-            kernel,
-            GRID_WORK_DIM,
-            nullptr,
-            GRID_GLOBAL_WORK_SIZE,
-            nullptr,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/direct" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/star/direct" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -347,7 +452,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             CL_TRUE,
             0,
             memsizeAsteroid,
-            topology.asteroid.content,
+            asteroid,
             0, nullptr, nullptr
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -358,7 +463,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             CL_TRUE,
             0,
             memsizePlanet,
-            topology.planet.content,
+            planet,
             0, nullptr, nullptr
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -369,7 +474,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             CL_TRUE,
             0,
             memsizeStar,
-            topology.star.content,
+            star,
             0, nullptr, nullptr
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -381,23 +486,38 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Излучаем зависимые события
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/relative" ];
-        errorCL = clEnqueueNDRangeKernel(
-            commandQueueCL,
-            kernel,
-            GRID_WORK_DIM,
-            nullptr,
-            GRID_GLOBAL_WORK_SIZE,
-            nullptr,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/relative" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/star/relative" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-#if 1
+#if 0
         // @test промежуточный результат
         errorCL = clEnqueueReadBuffer(
             commandQueueCL,
@@ -405,7 +525,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             CL_TRUE,
             0,
             memsizeAsteroid,
-            topology.asteroid.content,
+            asteroid,
             0, nullptr, nullptr
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -416,7 +536,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             CL_TRUE,
             0,
             memsizePlanet,
-            topology.planet.content,
+            planet,
             0, nullptr, nullptr
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -427,7 +547,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             CL_TRUE,
             0,
             memsizeStar,
-            topology.star.content,
+            star,
             0, nullptr, nullptr
         );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -555,17 +675,32 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Фиксируем характеристики согласно своим событиям
 #if 1
     {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/fix" ];
-        errorCL = clEnqueueNDRangeKernel(
-            commandQueueCL,
-            kernel,
-            GRID_WORK_DIM,
-            nullptr,
-            GRID_GLOBAL_WORK_SIZE,
-            nullptr,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/fix" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
+        {
+            const cl_kernel kernel = kernelCL[ "set/emit-event/star/fix" ];
+            errorCL = clEnqueueNDRangeKernel(
+                commandQueueCL,
+                kernel,
+                GRID_WORK_DIM,
+                nullptr,
+                GRID_GLOBAL_WORK_SIZE,
+                nullptr,
+                0, nullptr, nullptr
+            );
+            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        }
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -788,7 +923,8 @@ inline void EngineHybrid::prepareCLContext() {
     endDevCL = deviceUsedCL;
 
     // No GL interop
-    const cl_context_properties props[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformCL, 0 };
+    const cl_context_properties props[] =
+        { CL_CONTEXT_PLATFORM, (cl_context_properties)platformCL, 0 };
     // (!) Если установлен слишком большой размер стека, OpenCL не будет инициализирован.
     //     Включение LARGEADDRESSAWARE не решает проблему.
     gpuContextCL = clCreateContext(
