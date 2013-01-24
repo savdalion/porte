@@ -85,6 +85,9 @@ void EngineHybrid::incarnate(
 
     // Подготавливаем память под параметры для ядер OpenCL
     auto& topology = mPortulan.lock()->topology().topology();
+    auto& asteroid = topology.asteroid.content;
+    auto& planet   = topology.planet.content;
+    auto& star     = topology.star.content;
 
     if ( aboutStarSystemCL ) { clReleaseMemObject( aboutStarSystemCL ); }
     aboutStarSystemCL = clCreateBuffer(
@@ -105,7 +108,7 @@ void EngineHybrid::incarnate(
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeAsteroid,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        topology.asteroid.content,
+        asteroid,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -117,7 +120,7 @@ void EngineHybrid::incarnate(
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizePlanet,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        topology.planet.content,
+        planet,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -129,16 +132,15 @@ void EngineHybrid::incarnate(
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeStar,
         // #! Если память выделена динамически, обращаемся к содержанию.
-        topology.star.content,
+        star,
         &errorCL
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );    
 
 
-    // Подготавливаем параметры для ядер
-#if 1
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/begin" ];
+    // # У всех ядер часть набора параметров - одинакова. Воспользуемся.
+    for (auto itr = kernelCL.cbegin(); itr != kernelCL.cend(); ++itr) {
+        const cl_kernel kernel = itr->second;
 
         errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
@@ -154,146 +156,11 @@ void EngineHybrid::incarnate(
 
         errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/star/begin" ];
 
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        // # Остальные параметры - отличаются или меняются каждый пульс.
 
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    } // for (auto itr = kernelCL.cbegin() ...
 
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-#endif
-
-
-#if 1
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/direct" ];
-
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/star/direct" ];
-
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-#endif
-
-
-#if 1
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/relative" ];
-
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/star/relative" ];
-
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-#endif
-
-
-#if 1
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/fix" ];
-
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-    {
-        const cl_kernel kernel = kernelCL[ "set/emit-event/star/fix" ];
-
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    }
-#endif
 }
 
 
@@ -322,8 +189,36 @@ inline void EngineHybrid::pulse( int n ) {
     // выполняем 'n' циклов
     emitEvent( n );
 
-    // мир становится старше
-    mLive.add( n,  mTimestep * n );
+
+    // @test
+#if 1
+{
+    const auto tss = sizeof( pns::aboutStarSystem_t );
+    const auto ta = sizeof( pns::aboutAsteroid_t );
+    const auto tp = sizeof( pns::aboutPlanet_t );
+    const auto ts = sizeof( pns::aboutStar_t );
+
+    const auto tca = sizeof( pns::characteristicAsteroid_t );
+    const auto ts3 = sizeof( pns::small3d_t );
+    const auto tb3 = sizeof( pns::big3d_t );
+    const auto tr1 = sizeof( pns::real_t );
+    const auto tr2 = sizeof( pns::real2_t );
+    const auto tr4 = sizeof( pns::real4_t );
+    const auto tb = sizeof( bool );
+
+    const auto te2 = sizeof( pns::eventTwo_t );
+    const auto tpe = sizeof( pns::pointerElement_t );
+    const auto te = sizeof( enum pns::EVENT );
+
+    const auto tmm = sizeof( pns::memoryModel_t );
+    const auto tm = sizeof( pns::model_t );
+    const auto tfmm = sizeof( pns::frequencyMemoryModel_t );
+    const auto tfm = sizeof( pns::frequencyModel_t );
+
+    const bool test = true;
+}
+#endif
+
 
     // собираем статистику для элементов портулана
     statistics();
@@ -334,37 +229,10 @@ inline void EngineHybrid::pulse( int n ) {
 
 inline void EngineHybrid::emitEvent( int n ) {
 
-    static const size_t grid = typelib::max(
-        pns::ASTEROID_COUNT, pns::PLANET_COUNT, pns::STAR_COUNT
-    );
-    static const size_t GRID_WORK_DIM = 1;
-    static const size_t GRID_GLOBAL_WORK_SIZE[] = { grid };
-
-
-    /* @test
-    const auto tss = sizeof( pns::aboutStarSystem_t );
-    const auto ta = sizeof( pns::aboutAsteroid_t );
-    const auto tp = sizeof( pns::aboutPlanet_t );
-    const auto ts = sizeof( pns::aboutStar_t );
-
-    const auto tca = sizeof( pns::characteristicAsteroid_t );
-    const auto tc = sizeof( pns::coord_t );
-    const auto tr1 = sizeof( pns::real_t );
-    const auto tr2 = sizeof( pns::real2_t );
-    const auto tr4 = sizeof( pns::real4_t );
-    const auto tb = sizeof( bool );
-
-    const auto te2 = sizeof( pns::eventTwo_t );
-    const auto tpe = sizeof( pns::pointerElement_t );
-    const auto te = sizeof( enum pns::EVENT );
-    */
-
-
     auto& topology = mPortulan.lock()->topology().topology();
     auto& asteroid = topology.asteroid.content;
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
-
 
     // выполним 'n' пульсов
     // # Параметры для ядер уже подготовлены в incarnate().
@@ -373,35 +241,13 @@ inline void EngineHybrid::emitEvent( int n ) {
     // # Перед началом каждого пульса и в конце него элементы -
     //   упорядочены (оптимизированы). См. старания ниже.
 
+    const cl_long pulselive = mLive.pulselive();
+
     // Подготавливаем элементы к созданию событий
 #if 1
     {
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/begin" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/star/begin" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
+        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
+        runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/begin" );
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -413,150 +259,48 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Излучаем свои события
 #if 1
     {
+        // модель поведения всех элементов
+        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
+        //runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/direct" );
+
+        // модели поведения конкретных элементов
+        // # Запускаются для всей группы элементов, т.к. в общем случае
+        //   отрабатывать подобную модель могут много элементов.
+        // @todo optimize fine Не запускать ядро модели, если ни один элемент
+        //       не собирается отрабатывать эту модель.
+        /*
         {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/direct" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
+            const std::string key =
+                "set/unique-emit-event/asteroid/grow-up/direct";
+            const cl_kernel kernel = kernelCL[ key ];
+            errorCL = clSetKernelArg( kernel, 5, sizeof( pulselive ), &pulselive );
             oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+            runCLKernel< pns::ASTEROID_COUNT >( key );
+            // @todo ...
         }
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/star/direct" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
+        */
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-#if 0
-        // @test промежуточный результат
-        errorCL = clEnqueueReadBuffer(
-            commandQueueCL,
-            asteroidCL,
-            CL_TRUE,
-            0,
-            memsizeAsteroid,
-            asteroid,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clEnqueueReadBuffer(
-            commandQueueCL,
-            planetCL,
-            CL_TRUE,
-            0,
-            memsizePlanet,
-            planet,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clEnqueueReadBuffer(
-            commandQueueCL,
-            starCL,
-            CL_TRUE,
-            0,
-            memsizeStar,
-            star,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-#endif
     }
 #endif
 
 
-    // Излучаем зависимые события
+    // Излучаем свои зависимые события
 #if 1
     {
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/relative" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/star/relative" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
+        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/relative" );
+        runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/relative" );
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
         oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-#if 0
-        // @test промежуточный результат
-        errorCL = clEnqueueReadBuffer(
-            commandQueueCL,
-            asteroidCL,
-            CL_TRUE,
-            0,
-            memsizeAsteroid,
-            asteroid,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clEnqueueReadBuffer(
-            commandQueueCL,
-            planetCL,
-            CL_TRUE,
-            0,
-            memsizePlanet,
-            planet,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clEnqueueReadBuffer(
-            commandQueueCL,
-            starCL,
-            CL_TRUE,
-            0,
-            memsizeStar,
-            star,
-            0, nullptr, nullptr
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-#endif
     }
 #endif
 
 
-    // Уведомляем слушателей о событиях в звёздной системе
+    // Уведомляем слушателей о своих событиях в звёздной системе
     // Тут же собираем информацию о необходимости оптимизации списков
 #if 1
     // события астероидов
@@ -675,32 +419,8 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Фиксируем характеристики согласно своим событиям
 #if 1
     {
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/asteroid/fix" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
-        {
-            const cl_kernel kernel = kernelCL[ "set/emit-event/star/fix" ];
-            errorCL = clEnqueueNDRangeKernel(
-                commandQueueCL,
-                kernel,
-                GRID_WORK_DIM,
-                nullptr,
-                GRID_GLOBAL_WORK_SIZE,
-                nullptr,
-                0, nullptr, nullptr
-            );
-            oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        }
+        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
+        runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/fix" );
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -722,7 +442,7 @@ inline void EngineHybrid::emitEvent( int n ) {
 
     // оптимизация списка астероидов
 #if 1
-    // @todo optimize fine Оптимизировать в ядре OpenCL.
+    // @todo optimize? fine? Оптимизировать в ядре OpenCL.
     if ( needOptimizeAsteroid ) {
         // обновим данные на хосте
         {
@@ -832,6 +552,9 @@ inline void EngineHybrid::emitEvent( int n ) {
 #endif
 
 #endif
+
+    // мир становится старше
+    mLive.inc( mTimestep );
 
     } // for (int p = 0; p < n; ++p)
 
@@ -944,7 +667,6 @@ inline void EngineHybrid::prepareCLContext() {
 
 
 
-
 inline void EngineHybrid::prepareCLCommandQueue() {
     assert( gpuContextCL
         && "Контекст OpenCL требуется инициализировать до выполнения этого метода." );
@@ -954,7 +676,6 @@ inline void EngineHybrid::prepareCLCommandQueue() {
         clCreateCommandQueue( gpuContextCL, devicesCL[ deviceUsedCL ], 0, &errorCL );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 }
-
 
 
 
@@ -1104,6 +825,29 @@ inline void EngineHybrid::compileCLKernel(
 
 
 
+template< size_t GLOBAL_SIZE >
+inline void EngineHybrid::runCLKernel( const std::string& key ) {
+    assert( (kernelCL.find( key ) != kernelCL.cend())
+        && "Ядро OpenCL не найдено." );
+
+    static const size_t DIM = 1;
+    static const size_t GS[] = { GLOBAL_SIZE };
+
+    const cl_kernel kernel = kernelCL[ key ];
+    const auto errorCL = clEnqueueNDRangeKernel(
+        commandQueueCL,
+        kernel,
+        DIM,
+        nullptr,
+        GS,
+        nullptr,
+        0, nullptr, nullptr
+    );
+    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+}
+
+
+
 
 inline std::string EngineHybrid::commonConstantCLKernel() {
 
@@ -1119,13 +863,17 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
         << " -D PLANET_COUNT=" << pns::PLANET_COUNT
         << " -D STAR_COUNT=" << pns::STAR_COUNT
         << " -D EMITTER_EVENT_COUNT=" << pns::EMITTER_EVENT_COUNT
-        << " -D MAX_FEATURE_EVENT=" << pns::MAX_FEATURE_EVENT
+        << " -D FEATURE_EVENT_COUNT=" << pns::FEATURE_EVENT_COUNT
+        << " -D MEMORY_MODEL_COUNT=" << pns::MEMORY_MODEL_COUNT
+        << " -D FREQUENCY_MEMORY_MODEL_COUNT=" << pns::FREQUENCY_MEMORY_MODEL_COUNT
 
         << std::scientific
         << " -D BIG_VALUE_BASE_0=" << pns::BIG_VALUE_BASE_0
         << " -D BIG_VALUE_BASE_1=" << pns::BIG_VALUE_BASE_1
         << " -D BIG_VALUE_BASE_2=" << pns::BIG_VALUE_BASE_2
         << " -D BIG_VALUE_BASE_3=" << pns::BIG_VALUE_BASE_3
+        << " -D REAL_MAX=" << pns::REAL_MAX
+
 
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION
@@ -1145,7 +893,6 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
 
 
 
-
 inline std::string EngineHybrid::commonOptionCLKernel() {
     std::ostringstream options;
     options
@@ -1156,7 +903,7 @@ inline std::string EngineHybrid::commonOptionCLKernel() {
         << " -Werror"
 #if 0
         // серьёзная оптимизация
-        // (i) ~10% прирост только с включением опций ниже.
+        // #i ~10% прирост только с включением опций ниже.
         // @todo optimize Тонкая оптимизация OpenCL.
         //       http://khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
         << " -cl-fast-relaxed-math"
@@ -1164,15 +911,14 @@ inline std::string EngineHybrid::commonOptionCLKernel() {
 #endif
 #if 0
         // внимательная отладка
-        // (i) Включать только при вылавливании блох: более чем
-        //     20-кратное замедление.
+        // #i Включать только при вылавливании блох: более чем
+        //    20-кратное замедление.
         << " -cl-opt-disable"
 #endif
         << "";
 
     return options.str();
 }
-
 
 
 

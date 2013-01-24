@@ -23,21 +23,20 @@ inline Engine::real_t Engine::extent() {
     std::vector< real_t >  distance;
 
     const auto pushDistance = [ &distance ] (
-        const pns::real_t coord[ 3 ]
+        const pns::big3d_t& coord
     ) {
-        const auto c = typelib::CoordT< real_t >( coord );
+        const auto c = typelib::CoordT< real_t >(
+            pns::convertFromBigValue< pns::real_t >( coord.x ),
+            pns::convertFromBigValue< pns::real_t >( coord.y ),
+            pns::convertFromBigValue< pns::real_t >( coord.z )
+        );
         distance.push_back( c.distance() );
     };
 
     for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
         const auto body = asteroid[ i ];
         if ( pns::presentAsteroid( &body ) ) {
-            const pns::real_t c[ 3 ] = {
-                pns::convertFromBigValue< pns::real_t >( body.today.coord.x ),
-                pns::convertFromBigValue< pns::real_t >( body.today.coord.y ),
-                pns::convertFromBigValue< pns::real_t >( body.today.coord.z )
-            };
-            pushDistance( c );
+            pushDistance( body.today.coord );
         }
     }
 

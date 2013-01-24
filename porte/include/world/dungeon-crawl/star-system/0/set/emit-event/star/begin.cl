@@ -21,30 +21,43 @@ __kernel void begin(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
-    /* @test
-    printf( "aboutStarSystem_t %i\n", sizeof( aboutStarSystem_t ) );
-    printf( "aboutAsteroid_t %i\n", sizeof( aboutAsteroid_t ) );
-    printf( "aboutPlanet_t %i\n", sizeof( aboutPlanet_t ) );
-    printf( "aboutStar_t %i\n", sizeof( aboutStar_t ) );
-    printf( "real_t %i\n", sizeof( real_t ) );
-    printf( "real2_t %i\n", sizeof( real2_t ) );
-    printf( "real4_t %i\n", sizeof( real4_t ) );
-    printf( "characteristicAsteroid_t %i\n", sizeof( characteristicAsteroid_t ) );
-    printf( "bool %i\n", sizeof( bool ) );
-    printf( "eventTwo_t %i\n", sizeof( eventTwo_t ) );
-    printf( "pointerElement_t %i\n", sizeof( pointerElement_t ) );
-    printf( "enum EVENT %i\n", sizeof( enum EVENT ) );
-    return;
-    */
-
-
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > STAR_COUNT) || absentStar( &as[ i ] ) ) {
+    if (i >= STAR_COUNT) {
+        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
         return;
     }
+
+    if ( absentStar( &as[ i ] ) ) {
+        return;
+    }
+
+
+    // @test
+#if 0
+    printf( "aboutStarSystem_t %i\n", sizeof( aboutStarSystem_t ) );
+    printf( "aboutAsteroid_t %i\n", sizeof( aboutAsteroid_t ) );
+    printf( "aboutPlanet_t %i\n", sizeof( aboutPlanet_t ) );
+    printf( "aboutStar_t %i\n", sizeof( aboutStar_t ) );
+    printf( "characteristicAsteroid_t %i\n", sizeof( characteristicAsteroid_t ) );
+    printf( "small3d_t %i\n", sizeof( small3d_t ) );
+    printf( "big3d_t %i\n", sizeof( big3d_t ) );
+    printf( "real_t %i\n", sizeof( real_t ) );
+    printf( "real2_t %i\n", sizeof( real2_t ) );
+    printf( "real4_t %i\n", sizeof( real4_t ) );
+    printf( "bool %i\n", sizeof( bool ) );
+    printf( "eventTwo_t %i\n", sizeof( eventTwo_t ) );
+    printf( "pointerElement_t %i\n", sizeof( pointerElement_t ) );
+    printf( "enum EVENT %i\n", sizeof( enum EVENT ) );
+    printf( "memoryModel_t %i\n", sizeof( memoryModel_t ) );
+    printf( "model_t %i\n", sizeof( model_t ) );
+    printf( "frequencyMemoryModel_t %i\n", sizeof( frequencyMemoryModel_t ) );
+    printf( "frequencyModel_t %i\n", sizeof( frequencyModel_t ) );
+    printf( "\n" );
+    return;
+#endif
 
 
     __global aboutStar_t* element = &as[ i ];
@@ -58,10 +71,11 @@ __kernel void begin(
 
 
     // обнуляем события
-    // @todo optimize Достаточно обнулить вальдо.
+    /* - @todo optimize Достаточно обнулить вальдо.
     for (int w = ee->waldo; w > 0; --w) {
         ee->content[ w ].uid = E_NONE;
     }
+    */
 
     // обнуляем вальдо
     ee->waldo = 0;

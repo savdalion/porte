@@ -21,11 +21,18 @@ __kernel void relative(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > STAR_COUNT) || absentStar( &as[ i ] ) ) {
+    if (i >= STAR_COUNT) {
+        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        return;
+    }
+
+    if ( absentStar( &as[ i ] ) ) {
         return;
     }
 
@@ -74,7 +81,7 @@ __kernel void relative(
                         const real_t kineticBBefore = ewe->fReal[ 1 ];
                         const real_t deltaKineticA  = ewe->fReal[ 2 ];
                         const real_t deltaKineticB  = ewe->fReal[ 3 ];
-                        eventTwo_t e = {
+                        const eventTwo_t e = {
                             // uid события
                             E_COLLISION,
                             // второй участник события
@@ -96,7 +103,7 @@ __kernel void relative(
                     const real_t deltaMassBySecond = massAsteroid( aak );
                     const real_t deltaMassByTimestep = deltaMassBySecond;
                     if (w < EMITTER_EVENT_COUNT) {
-                        eventTwo_t e = {
+                        const eventTwo_t e = {
                             // uid события
                             E_CHANGE_MASS,
                             // второй участник события - почему бы и нет
@@ -110,7 +117,7 @@ __kernel void relative(
                     }
 
                     if (w < EMITTER_EVENT_COUNT) {
-                        eventTwo_t e = {
+                        const eventTwo_t e = {
                             // uid события
                             E_INCREASE_MASS,
                             // второй участник события - почему бы и нет

@@ -295,6 +295,63 @@ protected:
 
 
 
+    inline pns::asteroidContent_t asteroidContent() const {
+        return mPortulan->topology().topology().asteroid.content;
+    }
+
+    inline pns::asteroidContent_t asteroidContent() {
+        return mPortulan->topology().topology().asteroid.content;
+    }
+
+    inline pns::asteroidContent_t tac() const {
+        return asteroidContent();
+    }
+
+    inline pns::asteroidContent_t tac() {
+        return asteroidContent();
+    }
+
+
+
+
+    inline pns::planetContent_t planetContent() const {
+        return mPortulan->topology().topology().planet.content;
+    }
+
+    inline pns::planetContent_t planetContent() {
+        return mPortulan->topology().topology().planet.content;
+    }
+
+    inline pns::planetContent_t tpc() const {
+        return planetContent();
+    }
+
+    inline pns::planetContent_t tpc() {
+        return planetContent();
+    }
+
+
+
+
+    inline pns::starContent_t starContent() const {
+        return mPortulan->topology().topology().star.content;
+    }
+
+    inline pns::starContent_t starContent() {
+        return mPortulan->topology().topology().star.content;
+    }
+
+    inline pns::starContent_t tsc() const {
+        return starContent();
+    }
+
+    inline pns::starContent_t tsc() {
+        return starContent();
+    }
+
+
+
+
     inline std::shared_ptr< CounterEventListenerAsteroid >  listenerAsteroid() {
         return std::static_pointer_cast< CounterEventListenerAsteroid >(
             mListenerAsteroid
@@ -313,6 +370,38 @@ protected:
 
 
 
+protected:
+    /**
+    * Проверяет элементы звёздной системы на корректность содержания.
+    *
+    * @param onlyLive Просматривать только живые - present*() - элементы.
+    */
+    void testAsteroid( bool onlyLive ) const;
+
+
+
+
+    static inline bool testReal( pns::real_t v ) {
+        // @source http://johndcook.com/IEEE_exceptions_in_cpp.html
+        return ( (v <= std::numeric_limits< pns::real_t >().max())
+            && (v >= -std::numeric_limits< pns::real_t >().max())
+        );
+    }
+
+
+
+
+    static inline bool testReal4( pns::real4_t v ) {
+        return
+            testReal( v.s[ 0 ] )
+         && testReal( v.s[ 1 ] )
+         && testReal( v.s[ 2 ] )
+         && testReal( v.s[ 3 ] );
+    }
+
+
+
+
 private:
     std::shared_ptr< pes::Engine >    mEngine;
     std::shared_ptr< pns::Portulan >  mPortulan;
@@ -320,6 +409,67 @@ private:
     std::shared_ptr< pes::ListenerAsteroid >  mListenerAsteroid;
     std::shared_ptr< pes::ListenerStar >      mListenerStar;
 };
+
+
+
+
+
+
+
+
+inline void StarSystemTest::testAsteroid( bool onlyLive ) const {
+
+    // хватило разрядности для хранения характеристик
+    for (size_t i = 0; i < pns::ASTEROID_COUNT; ++i) {
+        const pns::aboutAsteroid_t& element = tac()[ i ];
+
+        //std::cout << i << " " << element.uid << std::endl;
+
+        if ( onlyLive && pns::absentAsteroid( &element ) ) {
+            // # Всегда просматриваем весь список, на случай если он
+            //   оказался неоптимизирован - см. pns::optimize*().
+            continue;
+        }
+
+        // общие характеристики
+
+        EXPECT_TRUE( testReal4( element.today.coord.x ) ) <<
+            "Координата X не корректна";
+        EXPECT_TRUE( testReal4( element.today.coord.y ) ) <<
+            "Координата Y не корректна";
+        EXPECT_TRUE( testReal4( element.today.coord.z ) ) <<
+            "Координата Z не корректна";
+
+        EXPECT_TRUE( testReal4( element.today.mass ) ) <<
+            "Масса не корректна";
+
+        EXPECT_TRUE( testReal( element.today.density ) ) <<
+            "Плотность не корректна";
+
+        EXPECT_TRUE( testReal( element.today.velocity.s[ 0 ] ) ) <<
+            "Скорость X не корректна";
+        EXPECT_TRUE( testReal( element.today.velocity.s[ 1 ] ) ) <<
+            "Скорость Y не корректна";
+        EXPECT_TRUE( testReal( element.today.velocity.s[ 2 ] ) ) <<
+            "Скорость Z не корректна";
+
+        
+        // память событий
+        for (int w = pns::EMITTER_EVENT_COUNT - 1; w >= 0; --w) {
+            const pns::eventTwo_t& e = element.emitterEvent.content[ w ];
+            EXPECT_TRUE( (e.uid >= pns::E_NONE) && (e.uid < pns::E_last) ) <<
+                "Событие не определено";
+            for (size_t q = 0; q < pns::FEATURE_EVENT_COUNT; ++q) {
+                EXPECT_TRUE( testReal( e.fReal[ q ] ) ) <<
+                    "Значение " << q << " в ячейке эммитера " << w <<
+                    " для события " << e.uid << " не корректно." <<
+                    " Астероид " << i << " (" << element.uid << ").";
+            }
+        }
+
+    } // for (size_t i = 0 ...
+
+}
 
 
 

@@ -125,5 +125,8 @@
     <None Include="include\world\dungeon-crawl\star-system\0\prepareEngineHybrid.inl">
       <Filter>Заголовочные файлы</Filter>
     </None>
+    <None Include="include\world\dungeon-crawl\star-system\0\set\unique-emit-event\!.md" />
+    <None Include="include\world\dungeon-crawl\star-system\0\set\emit-event\!.md" />
+    <None Include="include\world\dungeon-crawl\star-system\0\set\unique-emit-event\asteroid\grow-up\!.md" />
   </ItemGroup>
 </Project>

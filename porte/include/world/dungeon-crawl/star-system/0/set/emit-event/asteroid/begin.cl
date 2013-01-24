@@ -42,7 +42,12 @@ __kernel void begin(
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > ASTEROID_COUNT) || absentAsteroid( &aa[ i ] ) ) {
+    if (i >= ASTEROID_COUNT) {
+        printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
+        return;
+    }
+
+    if ( absentAsteroid( &aa[ i ] ) ) {
         return;
     }
 
@@ -58,10 +63,11 @@ __kernel void begin(
 
 
     // обнуляем события
-    // @todo optimize Достаточно обнулить вальдо.
+    /* - optimize Достаточно обнулить вальдо.
     for (int w = ee->waldo; w > 0; --w) {
         ee->content[ w ].uid = E_NONE;
     }
+    */
 
     // обнуляем вальдо
     ee->waldo = 0;

@@ -115,3 +115,11 @@ inline bool betweenRealExclude( const real_t v, const real_t a, const real_t b )
 inline bool betweenIntegerExclude( const int v, const int a, const int b ) {
     return (v > a) && (v < b);
 }
+
+
+
+
+/**
+* assert() для OpenCL.
+* Печатается сообщение и код возвращает управление.
+*/

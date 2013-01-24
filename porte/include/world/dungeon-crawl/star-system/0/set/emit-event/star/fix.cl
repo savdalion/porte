@@ -21,17 +21,24 @@ __kernel void fix(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > STAR_COUNT) || absentStar( &as[ i ] ) ) {
+    if (i >= STAR_COUNT) {
+        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        return;
+    }
+
+    if ( absentStar( &as[ i ] ) ) {
         return;
     }
 
 
     __global aboutStar_t* element = &as[ i ];
-    __global emitterEvent_t* ee = &element->emitterEvent;
+    const __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
         printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
@@ -62,22 +69,20 @@ __kernel void fix(
                 break;
 
             case E_CHANGE_COORD :
-                element->today.coord[ 0 ] += e->fReal[ 0 ];
-                element->today.coord[ 1 ] += e->fReal[ 1 ];
-                element->today.coord[ 2 ] += e->fReal[ 2 ];
+                element->today.coord.x += convertToBigValue( e->fReal[ 0 ] );
+                element->today.coord.y += convertToBigValue( e->fReal[ 1 ] );
+                element->today.coord.z += convertToBigValue( e->fReal[ 2 ] );
+#ifdef __DEBUG
+                assertReal4( element->today.coord.x, "(!) Overfill coord X for star.\n" );
+                assertReal4( element->today.coord.y, "(!) Overfill coord Y for star.\n" );
+                assertReal4( element->today.coord.z, "(!) Overfill coord Z for star.\n" );
+#endif
                 break;
 
             case E_CHANGE_MASS :
-#ifdef __DEBUG
-                if (e->fReal[ 1 ] > 0) {
-                    printf( "fix() Change mass star %d on %e kg.", element->uid, e->fReal[ 1 ] );
-                }
-#endif
                 element->today.mass += convertToBigValue( e->fReal[ 1 ] );
 #ifdef __DEBUG
-                if (e->fReal[ 1 ] > 0) {
-                    printf( " Mass star is ~ %e kg.\n", massStar( element ) );
-                }
+                assertReal4( element->today.mass, "(!) Overfill mass for star.\n" );
 #endif
                 break;
 
@@ -86,9 +91,14 @@ __kernel void fix(
                 break;
 
             case E_CHANGE_VELOCITY :
-                element->today.velocity[ 0 ] += e->fReal[ 0 ];
-                element->today.velocity[ 1 ] += e->fReal[ 1 ];
-                element->today.velocity[ 2 ] += e->fReal[ 2 ];
+                element->today.velocity.x += e->fReal[ 0 ];
+                element->today.velocity.y += e->fReal[ 1 ];
+                element->today.velocity.z += e->fReal[ 2 ];
+#ifdef __DEBUG
+                assertReal( element->today.velocity.x, "(!) Overfill velocity X for star.\n" );
+                assertReal( element->today.velocity.y, "(!) Overfill velocity Y for star.\n" );
+                assertReal( element->today.velocity.z, "(!) Overfill velocity Z for star.\n" );
+#endif
                 break;
 
             case E_DECREASE_MASS :
@@ -105,6 +115,10 @@ __kernel void fix(
 
             case E_INCREASE_MASS :
                 // # Отрабатывается в E_CHANGE_MASS.
+#ifdef __DEBUG
+                printf( "fix() Increase mass star %d on %e kg.", element->uid, e->fReal[ 1 ] );
+                printf( " Mass star is ~ %e kg.\n", massStar( element ) );
+#endif
                 break;
 
             case E_INCREASE_TEMPERATURE :

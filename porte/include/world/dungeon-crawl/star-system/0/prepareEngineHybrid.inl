@@ -10,28 +10,38 @@ namespace porte {
 
 
 inline void EngineHybrid::prepare() {
-    prepareEmitEvent();
+    prepareEmitEvent( "asteroid" );
+    //prepareEmitEvent( "planet" );
+    prepareEmitEvent( "star" );
 }
 
 
 
 
-
-inline void EngineHybrid::prepareEmitEvent() {
+inline void EngineHybrid::prepareEmitEvent( const std::string& element ) {
     // # Контекст и очередь команд инициализированы в конструкторе.
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
-    static const std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "set/emit-event/asteroid/begin" )
-        ( "set/emit-event/asteroid/direct" )
-        ( "set/emit-event/asteroid/relative" )
-        ( "set/emit-event/asteroid/fix" )
-        ( "set/emit-event/star/begin" )
-        ( "set/emit-event/star/direct" )
-        ( "set/emit-event/star/relative" )
-        ( "set/emit-event/star/fix" )
+    std::vector< std::string > kernelKeys = boost::assign::list_of
+        ( "set/emit-event/" + element + "/begin" )
+        ( "set/emit-event/" + element + "/direct" )
+        ( "set/emit-event/" + element + "/relative" )
+        ( "set/emit-event/" + element + "/fix" )
     ;
-    static const std::vector< std::string >  includeHCL;
+
+    // добавим модели поведения, которые *могут* быть усвоены
+    // конкретными элементами портулана
+    const std::string pathPrefix = "set/unique-emit-event/" + element;
+    std::set< std::string >  fl;
+    typelib::file::listFolder(
+        &fl,  L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTE + "/" + pathPrefix
+    );
+    for (auto itr = fl.cbegin(); itr != fl.cend(); ++itr) {
+        kernelKeys.push_back( pathPrefix + "/" + *itr + "/direct" );
+        //kernelKeys.push_back( pathPrefix + "/" + *itr + "/relative" );
+    }
+
+    const std::vector< std::string >  includeHCL;
 
     // Компилируем ядра OpenCL
     compileCLKernel( kernelKeys, includeHCL );

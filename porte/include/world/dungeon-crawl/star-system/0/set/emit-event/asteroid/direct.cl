@@ -25,9 +25,15 @@ __kernel void direct(
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > ASTEROID_COUNT) || absentAsteroid( &aa[ i ] ) ) {
+    if (i >= ASTEROID_COUNT) {
+        printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
     }
+
+    if ( absentAsteroid( &aa[ i ] ) ) {
+        return;
+    }
+
 
     __global aboutAsteroid_t* element = &aa[ i ];
     __global emitterEvent_t* ee = &element->emitterEvent;
@@ -48,19 +54,18 @@ __kernel void direct(
     // ѕроверка на столкновени€
     // # ѕровер€ем все идущие ниже по алфавиту элементы.
     //   —м. соглашение в теле EngineHybrid::pulse().
-    const real4_t coordA = (real4_t)(
-        convertFromBigValue( element->today.coord.x ),
-        convertFromBigValue( element->today.coord.y ),
-        convertFromBigValue( element->today.coord.z ),
-        0
-    );
-    const real_t maxSideA =
-        max( max( element->today.size[ 0 ],  element->today.size[ 1 ] ),  element->today.size[ 2 ] );
+    const real4_t coordA = convertFromBig3DValue( element->today.coord );
+    //const real_t maxSideA =
+    //    fmax( fmax( element->today.size.x,  element->today.size.y ), element->today.size.z );
+    real_t maxSideA = fmax( element->today.size.s0,  element->today.size.s1 );
+    //maxSideA = 1000;
+    @todo ! Ќе хватает регистров?
+
     const real_t massA = massAsteroid( element );
-    const real_t velocity1BeforeA = squareLengthVector( (real4_t)(
-        element->today.velocity[ 0 ],  element->today.velocity[ 1 ],  element->today.velocity[ 2 ],  0
-    ) );
-    const real_t kineticABefore = massA * velocity1BeforeA / 2.0f;
+    const real_t velocity1BeforeA =
+        squareLengthVector( element->today.velocity );
+    const real_t kineticABefore =
+        massA * velocity1BeforeA / 2.0f;
 
     // # ќтсутствующий элемент - сигнал конца списка.
     // # ѕрекращаем запоминать событи€, если пам€ть переполнена.
@@ -80,90 +85,88 @@ __kernel void direct(
         ) {
             __global const aboutStar_t* ask = &as[ k ];
 
-            const real4_t coordB = (real4_t)(
-                ask->today.coord[ 0 ],
-                ask->today.coord[ 1 ],
-                ask->today.coord[ 2 ],
-                0
-            );
-            const real_t collisionDistance =  max( maxSideA, ask->today.radius );
+            const real4_t coordB = convertFromBig3DValue( ask->today.coord );
+            const real_t collisionDistance = fmax( maxSideA, ask->today.radius );
             const bool hasCollision = collision( coordA,  coordB,  collisionDistance );
-            if ( hasCollision ) {
+            if ( !hasCollision ) {
+                continue;
+            }
+
 #ifdef __DEBUG
-                printf( "direct() Asteroid %d collision with star %d.\n", element->uid, ask->uid );
+            printf( "direct() Asteroid %d collision with star %d.\n", element->uid, ask->uid );
 #endif
-                // @todo optimize ѕри столкновении астероида и звезды кинет.
-                //       энерги€ не участвует в обработке событи€. Ќо есть
-                //       слушатели...
-                // силу удара определим по кинет. энергии
-                const real_t massB = massStar( ask );
-                const real_t velocity1BeforeB = squareLengthVector( (real4_t)(
-                    ask->today.velocity[ 0 ],  ask->today.velocity[ 1 ],  ask->today.velocity[ 2 ],  0
-                ) );
-                const real_t kineticBBefore = massB * velocity1BeforeB / 2.0f;
+            // @todo optimize ѕри столкновении астероида и звезды кинет.
+            //       энерги€ не участвует в обработке событи€. Ќо есть
+            //       слушатели...
+            // силу удара определим по кинет. энергии
+            const real_t massB = massStar( ask );
+            const real_t velocity1BeforeB =
+                squareLengthVector( ask->today.velocity );
+            const real_t kineticBBefore =
+                massB * velocity1BeforeB / 2.0f;
 
-                // @todo optimize јстероид слишком мал, чтобы существенно изменить
-                //       скорость (и кинет. энергию) звезды. ћожно не считать.
-                real4_t velocityAAfter, velocityBAfter;
-                speedCollisionVector(
-                    &velocityAAfter,  &velocityBAfter,
-                    massA,
-                    (real4_t)( element->today.velocity[ 0 ], element->today.velocity[ 1 ], element->today.velocity[ 2 ], 0 ),
-                    massB,
-                    (real4_t)( ask->today.velocity[ 0 ], ask->today.velocity[ 1 ], ask->today.velocity[ 2 ], 0 ),
-                    0.9
-                );
-                const real_t velocity1AfterA = squareLengthVector( (real4_t)(
-                    velocityAAfter[ 0 ],  velocityAAfter[ 1 ],  velocityAAfter[ 2 ],  0
-                ) );
-                const real_t velocity1AfterB = squareLengthVector( (real4_t)(
-                    velocityBAfter[ 0 ],  velocityBAfter[ 1 ],  velocityBAfter[ 2 ],  0
-                ) );
-                const real_t kineticAAfter = massA * velocity1AfterA / 2.0f;
-                const real_t kineticBAfter = massB * velocity1AfterB / 2.0f;
-                const real_t deltaKineticA = kineticABefore - kineticAAfter;
-                const real_t deltaKineticB = kineticBBefore - kineticBAfter;
+            // @todo optimize јстероид слишком мал, чтобы существенно изменить
+            //       скорость (и кинет. энергию) звезды. ћожно не считать.
+            real4_t velocityAAfter, velocityBAfter;
+            speedCollisionVector(
+                &velocityAAfter,  &velocityBAfter,
+                massA,
+                element->today.velocity,
+                massB,
+                ask->today.velocity,
+                0.9
+            );
+            // @todo optimize fine »спользовать 4-е поле дл€ вычислени€ и
+            //       хранени€ длины вектора.
+            const real_t velocity1AfterA =
+                squareLengthVector( velocityAAfter );
+            const real_t velocity1AfterB =
+                squareLengthVector( velocityBAfter );
+            const real_t kineticAAfter = massA * velocity1AfterA / 2.0f;
+            const real_t kineticBAfter = massB * velocity1AfterB / 2.0f;
+            const real_t deltaKineticA = kineticABefore - kineticAAfter;
+            const real_t deltaKineticB = kineticBBefore - kineticBAfter;
 
-                // при столкновении создаЄтс€ неск. событий
-                // #! ƒобавление сюда новых событий требует обновлени€
-                //    'MAX_EVENT_IN_ONE_LOOP' выше.
+            // при столкновении создаЄтс€ неск. событий
+            // #! ƒобавление сюда новых событий требует обновлени€
+            //    'MAX_EVENT_IN_ONE_LOOP' выше.
 
-                // —толкновение со звездой
-                {
-                    eventTwo_t e = {
-                        // uid событи€
-                        E_COLLISION,
-                        // второй участник событи€
-                        { GE_STAR,  k,  ask->uid },
-                        {
-                            kineticABefore, kineticBBefore,
-                            deltaKineticA,  deltaKineticB
-                        }
-                    };
-                    element->emitterEvent.content[ w ] = e;
-                    ++w;
-                }
+            // —толкновение со звездой
+            {
+                const eventTwo_t e = {
+                    // uid событи€
+                    E_COLLISION,
+                    // второй участник событи€
+                    { GE_STAR,  k,  ask->uid },
+                    {
+                        kineticABefore, kineticBBefore,
+                        deltaKineticA,  deltaKineticB
+                    }
+                };
+                //element->emitterEvent.content[ w ] = e;
+                //++w;
+            }
 
-                // јстероид уничтожен
-                {
-                    eventTwo_t e = {
-                        // uid событи€
-                        E_DESTROY,
-                        // второй участник событи€ - не важен дл€ этого событи€
-                        {},
-                        {
-                            kineticABefore,
-                            deltaKineticA
-                        }
-                    };
-                    element->emitterEvent.content[ w ] = e;
-                    ++w;
-                }
+#if 0
+            // јстероид уничтожен
+            {
+                const eventTwo_t e = {
+                    // uid событи€
+                    E_DESTROY,
+                    // второй участник событи€ - не важен дл€ этого событи€
+                    {},
+                    {
+                        kineticABefore,
+                        deltaKineticA
+                    }
+                };
+                element->emitterEvent.content[ w ] = e;
+                ++w;
+            }
 
-                // #! ƒобавление сюда новых событий требует обновлени€
-                //    'MAX_EVENT_IN_ONE_LOOP' выше.
-
-            } // if ( hasCollision )
+            // #! ƒобавление сюда новых событий требует обновлени€
+            //    'MAX_EVENT_IN_ONE_LOOP' выше.
+#endif
 
         } // for (size_t k = 0 ...
 
@@ -171,6 +174,6 @@ __kernel void direct(
 
 
     // обновл€ем вальдо
-    ee->waldo = w;
+    //ee->waldo = w;
 
 }

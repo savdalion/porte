@@ -46,6 +46,9 @@
     <None Include="include\world\dungeon-crawl\star-system\0\Engine.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\prepareEngineHybrid.inl" />
     <None Include="include\world\dungeon-crawl\star-system\0\EngineHybrid.inl" />
+    <None Include="include\world\dungeon-crawl\star-system\0\set\emit-event\!.md" />
+    <None Include="include\world\dungeon-crawl\star-system\0\set\unique-emit-event\!.md" />
+    <None Include="include\world\dungeon-crawl\star-system\0\set\unique-emit-event\asteroid\grow-up\!.md" />
     <None Include="porte\include\Engine.inl" />
     <None Include="heat-transfer\include\HeatTransfer.inl" />
     <None Include="include\uniform-heat-transfer\UniformHeatTransfer.inl" />

@@ -121,7 +121,6 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     // астероид
     // @source http://ru.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4
     // @source http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%8F%D1%81_%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%BE%D0%B8%D0%B4%D0%BE%D0%B2
-    auto& tac = topology()->asteroid.content;
     size_t countAsteroid = 0;
 
     // для позиционирования астероидов
@@ -144,10 +143,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
         const pns::real_t albedo = 0.6;
 
-        const auto tsc = topology()->star.content;
-        const pns::real_t radiusStar = tsc[ 0 ].today.radius;
+        const pns::real_t radiusStar = tsc()[ 0 ].today.radius;
         const pns::real_t surfaceTemperatureStar =
-            tsc[ 0 ].today.surfaceTemperature;
+            tsc()[ 0 ].today.surfaceTemperature;
 
         const pns::real_t d = asteroidOrbit;
         const pns::real_t temperature =
@@ -207,14 +205,14 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // emitterEvent
             {}
         };
-        tac[ countAsteroid ] = asteroid;
+        tac()[ countAsteroid ] = asteroid;
         ++countAsteroid;
     }
 #endif
 
     // завершаем список астероидов пустотой
     static const pns::aboutAsteroid_t ASTEROID_END_LIST = {};
-    tac[ countAsteroid ] = ASTEROID_END_LIST;
+    tac()[ countAsteroid ] = ASTEROID_END_LIST;
 
 
     // воплощаем
@@ -236,10 +234,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
     // делаем снимок мира (см. SetUp() и выше)
     const auto massStar = pns::convertFromBigValue< double >(
-        topology()->star.content[ 0 ].today.mass
+        tsc()[ 0 ].today.mass
     );
     const auto allMassAsteroid = pns::convertFromBigValue< double >(
-        topology()->asteroid.content[ 0 ].today.mass
+        tac()[ 0 ].today.mass
     );
 
 
@@ -255,8 +253,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
 
     // проверяем результат
-    EXPECT_EQ( 1,  pns::countStar( topology()->star.content, true ) );
-    EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
+
+    // все ли характеристики элементов остались в пределах нормы
+    testAsteroid( false );
+    // @todo testStar( false );
+
+    EXPECT_EQ( 1,  pns::countStar( tsc(), true ) );
+    EXPECT_EQ( 0,  pns::countAsteroid( tac(), true ) );
 
     // состояние астероида
     {
@@ -278,7 +281,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     // состояние звезды
     {
         const auto actual = pns::convertFromBigValue< double >(
-            topology()->star.content[ 0 ].today.mass
+            tsc()[ 0 ].today.mass
         );
         EXPECT_GT( actual, massStar );
 
@@ -449,6 +452,11 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
 
 
     // проверяем результат
+
+    // все ли характеристики элементов остались в пределах нормы
+    testAsteroid( false );
+    // @todo testStar( false );
+
     EXPECT_EQ( 1,  pns::countStar( topology()->star.content, true ) );
     EXPECT_EQ( 0,  pns::countAsteroid( topology()->asteroid.content, true ) );
 
@@ -503,7 +511,6 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
 
 #endif
 }
-
 
 
 

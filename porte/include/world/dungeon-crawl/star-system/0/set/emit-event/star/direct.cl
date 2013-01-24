@@ -21,11 +21,18 @@ __kernel void direct(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > STAR_COUNT) || absentStar( &as[ i ] ) ) {
+    if (i >= STAR_COUNT) {
+        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        return;
+    }
+
+    if ( absentStar( &as[ i ] ) ) {
         return;
     }
 
@@ -50,7 +57,7 @@ __kernel void direct(
         // вычислим часть формулы для расчёта силы притяжения: это значение
         // смогут использовать элементы, которые притягивает звезда
         const real_t fgm = G * massA;
-        eventTwo_t e = {
+        const eventTwo_t e = {
             // uid события
             E_GRAVITY,
             // второй участник события - здесь не важен
@@ -67,15 +74,15 @@ __kernel void direct(
     // @todo optimize Запоминать вычисленные значения.
     const real_t radiusA = element->today.radius;
     const real_t surfaceTemperatureA = element->today.surfaceTemperature;
-    const real_t luminosityBySecond =
+    const real_t luminosityABySecond =
         luminosity( radiusA, surfaceTemperatureA );
     if (w < EMITTER_EVENT_COUNT) {
-        eventTwo_t e = {
+        const eventTwo_t e = {
             // uid события
             E_RADIATION,
             // второй участник события - здесь не важен
             {},
-            { luminosityBySecond, luminosityBySecond * timestep }
+            { luminosityABySecond, luminosityABySecond * timestep }
         };
         element->emitterEvent.content[ w ] = e;
         ++w;
@@ -85,26 +92,26 @@ __kernel void direct(
     // Потеря массы (из-за излучения)
     // @todo optimize Запоминать вычисленные значения.
     // E = m * c ^ 2
-    const real_t deltaMassBySecond =
-        -luminosityBySecond / (SPEED_LIGHT * SPEED_LIGHT);
+    const real_t deltaMassABySecond =
+        -luminosityABySecond / (SPEED_LIGHT * SPEED_LIGHT);
     if (w < EMITTER_EVENT_COUNT) {
-        eventTwo_t e = {
+        const eventTwo_t e = {
             // uid события
             E_CHANGE_MASS,
             // второй участник события - здесь не важен
             {},
-            { deltaMassBySecond, deltaMassBySecond * timestep }
+            { deltaMassABySecond, deltaMassABySecond * timestep }
         };
         element->emitterEvent.content[ w ] = e;
         ++w;
     }
     if (w < EMITTER_EVENT_COUNT) {
-        eventTwo_t e = {
+        const eventTwo_t e = {
             // uid события
             E_DECREASE_MASS,
             // второй участник события - здесь не важен
             {},
-            { deltaMassBySecond, deltaMassBySecond * timestep }
+            { deltaMassABySecond, deltaMassABySecond * timestep }
         };
         element->emitterEvent.content[ w ] = e;
         ++w;

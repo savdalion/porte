@@ -21,16 +21,24 @@ __kernel void fix(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    if ( (i > ASTEROID_COUNT) || absentAsteroid( &aa[ i ] ) ) {
+    if (i >= ASTEROID_COUNT) {
+        printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
     }
 
+    if ( absentAsteroid( &aa[ i ] ) ) {
+        return;
+    }
+
+
     __global aboutAsteroid_t* element = &aa[ i ];
-    __global emitterEvent_t* ee = &element->emitterEvent;
+    const __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
         printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
@@ -66,10 +74,56 @@ __kernel void fix(
                 element->today.coord.x += convertToBigValue( e->fReal[ 0 ] );
                 element->today.coord.y += convertToBigValue( e->fReal[ 1 ] );
                 element->today.coord.z += convertToBigValue( e->fReal[ 2 ] );
+#ifdef __DEBUG
+                assertReal4( element->today.coord.x, "(!) Overfill coord X for asteroid.\n" );
+                assertReal4( element->today.coord.y, "(!) Overfill coord Y for asteroid.\n" );
+                assertReal4( element->today.coord.z, "(!) Overfill coord Z for asteroid.\n" );
+#endif
                 break;
 
             case E_CHANGE_MASS :
                 element->today.mass += convertToBigValue( e->fReal[ 1 ] );
+#ifdef __DEBUG
+                assertReal4( element->today.mass, "(!) Overfill mass for asteroid.\n" );
+#endif
+                break;
+
+            case E_CHANGE_SIZE :
+#ifdef __DEBUG
+/*
+                if ( !testReal( element->today.size[ 0 ] + e->fReal[ 3 ] )
+                  || !testReal( element->today.size[ 1 ] + e->fReal[ 4 ] )
+                  || !testReal( element->today.size[ 2 ] + e->fReal[ 5 ] )
+                ) {
+                    printf( "Asteroid %d before change size.\n"
+                        "  Coord %e %e %e\n"
+                        "  Velocity %e %e %e\n"
+                        "  Size %e %e %e\n"
+                        "",
+                        element->uid,
+                        element->today.coord.x,
+                        element->today.coord.y,
+                        element->today.coord.z,
+                        element->today.velocity[ 0 ],
+                        element->today.velocity[ 1 ],
+                        element->today.velocity[ 2 ],
+                        element->today.size[ 0 ],
+                        element->today.size[ 1 ],
+                        element->today.size[ 2 ]
+                    );
+                }
+*/
+#endif
+                element->today.size.x += e->fReal[ 3 ];
+                element->today.size.y += e->fReal[ 4 ];
+                element->today.size.z += e->fReal[ 5 ];
+#ifdef __DEBUG
+                assertReal( element->today.size.x, "(!) Overfill size X for asteroid.\n" );
+                assertReal( element->today.size.y, "(!) Overfill size Y for asteroid.\n" );
+                assertReal( element->today.size.z, "(!) Overfill size Z for asteroid.\n" );
+                printf( "fix() Change size asteroid %d.  %e x %e x %e\n",
+                    element->uid,  e->fReal[ 3 ],  e->fReal[ 4 ],  e->fReal[ 5 ] );
+#endif
                 break;
 
             case E_CHANGE_TEMPERATURE :
@@ -77,13 +131,22 @@ __kernel void fix(
                 break;
 
             case E_CHANGE_VELOCITY :
-                element->today.velocity[ 0 ] += e->fReal[ 0 ];
-                element->today.velocity[ 1 ] += e->fReal[ 1 ];
-                element->today.velocity[ 2 ] += e->fReal[ 2 ];
+                element->today.velocity.x += e->fReal[ 0 ];
+                element->today.velocity.y += e->fReal[ 1 ];
+                element->today.velocity.z += e->fReal[ 2 ];
+#ifdef __DEBUG
+                assertReal( element->today.velocity.x, "(!) Overfill velocity X for asteroid.\n" );
+                assertReal( element->today.velocity.y, "(!) Overfill velocity Y for asteroid.\n" );
+                assertReal( element->today.velocity.z, "(!) Overfill velocity Z for asteroid.\n" );
+#endif
                 break;
 
             case E_DECREASE_MASS :
                 // # Отрабатывается в E_CHANGE_MASS.
+                break;
+
+            case E_DECREASE_SIZE :
+                // # Отрабатывается в E_CHANGE_SIZE.
                 break;
 
             case E_DECREASE_TEMPERATURE :
@@ -96,6 +159,10 @@ __kernel void fix(
 
             case E_INCREASE_MASS :
                 // # Отрабатывается в E_CHANGE_MASS.
+                break;
+
+            case E_INCREASE_SIZE :
+                // # Отрабатывается в E_CHANGE_SIZE.
                 break;
 
             case E_INCREASE_TEMPERATURE :

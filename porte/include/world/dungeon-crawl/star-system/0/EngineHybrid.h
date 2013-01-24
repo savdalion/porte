@@ -101,7 +101,7 @@ private:
     void prepareCLCommandQueue();
 
     void prepare();
-    void prepareEmitEvent();
+    void prepareEmitEvent( const std::string& element );
 
 
     void compileCLKernel(
@@ -109,6 +109,13 @@ private:
         const std::vector< std::string >&  includeHCL = std::vector< std::string >(),
         const std::string& options = ""
     );
+
+
+    /**
+    * Выполняет указанное ядро OpenCL.
+    */
+    template< size_t GLOBAL_SIZE >
+    void runCLKernel( const std::string& key );
 
 
     static std::string commonConstantCLKernel();
