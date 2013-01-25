@@ -48,6 +48,15 @@ protected:
             static const pns::uid_t uid = 1;
             const pns::real4_t mass = pns::convertToBigValue( 1.9891e30 );
 
+            const pns::big3d_t coord = {};
+            pns::real3_t rotation = {};
+
+            const auto orbitalSpeed = typelib::VectorT< pns::real_t >::ZERO();
+            pns::real3_t velocity = {};
+            velocity.s[ 0 ] = orbitalSpeed.x;
+            velocity.s[ 1 ] = orbitalSpeed.y;
+            velocity.s[ 2 ] = orbitalSpeed.z;
+
             static const pns::characteristicStar_t today = {
                 // live
                 true,
@@ -60,13 +69,11 @@ protected:
                 // surfaceTemperature,
                 5780 + typelib::constant::physics::CK,
                 // coord
-                { 0, 0, 0 },
+                coord,
                 // rotation
-                { 0, 0, 0 },
-                // force, absForce
-                { 0, 0, 0 },  0,
+                rotation,
                 // velocity
-                { 0, 0, 0 },
+                velocity,
                 // luminosity
                 0
             };
@@ -135,6 +142,11 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         const pns::real_t rx = 30e3;
         const pns::real_t ry = 50e3;
         const pns::real_t rz = 40e3;
+        pns::real3_t size = {};
+        size.s[ 0 ] = rx;
+        size.s[ 1 ] = ry;
+        size.s[ 2 ] = rz;
+
         const pns::real_t density = 5000.0;
         const pns::real4_t mass = pns::convertToBigValue(
             typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
@@ -149,13 +161,30 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
         const pns::real_t d = asteroidOrbit;
         const pns::real_t temperature =
-                typelib::compute::physics::effectiveTemperature(
-                    luminosityStar(), d, albedo
-                );
+            typelib::compute::physics::effectiveTemperature(
+                luminosityStar(), d, albedo
+            );
 
-        const pns::real4_t x = pns::convertToBigValue( d );
-        const pns::real4_t y = pns::convertToBigValue( 0 );
-        const pns::real4_t z = pns::convertToBigValue( 0 );
+        const pns::big3d_t coord = {
+            pns::convertToBigValue( d ),
+            pns::convertToBigValue( 0 ),
+            pns::convertToBigValue( 0 )
+        };
+
+        pns::real3_t rotation = {};
+
+        const auto& star = topology()->star;
+        const auto absOrbitalSpeed =
+            typelib::compute::physics::orbitalSpeed(
+                pns::convertFromBigValue< pns::real_t >( mass ),
+                pns::massStar( &star.content[ 0 ] ),
+                d
+            );
+        const auto orbitalSpeed = typelib::VectorT< pns::real_t >::ZERO();
+        pns::real3_t velocity = {};
+        velocity.s[ 0 ] = orbitalSpeed.x;
+        velocity.s[ 1 ] = orbitalSpeed.y;
+        velocity.s[ 2 ] = orbitalSpeed.z;
 
         const pns::characteristicAsteroid_t today = {
             // live
@@ -163,15 +192,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // mass
             mass,
             // size
-            { rx, ry, rz },
+            size,
             // coord
-            { x, y, z },
+            coord,
             // rotation
-            { 0, 0, 0 },
-            // force, absForce
-            { 0, 0, 0 },  0,
+            rotation,
             // velocity
-            { 0, 0, 0 },
+            velocity,
             // density
             // # ~ Кремний 2330 кг / м3
             density,
@@ -195,7 +222,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // # ~ Кремний 383 кДж / моль
             380000 / 28.0855
         };
-        static const pns::aboutAsteroid_t asteroid = {
+        pns::aboutAsteroid_t asteroid = {
             // uid
             uid,
             // today
@@ -203,6 +230,8 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
             // future
             {},
             // emitterEvent
+            {},
+            // memoryModel
             {}
         };
         tac()[ countAsteroid ] = asteroid;
@@ -313,7 +342,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
 
 TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
-#if 1
+#if 0
 
     // подготовка
 #if 1

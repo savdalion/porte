@@ -48,10 +48,10 @@ protected:
             const pns::real4_t mass = pns::convertToBigValue( 1.9891e30 );
 
             const pns::big3d_t coord = {};
-            pns::small3d_t rotation = {};
+            pns::real3_t rotation = {};
 
             const auto orbitalSpeed = typelib::VectorT< pns::real_t >::ZERO();
-            pns::small3d_t velocity = {};
+            pns::real3_t velocity = {};
             velocity.s[ 0 ] = orbitalSpeed.x;
             velocity.s[ 1 ] = orbitalSpeed.y;
             velocity.s[ 2 ] = orbitalSpeed.z;
@@ -142,7 +142,7 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
         const pns::real_t rx = 30e3;
         const pns::real_t ry = 50e3;
         const pns::real_t rz = 40e3;
-        pns::small3d_t size = {};
+        pns::real3_t size = {};
         size.s[ 0 ] = rx;
         size.s[ 1 ] = ry;
         size.s[ 2 ] = rz;
@@ -162,9 +162,9 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
 
         const pns::real_t d = asteroidOrbit;
         const pns::real_t temperature =
-                typelib::compute::physics::effectiveTemperature(
-                    luminosityStar(), d, albedo
-                );
+            typelib::compute::physics::effectiveTemperature(
+                luminosityStar(), d, albedo
+            );
 
         const pns::big3d_t coord = {
             pns::convertToBigValue( d ),
@@ -172,7 +172,7 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
             pns::convertToBigValue( 0 )
         };
 
-        pns::small3d_t rotation = {};
+        pns::real3_t rotation = {};
 
         const auto& star = topology()->star;
         const auto absOrbitalSpeed =
@@ -183,7 +183,7 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
             );
         const auto orbitalSpeed =
             typelib::VectorT< pns::real_t >( 0, absOrbitalSpeed, 0 );
-        pns::small3d_t velocity = {};
+        pns::real3_t velocity = {};
         velocity.s[ 0 ] = orbitalSpeed.x;
         velocity.s[ 1 ] = orbitalSpeed.y;
         velocity.s[ 2 ] = orbitalSpeed.z;

@@ -49,9 +49,9 @@ __kernel void relative(
         "Size %e %e %e\n"
         "",
         element->uid,
-        element->today.coord.x,
-        element->today.coord.y,
-        element->today.coord.z,
+        convertFromBigValue( element->today.coord.x ),
+        convertFromBigValue( element->today.coord.y ),
+        convertFromBigValue( element->today.coord.z ),
         element->today.velocity[ 0 ],
         element->today.velocity[ 1 ],
         element->today.velocity[ 2 ],
@@ -71,9 +71,9 @@ __kernel void relative(
 
     // Силы от других элементов
     // накопим результат, просмотрев элементы звёздной системы
-    real4_t gfA = (real4_t)( 0 );
+    real3_t gfA = 0;
 
-    real4_t coordA;
+    real3_t coordA;
     convertFromBig3DValue( &coordA, element->today.coord );
     const real_t massA = massAsteroid( element );
 
@@ -96,28 +96,27 @@ __kernel void relative(
                 if (ee->content[ we ].uid == E_GRAVITY) {
                     // часть формулы уже вычислена звездой
                     const real_t fgm = ee->content[ we ].fReal[ 0 ];
-                    real4_t coordB;
+                    real3_t coordB;
                     convertFromBig3DValue( &coordB, ask->today.coord);
-                    real4_t dc = coordB - coordA;
-                    lengthVectorL( &dc );
-                    const real4_t squareDC = dc * dc;
+                    const real3_t dc = coordB - coordA;
+                    const real3_t squareDC = dc * dc;
+                    const real_t absDC = length( dc );
 #ifdef __DEBUG
                     /* - Увидим ошибку при проверке силы, ниже.
-                    assertReal( lengthDC, "(!) Overfill distance between asteroid and star.\n" );
+                    assertReal( absDC, "(!) Overfill distance between asteroid and star.\n" );
                     */
 #endif
-                    const bool correctLengthDC = testReal4( dc.w );
-                    if ( correctLengthDC && (dc.w > PRECISION) ) {
-                        const real4_t normalDC = dc / dc.w;
+                    const bool correctAbsDC = testReal( absDC );
+                    if ( correctAbsDC && (absDC > PRECISION) ) {
+                        const real3_t normalDC = dc / absDC;
                         // f = (G * mB) * mA / distance ^ 2
                         // @todo optimize Вынести '* massA' за циклы.
                         const real_t fgmm = fgm * massA;
-                        // @todo optimize Использовать деление для real4_t.
-                        gfA += (real4_t)(
+                        // @todo optimize Использовать деление для real3_t.
+                        gfA += (real3_t)(
                             zero( normalDC.x ) ? 0 : (fgmm / squareDC.x),
                             zero( normalDC.y ) ? 0 : (fgmm / squareDC.y),
-                            zero( normalDC.z ) ? 0 : (fgmm / squareDC.z),
-                            0
+                            zero( normalDC.z ) ? 0 : (fgmm / squareDC.z)
                         ) * normalDC;
                         // # В списке событий от 1 элемента может быть только
                         //   одна гравитационная сила.
@@ -134,8 +133,7 @@ __kernel void relative(
 
     // Результирующая сила
     // @todo optimize Не учитывать мизерные воздействия.
-    lengthVectorL( &gfA );
-    const real_t absForceA = gfA.w;
+    const real_t absForceA = length( gfA );
     const bool correctAbsForce = testReal( absForceA );
 #ifdef __DEBUG
     if ( !correctAbsForce ) {
@@ -156,7 +154,6 @@ __kernel void relative(
             element->today.size[ 2 ]
         );
     }
-    assertReal4( gfA, "(!) Overfill E_IMPACT_FORCE for asteroid.\n" );
     assertReal( absForceA, "(!) Overfill length E_IMPACT_FORCE for asteroid.\n" );
 #endif
     if ( correctAbsForce && (w < EMITTER_EVENT_COUNT) ) {
@@ -165,7 +162,7 @@ __kernel void relative(
             E_IMPACT_FORCE,
             // второй участник события - здесь не важен
             {},
-            { gfA.s0, gfA.s1, gfA.s2,  absForceA }
+            { gfA.x, gfA.y, gfA.z,  absForceA }
         };
         element->emitterEvent.content[ w ] = e;
         ++w;
@@ -173,7 +170,7 @@ __kernel void relative(
 
 
     // Действует ускорение
-    const real4_t accelerationA = gfA / massA;
+    const real3_t accelerationA = gfA / massA;
     const real_t absAccelerationA = absForceA / massA;  // = lengthVector( accelerationA )
     if ( (w < EMITTER_EVENT_COUNT) && (absAccelerationA > PRECISION) ) {
         const eventTwo_t e = {
@@ -182,7 +179,7 @@ __kernel void relative(
             // второй участник события - здесь не важен
             {},
             // @todo optimize fine Хранить значения в виде 4D-векторов.
-            { accelerationA.s0, accelerationA.s1, accelerationA.s2,  absAccelerationA }
+            { accelerationA.x, accelerationA.y, accelerationA.z,  absAccelerationA }
         };
         element->emitterEvent.content[ w ] = e;
         ++w;
@@ -190,12 +187,12 @@ __kernel void relative(
 
 
     // Меняется скорость
-    const real4_t deltaVelocityA = accelerationA * timestep;
-    real4_t velocityA = element->today.velocity;
-    lengthVectorL( &velocityA );
-    real4_t futureVelocityA = velocityA + deltaVelocityA;
-    lengthVectorL( &futureVelocityA );
-    const real_t absDeltaVelocityA = futureVelocityA.w - velocityA.w;
+    const real3_t deltaVelocityA = accelerationA * timestep;
+    const real3_t velocityA = element->today.velocity;
+    const real_t absVelocityA = length( velocityA );
+    const real3_t futureVelocityA = velocityA + deltaVelocityA;
+    const real_t absFutureVelocityA = length( futureVelocityA );
+    const real_t absDeltaVelocityA = absFutureVelocityA - absVelocityA;
     // # Скорость могла остаться прежней. Бережём память э. для др. событий.
     if (absDeltaVelocityA > PRECISION) {
         // @todo optimize? Ниже - повторение. Убрать его - ускорит обработку?
@@ -228,8 +225,8 @@ __kernel void relative(
 
 
     // Меняются координаты
-    const real4_t deltaCoordA = futureVelocityA * timestep;
-    if ( (w < EMITTER_EVENT_COUNT) && ((absDeltaVelocityA * timestep) > 0) ) {
+    const real3_t deltaCoordA = futureVelocityA * timestep;
+    if ( (w < EMITTER_EVENT_COUNT) && (length( deltaCoordA ) > PRECISION) ) {
         const eventTwo_t e = {
             // uid события
             E_CHANGE_COORD,

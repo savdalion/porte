@@ -64,14 +64,13 @@ __kernel void direct(
     // Проверка на столкновения
     // # Проверяем все идущие ниже по алфавиту элементы.
     //   См. соглашение в теле EngineHybrid::pulse().
-    //const real4_t coordA = convertFromBig3DValue( element->today.coord );
-    real4_t coordA;
+    real3_t coordA;
     convertFromBig3DValue( &coordA, element->today.coord );
 
     const real_t massA = massAsteroid( element );
-    lengthVector( &element->today.velocity );
+    const real_t absVelocityABefore = length( element->today.velocity );
     const real_t kineticABefore =
-        massA * element->today.velocity.w * element->today.velocity.w / 2.0f;
+        massA * absVelocityABefore * absVelocityABefore / 2.0f;
 
     // # Отсутствующий элемент - сигнал конца списка.
     // # Прекращаем запоминать события, если память переполнена.
@@ -91,12 +90,12 @@ __kernel void direct(
         ) {
             __global const aboutStar_t* ask = &as[ k ];
 
-            real4_t coordB;
+            real3_t coordB;
             convertFromBig3DValue( &coordB, ask->today.coord );
             // # Звезда всегда больше астероида.
             const real_t collisionDistance = ask->today.radius;
             const bool hasCollision =
-                collision( &coordA,  coordB,  collisionDistance );
+                collision( coordA,  coordB,  collisionDistance );
             if ( !hasCollision ) {
                 continue;
             }
@@ -109,14 +108,13 @@ __kernel void direct(
             //       слушатели...
             // силу удара определим по кинет. энергии
             const real_t massB = massStar( ask );
-            real4_t velocityBBefore = ask->today.velocity;
-            lengthVectorL( &velocityBBefore );
+            const real_t absVelocityBBefore = length( ask->today.velocity );
             const real_t kineticBBefore =
-                massB * velocityBBefore.w * velocityBBefore.w / 2.0f;
+                massB * absVelocityBBefore * absVelocityBBefore / 2.0f;
 
             // @todo optimize Астероид слишком мал, чтобы существенно изменить
             //       скорость (и кинет. энергию) звезды. Можно не считать.
-            real4_t velocityAAfter, velocityBAfter;
+            real3_t velocityAAfter, velocityBAfter;
             speedCollisionVector(
                 &velocityAAfter,  &velocityBAfter,
                 massA,
@@ -125,12 +123,12 @@ __kernel void direct(
                 ask->today.velocity,
                 0.9f
             );
-            lengthVectorL( &velocityAAfter );
-            lengthVectorL( &velocityBAfter );
+            const real_t absVelocityAAfter = length( velocityAAfter );
+            const real_t absVelocityBAfter = length( velocityBAfter );
             const real_t kineticAAfter =
-                massA * velocityAAfter.w * velocityAAfter.w / 2.0f;
+                massA * absVelocityAAfter * absVelocityAAfter / 2.0f;
             const real_t kineticBAfter =
-                massB * velocityBAfter.w * velocityBAfter.w / 2.0f;
+                massB * absVelocityBAfter * absVelocityBAfter / 2.0f;
             const real_t deltaKineticA = kineticABefore - kineticAAfter;
             const real_t deltaKineticB = kineticBBefore - kineticBAfter;
 

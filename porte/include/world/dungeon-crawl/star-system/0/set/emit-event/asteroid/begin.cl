@@ -33,6 +33,7 @@ __kernel void begin(
         printf( "aboutStar_t %i\n", sizeof( aboutStar_t ) );
         printf( "real_t %i\n", sizeof( real_t ) );
         printf( "real2_t %i\n", sizeof( real2_t ) );
+        printf( "real3_t %i\n", sizeof( real3_t ) );
         printf( "real4_t %i\n", sizeof( real4_t ) );
         printf( "characteristicAsteroid_t %i\n", sizeof( characteristicAsteroid_t ) );
         printf( "bool %i\n", sizeof( bool ) );

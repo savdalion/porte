@@ -25,6 +25,7 @@ typedef float   real_t;
 */
 typedef float   real_t;
 typedef float2  real2_t;
+typedef float3  real3_t;
 typedef float4  real4_t;
 
 typedef char    cl_char;

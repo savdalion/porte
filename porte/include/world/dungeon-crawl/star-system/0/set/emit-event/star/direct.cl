@@ -21,8 +21,6 @@ __kernel void direct(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
-    return;
-
     // # —юда получаем готовый индекс. ”читываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );

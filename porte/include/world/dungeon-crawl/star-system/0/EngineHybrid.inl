@@ -146,7 +146,7 @@ inline void EngineHybrid::pulse( int n ) {
     const auto ts = sizeof( pns::aboutStar_t );
 
     const auto tca = sizeof( pns::characteristicAsteroid_t );
-    const auto ts3 = sizeof( pns::small3d_t );
+    const auto ts3 = sizeof( pns::real3_t );
     const auto tb3 = sizeof( pns::big3d_t );
     const auto tr1 = sizeof( pns::real_t );
     const auto tr2 = sizeof( pns::real2_t );
@@ -182,6 +182,8 @@ inline void EngineHybrid::emitEvent( int n ) {
     auto& star     = topology.star.content;
 
 
+    // @todo fine clEnqueueMigrateMemObjects() для актуализации структур.
+
 
     // выполним 'n' пульсов
     // # Параметры для ядер уже подготовлены в incarnate().
@@ -191,14 +193,6 @@ inline void EngineHybrid::emitEvent( int n ) {
         //   упорядочены (оптимизированы). См. старания ниже.
 
         const cl_long pulselive = mLive.pulselive();
-
-    
-        // сформируем согласованные очереди для OpenCL
-        // # В блоках ниже исп. одинаковые порции событий для каждого
-        //   элемента звёздной системы.
-        //static const size_t PEN = 1;
-        vectorEventCL_t  emitBegin(  2 );
-        vectorEventCL_t  emitDirect( 1 );
 
 
         // Подготавливаем элементы к созданию событий
@@ -220,32 +214,88 @@ inline void EngineHybrid::emitEvent( int n ) {
     */
 
         cl::Event asteroidBegin;
-        //enqueueEventKernelCL< pns::ASTEROID_COUNT >(
-        //    "set/emit-event/asteroid/begin",  &asteroidBegin );
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+            "set/emit-event/asteroid/begin",  &asteroidBegin );
         cl::Event starBegin;
-        //enqueueEventKernelCL< pns::STAR_COUNT >(
-        //    "set/emit-event/star/begin",      &starBegin );
-        //mQueueCL.flush();
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/begin",      &starBegin );
+        const vectorEventCL_t afterBegin = boost::assign::list_of
+            ( asteroidBegin )
+            ( starBegin )
+        ;
 
         cl::Event asteroidDirect;
-        cl::Event starDirect;
-        const vectorEventCL_t afterBegin //= boost::assign::list_of
-            //( asteroidBegin )
-            //( starBegin )
-        ;
         enqueueEventKernelCL< pns::ASTEROID_COUNT >(
             "set/emit-event/asteroid/direct",  afterBegin,  &asteroidDirect );
-        //enqueueEventKernelCL< pns::STAR_COUNT >(
-        //    "set/emit-event/star/direct",      afterBegin,  &starDirect );
+        cl::Event starDirect;
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/direct",      afterBegin,  &starDirect );
+        const vectorEventCL_t afterDirect = boost::assign::list_of
+            ( asteroidDirect )
+            ( starDirect )
+        ;
 
-        mQueueCL.flush();
+        cl::Event asteroidRelative;
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+            "set/emit-event/asteroid/relative",  afterDirect,  &asteroidRelative );
+        cl::Event starRelative;
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/relative",      afterDirect,  &starRelative );
+        const vectorEventCL_t afterRelative = boost::assign::list_of
+            ( asteroidRelative )
+            ( starRelative )
+        ;
+
+        cl::Event asteroidFix;
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+            "set/emit-event/asteroid/fix",  afterRelative,  &asteroidFix );
+        cl::Event starFix;
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/fix",      afterRelative,  &starFix );
+        const vectorEventCL_t afterFix = boost::assign::list_of
+            ( asteroidFix )
+            ( starFix )
+        ;
 #endif
 
 
         // ожидаем завершения отработки очереди
         mQueueCL.finish();
 
+
+        // мир становится старше
+        mLive.inc( mTimestep );
+
     } // for (int p = 0 ...
+
+
+
+    // результат
+    mQueueCL.enqueueReadBuffer(
+        asteroidBCL,
+        CL_TRUE,
+        0,
+        memsizeAsteroid,
+        asteroid
+    );
+
+    mQueueCL.enqueueReadBuffer(
+        planetBCL,
+        CL_TRUE,
+        0,
+        memsizePlanet,
+        planet
+    );
+
+    mQueueCL.enqueueReadBuffer(
+        starBCL,
+        CL_TRUE,
+        0,
+        memsizeStar,
+        star
+    );
+
+    mQueueCL.finish();
 
 
 
@@ -570,45 +620,7 @@ inline void EngineHybrid::emitEvent( int n ) {
 
 #endif
 
-    // мир становится старше
-    mLive.inc( mTimestep );
-
     } // for (int p = 0; p < n; ++p)
-
-
-    // результат
-    errorCL = clEnqueueReadBuffer(
-        commandQueueCL,
-        asteroidCL,
-        CL_TRUE,
-        0,
-        memsizeAsteroid,
-        asteroid,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    errorCL = clEnqueueReadBuffer(
-        commandQueueCL,
-        planetCL,
-        CL_TRUE,
-        0,
-        memsizePlanet,
-        planet,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    errorCL = clEnqueueReadBuffer(
-        commandQueueCL,
-        starCL,
-        CL_TRUE,
-        0,
-        memsizeStar,
-        star,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
 #endif
 }
