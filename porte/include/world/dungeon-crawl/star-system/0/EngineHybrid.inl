@@ -235,8 +235,8 @@ inline void EngineHybrid::emitEvent( int n ) {
         ;
         enqueueEventKernelCL< pns::ASTEROID_COUNT >(
             "set/emit-event/asteroid/direct",  afterBegin,  &asteroidDirect );
-        enqueueEventKernelCL< pns::STAR_COUNT >(
-            "set/emit-event/star/direct",      afterBegin,  &starDirect );
+        //enqueueEventKernelCL< pns::STAR_COUNT >(
+        //    "set/emit-event/star/direct",      afterBegin,  &starDirect );
 
         mQueueCL.flush();
 #endif
@@ -644,7 +644,7 @@ inline void EngineHybrid::prepareCL() {
     mQueueCL = cl::CommandQueue( mContextCL, mDeviceCL[ 0 ],  0,  &errorCL );
 
 #ifdef _DEBUG
-    std::cout << "\nВыбрано устройство (OpenCL):\n";
+    std::cout << "\nВыбрано устройство OpenCL:\n";
     porte::printCLInfo( mPlatformCL.front()() );
 #endif
 }

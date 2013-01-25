@@ -25,6 +25,16 @@ __kernel void direct(
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
+
+    /* @test
+    if (i == 0) {
+        printf( "global_0 %d  local_0 %d  groups %d   dim() %d\n",
+            get_global_size( 0 ), get_local_size( 0 ), get_num_groups( 0 ),  get_work_dim() );
+    }
+    return;
+    */
+
+
     if (i >= ASTEROID_COUNT) {
         printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
@@ -57,20 +67,15 @@ __kernel void direct(
     //const real4_t coordA = convertFromBig3DValue( element->today.coord );
     real4_t coordA;
     convertFromBig3DValue( &coordA, element->today.coord );
-    //const real_t maxSideA =
-    //    fmax( fmax( element->today.size.x,  element->today.size.y ), element->today.size.z );
-    real_t maxSideA = fmax( element->today.size.s0,  element->today.size.s1 );
-    //real_t maxSideA = 1000;
 
     const real_t massA = massAsteroid( element );
-    const real_t velocity1BeforeA =
-        squareLengthVector( element->today.velocity );
+    lengthVector( &element->today.velocity );
     const real_t kineticABefore =
-        massA * velocity1BeforeA / 2.0f;
+        massA * element->today.velocity.w * element->today.velocity.w / 2.0f;
 
     // # Отсутствующий элемент - сигнал конца списка.
     // # Прекращаем запоминать события, если память переполнена.
-    
+
     // Столкновения со звёздами
     //if (w < EMITTER_EVENT_COUNT) { - проверяется в цикле ниже.
     {
@@ -88,8 +93,10 @@ __kernel void direct(
 
             real4_t coordB;
             convertFromBig3DValue( &coordB, ask->today.coord );
-            const real_t collisionDistance = fmax( maxSideA, ask->today.radius );
-            const bool hasCollision = collision( coordA,  coordB,  collisionDistance );
+            // # Звезда всегда больше астероида.
+            const real_t collisionDistance = ask->today.radius;
+            const bool hasCollision =
+                collision( &coordA,  coordB,  collisionDistance );
             if ( !hasCollision ) {
                 continue;
             }
@@ -102,10 +109,10 @@ __kernel void direct(
             //       слушатели...
             // силу удара определим по кинет. энергии
             const real_t massB = massStar( ask );
-            const real_t velocity1BeforeB =
-                squareLengthVector( ask->today.velocity );
+            real4_t velocityBBefore = ask->today.velocity;
+            lengthVectorL( &velocityBBefore );
             const real_t kineticBBefore =
-                massB * velocity1BeforeB / 2.0f;
+                massB * velocityBBefore.w * velocityBBefore.w / 2.0f;
 
             // @todo optimize Астероид слишком мал, чтобы существенно изменить
             //       скорость (и кинет. энергию) звезды. Можно не считать.
@@ -118,14 +125,12 @@ __kernel void direct(
                 ask->today.velocity,
                 0.9f
             );
-            // @todo optimize fine Использовать 4-е поле для вычисления и
-            //       хранения длины вектора.
-            const real_t velocity1AfterA =
-                squareLengthVector( velocityAAfter );
-            const real_t velocity1AfterB =
-                squareLengthVector( velocityBAfter );
-            const real_t kineticAAfter = massA * velocity1AfterA / 2.0f;
-            const real_t kineticBAfter = massB * velocity1AfterB / 2.0f;
+            lengthVectorL( &velocityAAfter );
+            lengthVectorL( &velocityBAfter );
+            const real_t kineticAAfter =
+                massA * velocityAAfter.w * velocityAAfter.w / 2.0f;
+            const real_t kineticBAfter =
+                massB * velocityBAfter.w * velocityBAfter.w / 2.0f;
             const real_t deltaKineticA = kineticABefore - kineticAAfter;
             const real_t deltaKineticB = kineticBBefore - kineticBAfter;
 
@@ -145,11 +150,10 @@ __kernel void direct(
                         deltaKineticA,  deltaKineticB
                     }
                 };
-                //element->emitterEvent.content[ w ] = e;
-                //++w;
+                element->emitterEvent.content[ w ] = e;
+                ++w;
             }
 
-#if 0
             // Астероид уничтожен
             {
                 const eventTwo_t e = {
@@ -168,7 +172,6 @@ __kernel void direct(
 
             // #! Добавление сюда новых событий требует обновления
             //    'MAX_EVENT_IN_ONE_LOOP' выше.
-#endif
 
         } // for (size_t k = 0 ...
 

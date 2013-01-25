@@ -43,13 +43,6 @@ __kernel void begin(
     return;
     */
 
-    // @test
-    if (i == 0) {
-        printf( "global_0 %d  local_0 %d  groups %d   dim() %d\n",
-            get_global_size( 0 ), get_local_size( 0 ), get_num_groups( 0 ),  get_work_dim() );
-    }
-    return;
-
 
 
     if (i >= ASTEROID_COUNT) {

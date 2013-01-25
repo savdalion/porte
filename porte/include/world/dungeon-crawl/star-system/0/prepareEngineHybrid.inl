@@ -12,7 +12,7 @@ namespace porte {
 inline void EngineHybrid::prepare() {
     prepareEmitEvent( "asteroid" );
     //prepareEmitEvent( "planet" );
-    prepareEmitEvent( "star" );
+    //prepareEmitEvent( "star" );
 }
 
 
@@ -23,10 +23,10 @@ inline void EngineHybrid::prepareEmitEvent( const std::string& element ) {
 
     // @todo fine Искать по папкам в "scale". Сейчас - фиксированный путь.
     std::vector< std::string > kernelKeys = boost::assign::list_of
-        ( "set/emit-event/" + element + "/begin" )
+        //( "set/emit-event/" + element + "/begin" )
         ( "set/emit-event/" + element + "/direct" )
-        ( "set/emit-event/" + element + "/relative" )
-        ( "set/emit-event/" + element + "/fix" )
+        //( "set/emit-event/" + element + "/relative" )
+        //( "set/emit-event/" + element + "/fix" )
     ;
 
     // добавим модели поведения, которые *могут* быть усвоены
