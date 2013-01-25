@@ -75,7 +75,7 @@ __kernel void relative(
 
     real3_t coordA;
     convertFromBig3DValue( &coordA, element->today.coord );
-    const real_t massA = massAsteroid( element );
+    const real_t massA = element->today.mass;
 
     // # Отсутствующий элемент - сигнал конца списка.
     // # Прекращаем запоминать события, если память переполнена.

@@ -21,6 +21,8 @@ __kernel void relative(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
@@ -98,7 +100,7 @@ __kernel void relative(
                     // столкновение с астероидом повлечёт для звезды и др. события
 
                     // Увеличение массы от падения астероида
-                    const real_t deltaMassBySecond = massAsteroid( aak );
+                    const real_t deltaMassBySecond = aak->today.mass;
                     const real_t deltaMassByTimestep = deltaMassBySecond;
                     if (w < EMITTER_EVENT_COUNT) {
                         const eventTwo_t e = {

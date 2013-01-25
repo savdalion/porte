@@ -45,7 +45,7 @@ protected:
 #if 1
         {
             static const pns::uid_t uid = 1;
-            const pns::real4_t mass = pns::convertToBigValue( 1.9891e30 );
+            const pns::real_t mass = 1.9891e30;
 
             const pns::big3d_t coord = {};
             pns::real3_t rotation = {};
@@ -148,10 +148,9 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
         size.s[ 2 ] = rz;
 
         const pns::real_t density = 5000.0;
-        const pns::real4_t mass = pns::convertToBigValue(
+        const pns::real_t mass =
             typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
-            density
-        );
+            density;
 
         const pns::real_t albedo = 0.6;
 
@@ -177,8 +176,8 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
         const auto& star = topology()->star;
         const auto absOrbitalSpeed =
             typelib::compute::physics::orbitalSpeed(
-                pns::convertFromBigValue< pns::real_t >( mass ),
-                pns::massStar( &star.content[ 0 ] ),
+                mass,
+                &star.content[ 0 ].today.mass,
                 d
             );
         const auto orbitalSpeed =
@@ -328,10 +327,7 @@ TEST_F( AsteroidUniqueBehaviuorSST,  Asteroid1GrowUpEatSunLight ) {
 
     // состояние звезды
     {
-        const auto actual = pns::convertFromBigValue< double >(
-            topology()->star.content[ 0 ].today.mass
-        );
-        EXPECT_GT( actual, massStar );
+        EXPECT_GT( tsc()[ 0 ].today.mass,  massStar );
 
         // события
         const auto l = listenerStar();

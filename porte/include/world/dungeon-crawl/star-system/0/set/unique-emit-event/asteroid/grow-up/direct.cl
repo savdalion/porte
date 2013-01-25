@@ -90,7 +90,7 @@ __kernel void direct(
 
 
     // Масса увеличивается
-    const real_t massA = massAsteroid( element );
+    const real_t massA = element->today.mass;
     const real_t K_MASS = 1e-5f;
     const real_t deltaMassABySecond = massA * K_MASS;
     const real_t deltaMassAByTimestep = deltaMassABySecond * timestep;

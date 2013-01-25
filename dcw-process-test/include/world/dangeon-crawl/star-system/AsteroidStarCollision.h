@@ -46,7 +46,7 @@ protected:
 #if 1
         {
             static const pns::uid_t uid = 1;
-            const pns::real4_t mass = pns::convertToBigValue( 1.9891e30 );
+            const pns::real_t mass = 1.9891e30;
 
             const pns::big3d_t coord = {};
             pns::real3_t rotation = {};
@@ -148,10 +148,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         size.s[ 2 ] = rz;
 
         const pns::real_t density = 5000.0;
-        const pns::real4_t mass = pns::convertToBigValue(
+        const pns::real_t mass =
             typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
-            density
-        );
+            density;
 
         const pns::real_t albedo = 0.6;
 
@@ -176,8 +175,8 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         const auto& star = topology()->star;
         const auto absOrbitalSpeed =
             typelib::compute::physics::orbitalSpeed(
-                pns::convertFromBigValue< pns::real_t >( mass ),
-                pns::massStar( &star.content[ 0 ] ),
+                mass,
+                star.content[ 0 ].today.mass,
                 d
             );
         const auto orbitalSpeed = typelib::VectorT< pns::real_t >::ZERO();
@@ -262,12 +261,8 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
     
 
     // делаем снимок мира (см. SetUp() и выше)
-    const auto massStar = pns::convertFromBigValue< double >(
-        tsc()[ 0 ].today.mass
-    );
-    const auto allMassAsteroid = pns::convertFromBigValue< double >(
-        tac()[ 0 ].today.mass
-    );
+    const auto massStar = tsc()[ 0 ].today.mass;
+    const auto allMassAsteroid = tac()[ 0 ].today.mass;
 
 
     // запускаем мир
@@ -309,10 +304,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
     // состояние звезды
     {
-        const auto actual = pns::convertFromBigValue< double >(
-            tsc()[ 0 ].today.mass
-        );
-        EXPECT_GT( actual, massStar );
+        EXPECT_GT( tsc()[ 0 ].today.mass,  massStar );
 
         // события
         const auto l = listenerStar();
@@ -373,10 +365,9 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
         const pns::real_t ry = 12e3 * (i + 1);
         const pns::real_t rz = 15e3 * (i + 1);
         const pns::real_t density = 5000.0;
-        const pns::real4_t mass = pns::convertToBigValue(
+        const pns::real_t mass =
             typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
-            density
-        );
+            density;
         massAsteroid[ i ] = mass;
         allMassAsteroid += pns::convertFromBigValue< double >( mass );
 

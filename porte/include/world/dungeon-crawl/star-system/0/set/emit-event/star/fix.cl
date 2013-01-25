@@ -21,6 +21,8 @@ __kernel void fix(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
@@ -78,9 +80,9 @@ __kernel void fix(
                 break;
 
             case E_CHANGE_MASS :
-                element->today.mass += convertToBigValue( e->fReal[ 1 ] );
+                element->today.mass += e->fReal[ 1 ];
 #ifdef __DEBUG
-                assertReal4( element->today.mass, "(!) Overfill mass for star.\n" );
+                assertReal( element->today.mass, "(!) Overfill mass for star.\n" );
 #endif
                 break;
 
@@ -115,7 +117,7 @@ __kernel void fix(
                 // # Отрабатывается в E_CHANGE_MASS.
 #ifdef __DEBUG
                 printf( "fix() Increase mass star %d on %e kg.", element->uid, e->fReal[ 1 ] );
-                printf( " Mass star is ~ %e kg.\n", massStar( element ) );
+                printf( " Mass star is ~ %e kg.\n", element->today.mass );
 #endif
                 break;
 

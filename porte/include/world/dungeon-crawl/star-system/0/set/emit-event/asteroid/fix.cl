@@ -80,9 +80,9 @@ __kernel void fix(
                 break;
 
             case E_CHANGE_MASS :
-                element->today.mass += convertToBigValue( e->fReal[ 1 ] );
+                element->today.mass += e->fReal[ 1 ];
 #ifdef __DEBUG
-                assertReal4( element->today.mass, "(!) Overfill mass for asteroid.\n" );
+                assertReal( element->today.mass, "(!) Overfill mass for asteroid.\n" );
 #endif
                 break;
 

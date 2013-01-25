@@ -50,11 +50,11 @@ __kernel void direct(
     // Обязательные события
 
     // Гравитация
-    const real_t massA = massStar( element );
     if (w < EMITTER_EVENT_COUNT) {
         // вычислим часть формулы для расчёта силы притяжения: это значение
         // смогут использовать элементы, которые притягивает звезда
-        const real_t fgm = G * massA;
+        const real_t fgm = G * element->today.mass;
+        /*
         const eventTwo_t e = {
             // uid события
             E_GRAVITY,
@@ -63,17 +63,21 @@ __kernel void direct(
             { fgm }
         };
         element->emitterEvent.content[ w ] = e;
+        */
+        element->emitterEvent.content[ w ].uid = E_GRAVITY;
+        element->emitterEvent.content[ w ].fReal[ 1 ] = fgm;
         ++w;
     }
 
 
+#if 0
     // Излучение энергии (ядерная реакция)
     // # Каждую секунду звезда излучает энергию.
     // @todo optimize Запоминать вычисленные значения.
     const real_t radiusA = element->today.radius;
     const real_t surfaceTemperatureA = element->today.surfaceTemperature;
-    const real_t luminosityABySecond =
-        luminosity( radiusA, surfaceTemperatureA );
+    const real_t luminosityABySecond = 0;
+        //luminosity( radiusA, surfaceTemperatureA );
     if (w < EMITTER_EVENT_COUNT) {
         const eventTwo_t e = {
             // uid события
@@ -114,6 +118,7 @@ __kernel void direct(
         element->emitterEvent.content[ w ] = e;
         ++w;
     }
+#endif
 
 
     // Проверка на столкновения

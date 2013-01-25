@@ -67,7 +67,7 @@ __kernel void direct(
     real3_t coordA;
     convertFromBig3DValue( &coordA, element->today.coord );
 
-    const real_t massA = massAsteroid( element );
+    const real_t massA = element->today.mass;
     const real_t absVelocityABefore = length( element->today.velocity );
     const real_t kineticABefore =
         massA * absVelocityABefore * absVelocityABefore / 2.0f;
@@ -107,7 +107,7 @@ __kernel void direct(
             //       энергия не участвует в обработке события. Но есть
             //       слушатели...
             // силу удара определим по кинет. энергии
-            const real_t massB = massStar( ask );
+            const real_t massB = ask->today.mass;
             const real_t absVelocityBBefore = length( ask->today.velocity );
             const real_t kineticBBefore =
                 massB * absVelocityBBefore * absVelocityBBefore / 2.0f;

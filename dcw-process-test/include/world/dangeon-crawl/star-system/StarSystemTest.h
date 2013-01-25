@@ -440,7 +440,7 @@ inline void StarSystemTest::testAsteroid( bool onlyLive ) const {
         EXPECT_TRUE( testReal4( element.today.coord.z ) ) <<
             "Координата Z не корректна";
 
-        EXPECT_TRUE( testReal4( element.today.mass ) ) <<
+        EXPECT_TRUE( testReal( element.today.mass ) ) <<
             "Масса не корректна";
 
         EXPECT_TRUE( testReal( element.today.density ) ) <<
