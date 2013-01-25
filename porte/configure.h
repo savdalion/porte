@@ -73,4 +73,10 @@ static const auto MIN_CHANGE_DISTANCE_PORTE = 0.01f;
 
 
 
+/**
+* Настройки OpenCL.
+*/
+#define __CL_ENABLE_EXCEPTIONS
+
+
 } // porte

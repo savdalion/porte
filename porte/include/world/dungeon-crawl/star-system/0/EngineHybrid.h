@@ -2,16 +2,15 @@
 
 #include "../../../../../configure.h"
 #include "../../../../porte/EngineWithoutBooster.h"
+#include "../../../../porte/CL.h"
+#include "../../../../porte/Exception.h"
 #include "StoreListenerAsteroid.h"
 #include "StoreListenerStar.h"
 #include <boost/assign.hpp>
 
 // # Все комментарии см. в planet::l0::Engine.
 
-#include <oclUtils.h>
-#include <CL/cl_gl.h>    
-
-#define GL_SHARING_EXTENSION "cl_khr_gl_sharing"
+#include <CL/cl.hpp>
 
 
 #undef CL_NONE
@@ -39,6 +38,7 @@ class EngineHybrid :
 public:
     typedef std::shared_ptr< EngineHybrid >  Ptr;
     typedef std::unique_ptr< EngineHybrid >  UPtr;
+
 
 
 
@@ -97,11 +97,15 @@ private:
 
 
 
-    void prepareCLContext();
-    void prepareCLCommandQueue();
+    void prepareCL();
+
+
+
 
     void prepare();
     void prepareEmitEvent( const std::string& element );
+
+
 
 
     void compileCLKernel(
@@ -111,67 +115,60 @@ private:
     );
 
 
+
+
     /**
-    * Выполняет указанное ядро OpenCL.
+    * Выполняет ядро OpenCL по имени 'key'.
+    *
+    * @param waitEvents  Ядро подождёт завершения этих событий.
+    * @param event  Если указан, инициируется событием (для синхронизации
+    *        потоков).
     */
+    typedef VECTOR_CLASS< cl::Event >  vectorEventCL_t;
+
+
     template< size_t GLOBAL_SIZE >
-    void runCLKernel( const std::string& key );
+    void enqueueEventKernelCL(
+        const std::string&  key,
+        cl::Event*          event = nullptr
+    );
+
+
+    template< size_t GLOBAL_SIZE >
+    void enqueueEventKernelCL(
+        const std::string&      key,
+        const vectorEventCL_t&  waitEvents,
+        cl::Event*              event = nullptr
+    );
+
+
 
 
     static std::string commonConstantCLKernel();
     static std::string commonOptionCLKernel();
 
 
-    static void fnErrorCL( int exitCode );
-
-
 
 
 private:
-    std::map< std::string, cl_kernel >  kernelCL;
+    std::map< std::string, cl::Kernel >  mKernelCL;
 
     const size_t memsizeStarSystem;
     const size_t memsizeAsteroid;
     const size_t memsizePlanet;
     const size_t memsizeStar;
 
-    cl_mem aboutStarSystemCL;
-    cl_mem asteroidCL;
-    cl_mem planetCL;
-    cl_mem starCL;
+    cl::Buffer aboutStarSystemBCL;
+    cl::Buffer asteroidBCL;
+    cl::Buffer planetBCL;
+    cl::Buffer starBCL;
 
+    cl::Context mContextCL;
+    std::vector< cl::Device >  mDeviceCL;
+    cl::CommandQueue mQueueCL;
 
     cl_int errorCL;
-
-    cl_device_id* devicesCL;
-    cl_uint deviceUsedCL;
-    cl_uint devCountCL;
-    cl_platform_id platformCL;
-
-    cl_context gpuContextCL;
-
-    cl_command_queue commandQueueCL;
 };
-
-
-
-
-
-
-void __stdcall pfn_notify_cl(
-    const char* errinfo, const void* private_info,
-    size_t cb, void* user_data
-);
-
-
-
-
-/**
-* Получает платформу OpenCL, отдавая предпочтение CPU.
-*
-* @see oclUtils.h / oclGetPlatformID()
-*/
-cl_int getPlatformIDCPU( cl_platform_id* clSelectedPlatformID );
 
 
                 } // l0

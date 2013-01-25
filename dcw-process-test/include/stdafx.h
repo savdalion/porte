@@ -12,7 +12,6 @@
 #pragma warning( disable : 4251 )
 
 
-
 // (!) —ледующие предупреждени€ следует включать только если исп. чужие
 //     библиотеки и они эти предупреждени€ выбрасывают.
 
@@ -23,6 +22,11 @@
 
 // ѕреобразование double в int, возможна потер€ данных
 //#pragma warning( disable : 4244 )
+
+// ¬ыбрасывает cl.hpp v 1.2
+// C++ exception specification ignored except to indicate a function
+// is not __declspec(nothrow)
+#pragma warning( disable : 4290 )
 
 
 

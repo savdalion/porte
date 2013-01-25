@@ -13,12 +13,14 @@
   <ItemGroup>
     <ClInclude Include="configure.h" />
     <ClInclude Include="include\chemistry\Chemistry.h" />
+    <ClInclude Include="include\porte\Exception.h" />
     <ClInclude Include="include\porte\EngineWithoutBooster.h" />
     <ClInclude Include="include\porte\Booster.h" />
     <ClInclude Include="include\porte\StoreListener.h" />
     <ClInclude Include="include\porte\PortulanBooster.h" />
     <ClInclude Include="include\porte\AEngine.h" />
     <ClInclude Include="include\porte\Pulse.h" />
+    <ClInclude Include="include\porte\CL.h" />
     <ClInclude Include="include\world\dungeon-crawl\planet\0\ListenerPlanet.h" />
     <ClInclude Include="include\world\dungeon-crawl\planet\0\Engine.h" />
     <ClInclude Include="include\world\dungeon-crawl\planet\0\Listener.h" />
@@ -81,7 +83,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(BOOST_ROOT);D:\Projects\workspace\portulan;D:\Projects\workspace\silhouette;D:\Projects\workspace\typelib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source\Magick++\lib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.2\OpenCL\common\inc;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.2\shared\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(BOOST_ROOT);D:\Projects\workspace\portulan;D:\Projects\workspace\silhouette;D:\Projects\workspace\typelib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source\Magick++\lib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source;C:\Program Files (x86)\Intel\OpenCL SDK\3.0\include;$(IncludePath)</IncludePath>
     <IntDir>V:\temp\debug-porte\$(MSBuildProjectName)\</IntDir>
     <OutDir>V:\bin\debug-porte\</OutDir>
   </PropertyGroup>

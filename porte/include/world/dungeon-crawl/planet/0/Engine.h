@@ -11,15 +11,7 @@
 #include <ctime>
 
 
-/* - Нет. Используем C-подход от NVIDIA.
-     См. http://nvidia.com/content/cuda/cuda-downloads.html
-#include "../../external/opencl/cl.hpp"
-*/
-#include <oclUtils.h>
-#include <CL/cl_gl.h>    
-
-// (i) Для Apple: "cl_APPLE_gl_sharing"
-#define GL_SHARING_EXTENSION "cl_khr_gl_sharing"
+#include <CL/cl.hpp>    
 
 
 // существует неудобный define

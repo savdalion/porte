@@ -84,6 +84,12 @@
     <ClInclude Include="include\world\dungeon-crawl\star-system\0\StoreListenerStar.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="include\porte\Exception.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="include\porte\CL.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="porte\include\Engine.inl">

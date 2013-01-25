@@ -15,11 +15,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "porte", "porte\porte.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uht-visualtest", "uht-visualtest\uht-visualtest.vcxproj", "{5EB36EC3-7E9D-4E74-AC5E-0E692690BCE4}"
 	ProjectSection(ProjectDependencies) = postProject
+		{D3DE6C6F-752D-45CC-BBB7-B1DC869D9F53} = {D3DE6C6F-752D-45CC-BBB7-B1DC869D9F53}
 		{3421E387-6F9F-4E23-91FC-50DF404B12FA} = {3421E387-6F9F-4E23-91FC-50DF404B12FA}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "chemistry-visualtest", "chemistry-visualtest\chemistry-visualtest.vcxproj", "{344CE3FD-0ADB-4B08-A870-E2C5935B8D24}"
 	ProjectSection(ProjectDependencies) = postProject
+		{D3DE6C6F-752D-45CC-BBB7-B1DC869D9F53} = {D3DE6C6F-752D-45CC-BBB7-B1DC869D9F53}
 		{3421E387-6F9F-4E23-91FC-50DF404B12FA} = {3421E387-6F9F-4E23-91FC-50DF404B12FA}
 	EndProjectSection
 EndProject
@@ -33,6 +35,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "portulan-test", "..\portulan\portulan-test\portulan-test.vcxproj", "{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dcw-process-test", "dcw-process-test\dcw-process-test.vcxproj", "{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{41DEF228-0340-4356-99FE-FC473A36B1DE} = {41DEF228-0340-4356-99FE-FC473A36B1DE}
+		{D3DE6C6F-752D-45CC-BBB7-B1DC869D9F53} = {D3DE6C6F-752D-45CC-BBB7-B1DC869D9F53}
+		{3421E387-6F9F-4E23-91FC-50DF404B12FA} = {3421E387-6F9F-4E23-91FC-50DF404B12FA}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,23 +57,18 @@ Global
 		{3421E387-6F9F-4E23-91FC-50DF404B12FA}.Release|Win32.ActiveCfg = Release|Win32
 		{3421E387-6F9F-4E23-91FC-50DF404B12FA}.Release|Win32.Build.0 = Release|Win32
 		{5EB36EC3-7E9D-4E74-AC5E-0E692690BCE4}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5EB36EC3-7E9D-4E74-AC5E-0E692690BCE4}.Debug|Win32.Build.0 = Debug|Win32
 		{5EB36EC3-7E9D-4E74-AC5E-0E692690BCE4}.Release|Win32.ActiveCfg = Release|Win32
 		{5EB36EC3-7E9D-4E74-AC5E-0E692690BCE4}.Release|Win32.Build.0 = Release|Win32
 		{344CE3FD-0ADB-4B08-A870-E2C5935B8D24}.Debug|Win32.ActiveCfg = Debug|Win32
-		{344CE3FD-0ADB-4B08-A870-E2C5935B8D24}.Debug|Win32.Build.0 = Debug|Win32
 		{344CE3FD-0ADB-4B08-A870-E2C5935B8D24}.Release|Win32.ActiveCfg = Release|Win32
 		{344CE3FD-0ADB-4B08-A870-E2C5935B8D24}.Release|Win32.Build.0 = Release|Win32
 		{584C9643-4035-44CA-BE52-337B63E02DD8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{584C9643-4035-44CA-BE52-337B63E02DD8}.Debug|Win32.Build.0 = Debug|Win32
 		{584C9643-4035-44CA-BE52-337B63E02DD8}.Release|Win32.ActiveCfg = Release|Win32
 		{584C9643-4035-44CA-BE52-337B63E02DD8}.Release|Win32.Build.0 = Release|Win32
 		{57C90FCB-E78E-4D1E-A598-F8D586BDE6AD}.Debug|Win32.ActiveCfg = Debug|Win32
-		{57C90FCB-E78E-4D1E-A598-F8D586BDE6AD}.Debug|Win32.Build.0 = Debug|Win32
 		{57C90FCB-E78E-4D1E-A598-F8D586BDE6AD}.Release|Win32.ActiveCfg = Release|Win32
 		{57C90FCB-E78E-4D1E-A598-F8D586BDE6AD}.Release|Win32.Build.0 = Release|Win32
 		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Debug|Win32.Build.0 = Debug|Win32
 		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Release|Win32.ActiveCfg = Release|Win32
 		{CDEA5A44-7F3F-4743-9AC1-19CC155699E3}.Release|Win32.Build.0 = Release|Win32
 		{DBE3302B-C2C1-4A5A-B389-7B114E7745D2}.Debug|Win32.ActiveCfg = Debug|Win32

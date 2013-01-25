@@ -20,30 +20,12 @@ inline EngineHybrid::EngineHybrid(
     memsizePlanet( sizeof( pns::aboutPlanet_t ) * pns::PLANET_COUNT ),
     memsizeStar( sizeof( pns::aboutStar_t ) * pns::STAR_COUNT ),
 
-    aboutStarSystemCL( nullptr ),
-    asteroidCL( nullptr ),
-    planetCL( nullptr ),
-    starCL( nullptr ),
-
-    errorCL( CL_SUCCESS ),
-    devicesCL( nullptr ),
-    deviceUsedCL( 0 ),
-    devCountCL( 0 ),
-    platformCL( nullptr ),
-    gpuContextCL( nullptr ),
-    commandQueueCL( nullptr )
+    errorCL( CL_SUCCESS )
 {
     // Подготавливаем контекст и очередь команд для работы с OpenCL
-    prepareCLContext();
-    prepareCLCommandQueue();
+    prepareCL();
 
-    assert( gpuContextCL
-        && "Контекст OpenCL не инициализирован." );
-    assert( commandQueueCL
-        && "Очередь команд OpenCL не инициализирована." );
-
-
-    // Подготавливаем ядра OpenCL (ядра требуют компиляции)
+    // Подготавливаем ядра OpenCL (требуют компиляции)
     prepare();
 }
 
@@ -51,26 +33,7 @@ inline EngineHybrid::EngineHybrid(
 
 
 inline EngineHybrid::~EngineHybrid() {
-    // освобождаем память, выделенную под параметры ядер
-    if ( aboutStarSystemCL ) { clReleaseMemObject( aboutStarSystemCL ); }
-    if ( asteroidCL ) { clReleaseMemObject( asteroidCL ); }
-    if ( planetCL ) { clReleaseMemObject( planetCL ); }
-    if ( starCL ) { clReleaseMemObject( starCL ); };
-
-    // удаляем собранные ядра
-    for (auto itr = kernelCL.begin(); itr != kernelCL.end(); ++itr) {
-        errorCL |= clReleaseKernel( itr->second );
-    }
-#ifdef _DEBUG
-    oclCheckError( errorCL, CL_SUCCESS );
-#endif
-
-    // при подготовке ядер создали список устройств, освобождаем
-    free( devicesCL );
-
-    // освобождаем очередь команд и контекст
-    clReleaseCommandQueue( commandQueueCL );
-    clReleaseContext( gpuContextCL );
+    // обо всём позаботятся объекты из ::cl
 }
 
 
@@ -80,6 +43,7 @@ void EngineHybrid::incarnate(
     std::shared_ptr< portulan_t >  p,
     real_t extentPortulan
 ) {
+    // # 'p' обновляет 'mPortulan' у родителя.
     EngineWithoutBooster::incarnate( p, extentPortulan );
 
 
@@ -89,73 +53,48 @@ void EngineHybrid::incarnate(
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
 
-    if ( aboutStarSystemCL ) { clReleaseMemObject( aboutStarSystemCL ); }
-    aboutStarSystemCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
+    aboutStarSystemBCL = cl::Buffer(
+        mContextCL,
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
         memsizeStarSystem,
-        // #! Если память выделена динамически, обращаемся к содержанию.
         &topology.aboutStarSystem,
         &errorCL
     );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    if ( asteroidCL ) { clReleaseMemObject( asteroidCL ); }
-    asteroidCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
+    asteroidBCL = cl::Buffer(
+        mContextCL,
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeAsteroid,
-        // #! Если память выделена динамически, обращаемся к содержанию.
         asteroid,
         &errorCL
     );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    if ( planetCL ) { clReleaseMemObject( planetCL ); }
-    planetCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
+    planetBCL = cl::Buffer(
+        mContextCL,
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizePlanet,
-        // #! Если память выделена динамически, обращаемся к содержанию.
         planet,
         &errorCL
     );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
 
-    if ( starCL ) { clReleaseMemObject( starCL ); };
-    starCL = clCreateBuffer(
-        gpuContextCL,
-        // доп. память не выделяется
+    starBCL = cl::Buffer(
+        mContextCL,
         CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
         memsizeStar,
-        // #! Если память выделена динамически, обращаемся к содержанию.
         star,
         &errorCL
     );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );    
 
 
     // # У всех ядер часть набора параметров - одинакова. Воспользуемся.
-    for (auto itr = kernelCL.cbegin(); itr != kernelCL.cend(); ++itr) {
-        const cl_kernel kernel = itr->second;
+    for (auto itr = std::begin( mKernelCL ); itr != std::end( mKernelCL ); ++itr) {
+        cl::Kernel& kernel = itr->second;
 
-        errorCL = clSetKernelArg( kernel, 0, sizeof( const cl_mem ), &aboutStarSystemCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 1, sizeof( const cl_mem ), &asteroidCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 2, sizeof( const cl_mem ), &planetCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 3, sizeof( const cl_mem ), &starCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-        errorCL = clSetKernelArg( kernel, 4, sizeof( mTimestep ), &mTimestep );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+        kernel.setArg( 0, aboutStarSystemBCL );
+        kernel.setArg( 1, asteroidBCL );
+        kernel.setArg( 2, planetBCL );
+        kernel.setArg( 3, starBCL );
+        kernel.setArg( 4, mTimestep );
 
         // # Остальные параметры - отличаются или меняются каждый пульс.
 
@@ -187,7 +126,15 @@ inline void EngineHybrid::pulse( int n ) {
     //   загрузка памяти общих событий, ускорение обработки.
 
     // выполняем 'n' циклов
-    emitEvent( n );
+    try {
+        emitEvent( n );
+    } catch ( cl::Error& ex ) {
+        const std::string s =
+            static_cast< std::string >( ex.what() ) +
+            " (" + boost::lexical_cast< std::string >( ex.err() ) + ")";
+        std::cerr << s << std::endl;
+        throw Exception( s );
+    }
 
 
     // @test
@@ -234,6 +181,76 @@ inline void EngineHybrid::emitEvent( int n ) {
     auto& planet   = topology.planet.content;
     auto& star     = topology.star.content;
 
+
+
+    // выполним 'n' пульсов
+    // # Параметры для ядер уже подготовлены в incarnate().
+    for (int p = 0; p < n; ++p) {
+
+        // # Перед началом каждого пульса и в конце него элементы -
+        //   упорядочены (оптимизированы). См. старания ниже.
+
+        const cl_long pulselive = mLive.pulselive();
+
+    
+        // сформируем согласованные очереди для OpenCL
+        // # В блоках ниже исп. одинаковые порции событий для каждого
+        //   элемента звёздной системы.
+        //static const size_t PEN = 1;
+        vectorEventCL_t  emitBegin(  2 );
+        vectorEventCL_t  emitDirect( 1 );
+
+
+        // Подготавливаем элементы к созданию событий
+#if 1
+    /*
+        cl::Event asteroidBegin;
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+            "set/emit-event/asteroid/begin",  &asteroidBegin );
+        cl::Event asteroidDirect;
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+            "set/emit-event/asteroid/direct", &asteroidDirect );
+
+        cl::Event starBegin;
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/begin",      &starBegin );
+        cl::Event starDirect;
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/direct",     &starDirect );
+    */
+
+        cl::Event asteroidBegin;
+        //enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+        //    "set/emit-event/asteroid/begin",  &asteroidBegin );
+        cl::Event starBegin;
+        //enqueueEventKernelCL< pns::STAR_COUNT >(
+        //    "set/emit-event/star/begin",      &starBegin );
+        //mQueueCL.flush();
+
+        cl::Event asteroidDirect;
+        cl::Event starDirect;
+        const vectorEventCL_t afterBegin //= boost::assign::list_of
+            //( asteroidBegin )
+            //( starBegin )
+        ;
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
+            "set/emit-event/asteroid/direct",  afterBegin,  &asteroidDirect );
+        enqueueEventKernelCL< pns::STAR_COUNT >(
+            "set/emit-event/star/direct",      afterBegin,  &starDirect );
+
+        mQueueCL.flush();
+#endif
+
+
+        // ожидаем завершения отработки очереди
+        mQueueCL.finish();
+
+    } // for (int p = 0 ...
+
+
+
+#if 0
+// @todo ...
     // выполним 'n' пульсов
     // # Параметры для ядер уже подготовлены в incarnate().
     for (int p = 0; p < n; ++p) {
@@ -246,8 +263,8 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Подготавливаем элементы к созданию событий
 #if 1
     {
-        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
-        runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/begin" );
+        enqueueKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
+        enqueueKernelCL< pns::STAR_COUNT >( "set/emit-event/star/begin" );
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -260,8 +277,8 @@ inline void EngineHybrid::emitEvent( int n ) {
 #if 1
     {
         // модель поведения всех элементов
-        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
-        //runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/direct" );
+        enqueueKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
+        //enqueueKernelCL< pns::STAR_COUNT >( "set/emit-event/star/direct" );
 
         // модели поведения конкретных элементов
         // # Запускаются для всей группы элементов, т.к. в общем случае
@@ -275,7 +292,7 @@ inline void EngineHybrid::emitEvent( int n ) {
             const cl_kernel kernel = kernelCL[ key ];
             errorCL = clSetKernelArg( kernel, 5, sizeof( pulselive ), &pulselive );
             oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-            runCLKernel< pns::ASTEROID_COUNT >( key );
+            enqueueKernelCL< pns::ASTEROID_COUNT >( key );
             // @todo ...
         }
         */
@@ -290,8 +307,8 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Излучаем свои зависимые события
 #if 1
     {
-        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/relative" );
-        runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/relative" );
+        enqueueKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/relative" );
+        enqueueKernelCL< pns::STAR_COUNT >( "set/emit-event/star/relative" );
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -419,8 +436,8 @@ inline void EngineHybrid::emitEvent( int n ) {
     // Фиксируем характеристики согласно своим событиям
 #if 1
     {
-        runCLKernel< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
-        runCLKernel< pns::STAR_COUNT >( "set/emit-event/star/fix" );
+        enqueueKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
+        enqueueKernelCL< pns::STAR_COUNT >( "set/emit-event/star/fix" );
 
         // синхронизация
         errorCL = clFinish( commandQueueCL );
@@ -592,6 +609,8 @@ inline void EngineHybrid::emitEvent( int n ) {
         0, nullptr, nullptr
     );
     oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+
+#endif
 }
 
 
@@ -607,75 +626,29 @@ inline void EngineHybrid::statistics() {
 
 
 
-inline void EngineHybrid::prepareCLContext() {
+inline void EngineHybrid::prepareCL() {
 
-    // @source http://nvidia.com/content/cuda/cuda-downloads.html / oclMarchingCubes.cpp
+    std::vector< cl::Platform >  mPlatformCL;
+    cl::Platform::get( &mPlatformCL );
+    if ( mPlatformCL.empty() ) {
+        throw Exception( "Не найдено ни одного устройства с поддержкой OpenCL." );
+    }
 
-#ifdef ONLY_CPU_OPENCL_STARSYSTEM_L0_ENGINE_PORTE
-    errorCL = getPlatformIDCPU( &platformCL );
-    const static cl_device_type DEVICE_TYPE = CL_DEVICE_TYPE_CPU;
-#else
-    errorCL = oclGetPlatformID( &platformCL );
-    const static cl_device_type DEVICE_TYPE = CL_DEVICE_TYPE_GPU;
-#endif
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // Get the number of GPU devices available to the platform
-    errorCL = clGetDeviceIDs(
-        platformCL,
-        DEVICE_TYPE,
-        0,
-        nullptr,
-        &devCountCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    // Create the device list
-    devicesCL = new cl_device_id[ devCountCL ];
-    errorCL = clGetDeviceIDs(
-        platformCL,
-        DEVICE_TYPE,
-        devCountCL,
-        devicesCL,
-        nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
-    size_t endDevCL = devCountCL - 1;
-    deviceUsedCL = CLAMP( deviceUsedCL, 0, endDevCL );
-    endDevCL = deviceUsedCL;
-
-    // No GL interop
-    const cl_context_properties props[] =
-        { CL_CONTEXT_PLATFORM, (cl_context_properties)platformCL, 0 };
-    // (!) Если установлен слишком большой размер стека, OpenCL не будет инициализирован.
-    //     Включение LARGEADDRESSAWARE не решает проблему.
-    gpuContextCL = clCreateContext(
-        props, 1, &devicesCL[ deviceUsedCL ],
-        &pfn_notify_cl, nullptr, &errorCL
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-
+    cl_context_properties properties[] = {
+        CL_CONTEXT_PLATFORM,
+        ( cl_context_properties )( mPlatformCL.front() )(),
+        0
+    };
+    mContextCL = cl::Context( CL_DEVICE_TYPE_CPU, properties );
+    mDeviceCL = mContextCL.getInfo< CL_CONTEXT_DEVICES >();
+    mQueueCL = cl::CommandQueue( mContextCL, mDeviceCL[ 0 ],  0,  &errorCL );
 
 #ifdef _DEBUG
-    std::cout << "Выбрано устройство (OpenCL):" << std::endl;
-    oclPrintDevInfo( LOGCONSOLE, devicesCL[ deviceUsedCL ] );
+    std::cout << "\nВыбрано устройство (OpenCL):\n";
+    porte::printCLInfo( mPlatformCL.front()() );
 #endif
-
 }
 
-
-
-
-inline void EngineHybrid::prepareCLCommandQueue() {
-    assert( gpuContextCL
-        && "Контекст OpenCL требуется инициализировать до выполнения этого метода." );
-
-    // create a command-queue
-    commandQueueCL =
-        clCreateCommandQueue( gpuContextCL, devicesCL[ deviceUsedCL ], 0, &errorCL );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-}
 
 
 
@@ -745,18 +718,19 @@ inline void EngineHybrid::compileCLKernel(
     } // for (auto itr = hcl.cbegin(); ...
 
 
-    // компилируем ядро
+    // собираем исходники ядер в один файл и компилируем
     for (auto itr = std::begin( kernelKeys ); itr != std::end( kernelKeys ); ++itr) {
         //   # Последнее за "/" название является именем ядра.
         const std::string kernelKey = *itr;
-        const std::string kernelName = itr->substr( itr->find_last_of( '/' ) + 1 );
+        const std::string kernelName =
+            itr->substr( itr->find_last_of( '/' ) + 1 );
 
         // Program Setup
         const std::string fileKernel = kernelKey + ".cl";
         const std::string pathAndName =
             L0_STARSYSTEM_DUNGEONCRAWL_PATH_CL_PORTE + "/" + fileKernel;
 #ifdef _DEBUG
-        std::cout << "Собираем \"" << fileKernel << "\" ..";
+        std::cout << "\"" << fileKernel << "\" ..";
 #endif
         const std::ifstream  file( pathAndName.c_str() );
         assert( file.is_open()
@@ -783,40 +757,35 @@ inline void EngineHybrid::compileCLKernel(
         out.close();
 #endif
 
-        const char* programSource = kernelSourceCode.c_str();
-        const size_t programLength = kernelSourceCode.length();
-        cl_program programCL = clCreateProgramWithSource(
-            gpuContextCL,  1,  &programSource,
-            &programLength, &errorCL
-        );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-    
+        // @todo optimize Ядра можно загружать уже скомпилированные.
+        const cl::Program::Sources  source( 1,  std::make_pair(
+            kernelSourceCode.c_str(),  kernelSourceCode.length()
+        ) );
+
+        // компилируем каждое ядро в определённом контексте для устройства
 #ifdef _DEBUG
-        std::cout << "Опции OpenCL для ядра \"" << kernelKey << "\"" << std::endl << commonOptions.str() << std::endl;
+        std::cout << "Опции OpenCL для ядра \"" << kernelKey << "\"" <<
+            std::endl << commonOptions.str() <<
+        std::endl;
 #endif
 
-        // build the program
-        errorCL = clBuildProgram(
-            programCL, 0, nullptr, commonOptions.str().c_str(),
-            //pfn_notify_program_cl, nullptr
-            nullptr, nullptr
-        );
-        if (errorCL != CL_SUCCESS) {
-            shrLogEx( LOGCONSOLE | ERRORMSG, errorCL, STDERROR );
-            oclLogBuildInfo( programCL, oclGetFirstDev( gpuContextCL ) );
-            const std::string debugFileKernel = kernelName + ".ptx";
-            oclLogPtx( programCL, oclGetFirstDev( gpuContextCL ), debugFileKernel.c_str() );
-            fnErrorCL( errorCL );
+        const cl::Program  program( mContextCL, source );
+        try {
+            program.build( mDeviceCL,  commonOptions.str().c_str() );
+
+        } catch ( const cl::Error& ex ) {
+            std::cerr << "(!) Error: " << ex.what() <<
+                "(" << ex.err() << ")" <<
+            std:: endl;
+            if (ex.err() == CL_BUILD_PROGRAM_FAILURE) {
+                std::cerr <<
+                    program.getBuildInfo< CL_PROGRAM_BUILD_LOG >( mDeviceCL.front() ) <<
+                std::endl;
+            }
         }
 
-        // create the kernel
-        cl_kernel oneKernelCL =
-            clCreateKernel( programCL, kernelName.c_str(), &errorCL );
-        oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
-        kernelCL[ kernelKey ] = oneKernelCL;
-
-        // Некоторые ресурсы надо освободить прямо сейчас
-        clReleaseProgram( programCL );
+        const cl::Kernel  kernel( program,  kernelName.c_str(),  &errorCL );
+        mKernelCL[ kernelKey ] = kernel;
 
     } // for (auto itr
 
@@ -826,24 +795,36 @@ inline void EngineHybrid::compileCLKernel(
 
 
 template< size_t GLOBAL_SIZE >
-inline void EngineHybrid::runCLKernel( const std::string& key ) {
-    assert( (kernelCL.find( key ) != kernelCL.cend())
+inline void EngineHybrid::enqueueEventKernelCL(
+    const std::string&  key,
+    cl::Event*          event
+) {
+    static const auto EMPTY_WAIT = vectorEventCL_t();
+    enqueueEventKernelCL< GLOBAL_SIZE >(
+        key,  EMPTY_WAIT,  event
+    );
+}
+
+
+
+
+template< size_t GLOBAL_SIZE >
+inline void EngineHybrid::enqueueEventKernelCL(
+    const std::string&      key,
+    const vectorEventCL_t&  waitEvents,
+    cl::Event*              event
+) {
+    assert( (mKernelCL.find( key ) != mKernelCL.cend())
         && "Ядро OpenCL не найдено." );
 
-    static const size_t DIM = 1;
-    static const size_t GS[] = { GLOBAL_SIZE };
-
-    const cl_kernel kernel = kernelCL[ key ];
-    const auto errorCL = clEnqueueNDRangeKernel(
-        commandQueueCL,
-        kernel,
-        DIM,
-        nullptr,
-        GS,
-        nullptr,
-        0, nullptr, nullptr
-    );
-    oclCheckErrorEX( errorCL, CL_SUCCESS, &fnErrorCL );
+    mQueueCL.enqueueNDRangeKernel(
+        mKernelCL[ key ],
+        cl::NullRange,
+        cl::NDRange( GLOBAL_SIZE ),
+        cl::NullRange,
+        waitEvents.empty() ? nullptr : &waitEvents,
+        event
+    ); 
 }
 
 
@@ -866,24 +847,28 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
         << " -D FEATURE_EVENT_COUNT=" << pns::FEATURE_EVENT_COUNT
         << " -D MEMORY_MODEL_COUNT=" << pns::MEMORY_MODEL_COUNT
         << " -D FREQUENCY_MEMORY_MODEL_COUNT=" << pns::FREQUENCY_MEMORY_MODEL_COUNT
+        << " -D UID_MODEL_LENGTH=" << pns::UID_MODEL_LENGTH
 
+        // #! Если для вычислений не используется double, важно передавать
+        //    вещественные значения как float. Иначе на драйвере OpenCL 1.2
+        //    от Intel - ошибка компиляции.
         << std::scientific
-        << " -D BIG_VALUE_BASE_0=" << pns::BIG_VALUE_BASE_0
-        << " -D BIG_VALUE_BASE_1=" << pns::BIG_VALUE_BASE_1
-        << " -D BIG_VALUE_BASE_2=" << pns::BIG_VALUE_BASE_2
-        << " -D BIG_VALUE_BASE_3=" << pns::BIG_VALUE_BASE_3
-        << " -D REAL_MAX=" << pns::REAL_MAX
+        << " -D BIG_VALUE_BASE_0=" << pns::BIG_VALUE_BASE_0 << "f"
+        << " -D BIG_VALUE_BASE_1=" << pns::BIG_VALUE_BASE_1 << "f"
+        << " -D BIG_VALUE_BASE_2=" << pns::BIG_VALUE_BASE_2 << "f"
+        << " -D BIG_VALUE_BASE_3=" << pns::BIG_VALUE_BASE_3 << "f"
+        << " -D REAL_MAX=" << pns::REAL_MAX << "f"
 
 
         // точность сравнения значений с плав. точкой
-        << " -D PRECISION=" << typelib::PRECISION
+        << " -D PRECISION=" << typelib::PRECISION << "f"
 
         // физические и геометрические константы
-        << " -D PI=" << typelib::constant::pi
-        << " -D SPEED_LIGHT=" << typelib::constant::physics::c
-        << " -D CK_TEMPERATURE=" << typelib::constant::physics::CK
-        << " -D G=" << typelib::constant::physics::G
-        << " -D STEFAN_BOLTZMANN=" << typelib::constant::physics::stefanBoltzmann
+        << " -D PI=" << typelib::constant::pi << "f"
+        << " -D SPEED_LIGHT=" << typelib::constant::physics::c << "f"
+        << " -D CK_TEMPERATURE=" << typelib::constant::physics::CK << "f"
+        << " -D G=" << typelib::constant::physics::G << "f"
+        << " -D STEFAN_BOLTZMANN=" << typelib::constant::physics::stefanBoltzmann << "f"
 
         << "";
 
@@ -918,105 +903,6 @@ inline std::string EngineHybrid::commonOptionCLKernel() {
         << "";
 
     return options.str();
-}
-
-
-
-
-inline void EngineHybrid::fnErrorCL( int exitCode ) {
-    std::cerr << "Код ошибки OpenCL: " << exitCode << std::endl;
-
-    // @todo fine Выбрасывать исключение.
-    std::cin.ignore();
-    std::exit( exitCode );
-}
-
-
-
-
-
-
-
-
-inline void __stdcall pfn_notify_cl(
-    const char* errinfo, const void* private_info,
-    size_t cb, void* user_data
-) {
-    std::cout << std::endl << "(!) OpenCL error via pfn_notify_cl(): " << *errinfo << std::endl;
-};
-
-
-
-/*
-inline void __stdcall pfn_notify_program_cl(
-    cl_program, void* user_data
-) {
-    fprintf( stderr, "\n(!) OpenCL error via pfn_notify_program_cl().\n" );
-};
-*/
-
-
-
-
-
-inline cl_int getPlatformIDCPU( cl_platform_id* clSelectedPlatformID ) {
-    char chBuffer[1024];
-    cl_uint num_platforms; 
-    cl_platform_id* clPlatformIDs;
-    cl_int ciErrNum;
-    *clSelectedPlatformID = NULL;
-
-    // Get OpenCL platform count
-    ciErrNum = clGetPlatformIDs (0, NULL, &num_platforms);
-    if (ciErrNum != CL_SUCCESS)
-    {
-        shrLog(" Error %i in clGetPlatformIDs Call !!!\n\n", ciErrNum);
-        return -1000;
-    }
-    else 
-    {
-        if(num_platforms == 0)
-        {
-            shrLog("No OpenCL platform found!\n\n");
-            return -2000;
-        }
-        else 
-        {
-            // if there's a platform or more, make space for ID's
-            if ((clPlatformIDs = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id))) == NULL)
-            {
-                shrLog("Failed to allocate memory for cl_platform ID's!\n\n");
-                return -3000;
-            }
-
-            // get platform info for each platform and trap the CPU platform if found
-            ciErrNum = clGetPlatformIDs (num_platforms, clPlatformIDs, NULL);
-            for(cl_uint i = 0; i < num_platforms; ++i)
-            {
-                ciErrNum = clGetPlatformInfo (clPlatformIDs[i], CL_PLATFORM_NAME, 1024, &chBuffer, NULL);
-                if(ciErrNum == CL_SUCCESS)
-                {
-                    if ( (strstr( chBuffer, "Intel" ) != NULL)
-                      || (strstr( chBuffer, "AMD"   ) != NULL)
-                    ) {
-                        *clSelectedPlatformID = clPlatformIDs[i];
-                        break;
-                    }
-                }
-            }
-
-            // default to zeroeth platform if NVIDIA not found
-            if(*clSelectedPlatformID == NULL)
-            {
-                shrLog("WARNING: CPU OpenCL platform not found - defaulting to first platform!\n\n");
-                *clSelectedPlatformID = clPlatformIDs[0];
-            }
-
-            free(clPlatformIDs);
-        }
-    }
-
-    return CL_SUCCESS;
 }
 
 

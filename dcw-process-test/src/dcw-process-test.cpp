@@ -35,7 +35,6 @@ int main( int argc, char** argv ) {
 
 
 
-
     ::testing::InitGoogleTest( &argc, argv );
     ::testing::FLAGS_gtest_death_test_style = "fast";
     int result = 0;

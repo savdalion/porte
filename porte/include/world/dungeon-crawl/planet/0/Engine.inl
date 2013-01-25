@@ -1,3 +1,6 @@
+#if 0
+// @todo ...
+
 namespace porte {
     namespace world {
         namespace dungeoncrawl {
@@ -619,3 +622,5 @@ inline void __stdcall pfn_notify_program_cl(
         } // dungeoncrawl
     } // world
 } // porte
+
+#endif

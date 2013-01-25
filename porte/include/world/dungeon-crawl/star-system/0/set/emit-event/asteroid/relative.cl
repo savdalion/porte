@@ -75,7 +75,8 @@ __kernel void relative(
     // накопим результат, просмотрев элементы звёздной системы
     real4_t gfA = (real4_t)( 0 );
 
-    const real4_t coordA = convertFromBig3DValue( element->today.coord );
+    real4_t coordA;
+    convertFromBig3DValue( &coordA, element->today.coord );
     const real_t massA = massAsteroid( element );
 
     // # Отсутствующий элемент - сигнал конца списка.
@@ -97,7 +98,8 @@ __kernel void relative(
                 if (ee->content[ we ].uid == E_GRAVITY) {
                     // часть формулы уже вычислена звездой
                     const real_t fgm = ee->content[ we ].fReal[ 0 ];
-                    const real4_t coordB = convertFromBig3DValue( ask->today.coord);
+                    real4_t coordB;
+                    convertFromBig3DValue( &coordB, ask->today.coord);
                     const real4_t dc = coordB - coordA;
                     const real4_t squareDC = dc * dc;
                     const real_t lengthDC = lengthVectorAccurate( dc );

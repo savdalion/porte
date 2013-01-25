@@ -11,7 +11,7 @@
      Ñì. http://nvidia.com/content/cuda/cuda-downloads.html
 #include "../../external/opencl/cl.hpp"
 */
-#include <oclUtils.h>
+//#include <oclUtils.h>
 #include <CL/cl_gl.h>    
 
 // (i) Äëÿ Apple: "cl_APPLE_gl_sharing"

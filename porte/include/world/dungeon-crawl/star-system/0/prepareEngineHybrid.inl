@@ -38,7 +38,6 @@ inline void EngineHybrid::prepareEmitEvent( const std::string& element ) {
     );
     for (auto itr = fl.cbegin(); itr != fl.cend(); ++itr) {
         kernelKeys.push_back( pathPrefix + "/" + *itr + "/direct" );
-        //kernelKeys.push_back( pathPrefix + "/" + *itr + "/relative" );
     }
 
     const std::vector< std::string >  includeHCL;

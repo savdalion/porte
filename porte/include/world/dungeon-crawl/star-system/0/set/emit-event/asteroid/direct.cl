@@ -54,12 +54,13 @@ __kernel void direct(
     // Проверка на столкновения
     // # Проверяем все идущие ниже по алфавиту элементы.
     //   См. соглашение в теле EngineHybrid::pulse().
-    const real4_t coordA = convertFromBig3DValue( element->today.coord );
+    //const real4_t coordA = convertFromBig3DValue( element->today.coord );
+    real4_t coordA;
+    convertFromBig3DValue( &coordA, element->today.coord );
     //const real_t maxSideA =
     //    fmax( fmax( element->today.size.x,  element->today.size.y ), element->today.size.z );
     real_t maxSideA = fmax( element->today.size.s0,  element->today.size.s1 );
-    //maxSideA = 1000;
-    @todo ! Не хватает регистров?
+    //real_t maxSideA = 1000;
 
     const real_t massA = massAsteroid( element );
     const real_t velocity1BeforeA =
@@ -85,7 +86,8 @@ __kernel void direct(
         ) {
             __global const aboutStar_t* ask = &as[ k ];
 
-            const real4_t coordB = convertFromBig3DValue( ask->today.coord );
+            real4_t coordB;
+            convertFromBig3DValue( &coordB, ask->today.coord );
             const real_t collisionDistance = fmax( maxSideA, ask->today.radius );
             const bool hasCollision = collision( coordA,  coordB,  collisionDistance );
             if ( !hasCollision ) {
@@ -93,7 +95,7 @@ __kernel void direct(
             }
 
 #ifdef __DEBUG
-            printf( "direct() Asteroid %d collision with star %d.\n", element->uid, ask->uid );
+            //printf( "direct() Asteroid %d collision with star %d.\n", element->uid, ask->uid );
 #endif
             // @todo optimize При столкновении астероида и звезды кинет.
             //       энергия не участвует в обработке события. Но есть
@@ -114,7 +116,7 @@ __kernel void direct(
                 element->today.velocity,
                 massB,
                 ask->today.velocity,
-                0.9
+                0.9f
             );
             // @todo optimize fine Использовать 4-е поле для вычисления и
             //       хранения длины вектора.
