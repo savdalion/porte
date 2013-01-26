@@ -83,7 +83,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(BOOST_ROOT);D:\Projects\workspace\portulan;D:\Projects\workspace\silhouette;D:\Projects\workspace\typelib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source\Magick++\lib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source;C:\Program Files (x86)\Intel\OpenCL SDK\3.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(BOOST_ROOT);D:\Projects\workspace\portulan;D:\Projects\workspace\silhouette;D:\Projects\workspace\typelib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source\Magick++\lib;D:\Projects\workspace\utils\GraphicsMagick-1.3.15-Mercurial-Source;C:\Program Files (x86)\Intel\OpenCL SDK\2.0\include;$(IncludePath)</IncludePath>
     <IntDir>V:\temp\debug-porte\$(MSBuildProjectName)\</IntDir>
     <OutDir>V:\bin\debug-porte\</OutDir>
   </PropertyGroup>

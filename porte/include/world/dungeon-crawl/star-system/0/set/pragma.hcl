@@ -1,6 +1,7 @@
-/* Для OpenCL 1.2 уже не надо.
+// #i Для OpenCL 1.2 включать не обязательно.
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-*/
+
+
 
 
 // # Т.к. не все видеокарты поддерживают 'double' для OpenCL и не все CPU

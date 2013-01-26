@@ -242,11 +242,11 @@ inline void EngineHybrid::emitEvent( int n ) {
 #endif
 
 #if 1
-        //enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
         //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/begin" );
         mQueueCL.finish();
 
-        //enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
         //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/direct" );
         mQueueCL.finish();
 
@@ -254,7 +254,7 @@ inline void EngineHybrid::emitEvent( int n ) {
         //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/relative" );
         mQueueCL.finish();
 
-        enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
+        //enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
         //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/fix" );
         mQueueCL.finish();
 #endif
