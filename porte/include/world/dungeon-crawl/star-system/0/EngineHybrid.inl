@@ -146,10 +146,9 @@ inline void EngineHybrid::pulse( int n ) {
     const auto ts = sizeof( pns::aboutStar_t );
 
     const auto tca = sizeof( pns::characteristicAsteroid_t );
-    const auto ts3 = sizeof( pns::real3_t );
-    const auto tb3 = sizeof( pns::big3d_t );
     const auto tr1 = sizeof( pns::real_t );
     const auto tr2 = sizeof( pns::real2_t );
+    const auto ts3 = sizeof( pns::real3_t );
     const auto tr4 = sizeof( pns::real4_t );
     const auto tb = sizeof( bool );
 
@@ -196,23 +195,7 @@ inline void EngineHybrid::emitEvent( int n ) {
 
 
         // Подготавливаем элементы к созданию событий
-#if 1
-    /*
-        cl::Event asteroidBegin;
-        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
-            "set/emit-event/asteroid/begin",  &asteroidBegin );
-        cl::Event asteroidDirect;
-        enqueueEventKernelCL< pns::ASTEROID_COUNT >(
-            "set/emit-event/asteroid/direct", &asteroidDirect );
-
-        cl::Event starBegin;
-        enqueueEventKernelCL< pns::STAR_COUNT >(
-            "set/emit-event/star/begin",      &starBegin );
-        cl::Event starDirect;
-        enqueueEventKernelCL< pns::STAR_COUNT >(
-            "set/emit-event/star/direct",     &starDirect );
-    */
-
+#if 0
         cl::Event asteroidBegin;
         enqueueEventKernelCL< pns::ASTEROID_COUNT >(
             "set/emit-event/asteroid/begin",  &asteroidBegin );
@@ -256,6 +239,24 @@ inline void EngineHybrid::emitEvent( int n ) {
             ( asteroidFix )
             ( starFix )
         ;
+#endif
+
+#if 1
+        //enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
+        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/begin" );
+        mQueueCL.finish();
+
+        //enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
+        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/direct" );
+        mQueueCL.finish();
+
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/relative" );
+        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/relative" );
+        mQueueCL.finish();
+
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
+        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/fix" );
+        mQueueCL.finish();
 #endif
 
 
@@ -849,6 +850,9 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
         // лечим точность для float
         << std::fixed
 
+        // структуры и методы портулана на С++ станут годным для OpenCL.
+        << " -D PORTULAN_AS_OPEN_CL_STRUCT"
+
         << " -D __DEBUG"
         //<< " -D GPU_OPENCL"
 
@@ -865,12 +869,7 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
         //    вещественные значения как float. Иначе на драйвере OpenCL 1.2
         //    от Intel - ошибка компиляции.
         << std::scientific
-        << " -D BIG_VALUE_BASE_0=" << pns::BIG_VALUE_BASE_0 << "f"
-        << " -D BIG_VALUE_BASE_1=" << pns::BIG_VALUE_BASE_1 << "f"
-        << " -D BIG_VALUE_BASE_2=" << pns::BIG_VALUE_BASE_2 << "f"
-        << " -D BIG_VALUE_BASE_3=" << pns::BIG_VALUE_BASE_3 << "f"
         << " -D REAL_MAX=" << pns::REAL_MAX << "f"
-
 
         // точность сравнения значений с плав. точкой
         << " -D PRECISION=" << typelib::PRECISION << "f"

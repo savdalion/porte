@@ -47,7 +47,7 @@ __kernel void begin(
 
 
     if (i >= ASTEROID_COUNT) {
-        printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
     }
 
@@ -60,8 +60,8 @@ __kernel void begin(
     __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 #endif
 

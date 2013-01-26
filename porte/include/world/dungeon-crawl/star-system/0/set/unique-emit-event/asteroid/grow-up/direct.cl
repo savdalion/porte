@@ -34,8 +34,9 @@ __kernel void direct(
     printf( "get_global_id() %d\n",    get_global_id( 0 ) );
     printf( "get_group_id() %d\n",     get_group_id( 0 ) );
     */
+
     if (i >= ASTEROID_COUNT) {
-        printf( "(!) Index %d / %d is out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
+        //printf( "(!) Index %d / %d is out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
     }
 #endif
@@ -56,8 +57,8 @@ __kernel void direct(
     __global frequencyMemoryModel_t* fmm = &element->frequencyMemoryModel;
 #ifdef __DEBUG
     if ( !betweenInteger( fmm->waldo, 0, FREQUENCY_MEMORY_MODEL_COUNT - 1 ) ) {
-        printf( "(?) Frequency memory model of asteroid %d is overfilled. Waldo = %i / %d.\n",
-            element->uid,  fmm->waldo,  FREQUENCY_MEMORY_MODEL_COUNT - 1 );
+        //printf( "(?) Frequency memory model of asteroid %d is overfilled. Waldo = %i / %d.\n",
+        //    element->uid,  fmm->waldo,  FREQUENCY_MEMORY_MODEL_COUNT - 1 );
     }
 #endif
 
@@ -74,7 +75,7 @@ __kernel void direct(
     if ( !hasNeedful ) {
         // нет условий для развития модели
 #ifdef __DEBUG
-        printf( "(?) Model %d / %d is out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
+        //printf( "(?) Model %d / %d is out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
 #endif
         return;
     }
@@ -84,7 +85,7 @@ __kernel void direct(
     if (w > (EMITTER_EVENT_COUNT - TRANSACT_SIZE)) {
         // у элемента недостаточно свободной памяти, чтобы запомнить блок
         // событий от 1 пульса этой модели
-        printf( "(?) Memory of asteroid %d is overfilled. Unique event is not commited.\n", element->uid );
+        //printf( "(?) Memory of asteroid %d is overfilled. Unique event is not commited.\n", element->uid );
         return;
     }
 
@@ -98,17 +99,6 @@ __kernel void direct(
         const eventTwo_t e = {
             // uid события
             E_CHANGE_MASS,
-            // второй участник события - здесь не важен
-            {},
-            { deltaMassABySecond, deltaMassAByTimestep }
-        };
-        ee->content[ w ] = e;
-        ++w;
-    }
-    {
-        const eventTwo_t e = {
-            // uid события
-            E_INCREASE_MASS,
             // второй участник события - здесь не важен
             {},
             { deltaMassABySecond, deltaMassAByTimestep }
@@ -142,20 +132,6 @@ __kernel void direct(
         ee->content[ w ] = e;
         ++w;
     }
-    {
-        const eventTwo_t e = {
-            // uid события
-            E_INCREASE_SIZE,
-            // второй участник события - здесь не важен
-            {},
-            {
-                deltaSizeABySecond.s0,   deltaSizeABySecond.s1,   deltaSizeABySecond.s2,
-                deltaSizeAByTimestep.s0, deltaSizeAByTimestep.s1, deltaSizeAByTimestep.s2
-            }
-        };
-        ee->content[ w ] = e;
-        ++w;
-    }
 
 
     // @todo Плотность сохраняется, пересчитываем из-за событий выше
@@ -164,8 +140,8 @@ __kernel void direct(
 
     // обновляем вальдо
     if (w != (ee->waldo + TRANSACT_SIZE)) {
-        printf( "(!) Transact size for this model of asteroid %d is incorrect. %i %i\n",
-            element->uid,  ee->waldo + TRANSACT_SIZE,  w );
+        //printf( "(!) Transact size for this model of asteroid %d is incorrect. %i %i\n",
+        //    element->uid,  ee->waldo + TRANSACT_SIZE,  w );
     }
     ee->waldo = w;
 

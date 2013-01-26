@@ -26,7 +26,7 @@ __kernel void relative(
     const uint i = get_global_id( 0 );
 
     if (i >= ASTEROID_COUNT) {
-        printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
     }
 
@@ -39,19 +39,20 @@ __kernel void relative(
     __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 
+    /* @test
     printf( "Asteroid %d.\n"
         "Coord %e %e %e\n"
         "Velocity %e %e %e\n"
         "Size %e %e %e\n"
         "",
         element->uid,
-        convertFromBigValue( element->today.coord.x ),
-        convertFromBigValue( element->today.coord.y ),
-        convertFromBigValue( element->today.coord.z ),
+        element->today.coord.x,
+        element->today.coord.y,
+        element->today.coord.z,
         element->today.velocity[ 0 ],
         element->today.velocity[ 1 ],
         element->today.velocity[ 2 ],
@@ -59,6 +60,7 @@ __kernel void relative(
         element->today.size[ 1 ],
         element->today.size[ 2 ]
     );
+    */
 #endif
 
     int w = ee->waldo;
@@ -73,8 +75,7 @@ __kernel void relative(
     // накопим результат, просмотрев элементы звЄздной системы
     real3_t gfA = 0;
 
-    real3_t coordA;
-    convertFromBig3DValue( &coordA, element->today.coord );
+    const real3_t coordA = element->today.coord;
     const real_t massA = element->today.mass;
 
     // # ќтсутствующий элемент - сигнал конца списка.
@@ -96,8 +97,7 @@ __kernel void relative(
                 if (ee->content[ we ].uid == E_GRAVITY) {
                     // часть формулы уже вычислена звездой
                     const real_t fgm = ee->content[ we ].fReal[ 0 ];
-                    real3_t coordB;
-                    convertFromBig3DValue( &coordB, ask->today.coord);
+                    const real3_t coordB = ask->today.coord;
                     const real3_t dc = coordB - coordA;
                     const real3_t squareDC = dc * dc;
                     const real_t absDC = length( dc );
@@ -137,6 +137,7 @@ __kernel void relative(
     const bool correctAbsForce = testReal( absForceA );
 #ifdef __DEBUG
     if ( !correctAbsForce ) {
+        /*
         printf( "Don't correct \'absForce\' for asteroid %d.\n"
             "Coord %e %e %e\n"
             "Velocity %e %e %e\n"
@@ -153,6 +154,7 @@ __kernel void relative(
             element->today.size[ 1 ],
             element->today.size[ 2 ]
         );
+        */
     }
     assertReal( absForceA, "(!) Overfill length E_IMPACT_FORCE for asteroid.\n" );
 #endif
@@ -204,19 +206,6 @@ __kernel void relative(
                 // второй участник событи€ - здесь не важен
                 {},
                 { deltaVelocityA.x, deltaVelocityA.y, deltaVelocityA.z, absDeltaVelocityA }
-            };
-            element->emitterEvent.content[ w ] = e;
-            ++w;
-        }
-
-        //  ак изменилась скорость по отношению к текущей
-        if (w < EMITTER_EVENT_COUNT) {
-            eventTwo_t e = {
-                // uid событи€
-                (absDeltaVelocityA < 0) ? E_DECREASE_VELOCITY : E_INCREASE_VELOCITY,
-                // второй участник событи€ - здесь не важен
-                {},
-                { deltaVelocityA.x, deltaVelocityA.y, deltaVelocityA.z,  absDeltaVelocityA }
             };
             element->emitterEvent.content[ w ] = e;
             ++w;

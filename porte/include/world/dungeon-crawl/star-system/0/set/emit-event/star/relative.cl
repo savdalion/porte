@@ -28,7 +28,7 @@ __kernel void relative(
     const uint i = get_global_id( 0 );
 
     if (i >= STAR_COUNT) {
-        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
         return;
     }
 
@@ -41,8 +41,8 @@ __kernel void relative(
     __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 #endif
 
@@ -73,7 +73,7 @@ __kernel void relative(
                   && accordancePointerElement( GE_STAR, i, element->uid,  &ewe->pi )
                 ) {
 #ifdef __DEBUG
-                    printf( "relative() Star %d collision with asteroid %d.\n", element->uid, aak->uid );
+                    //printf( "relative() Star %d collision with asteroid %d.\n", element->uid, aak->uid );
 #endif
                     const pointerElement_t piB = { GE_ASTEROID, k, aak->uid };
                     if (w < EMITTER_EVENT_COUNT) {
@@ -106,20 +106,6 @@ __kernel void relative(
                         const eventTwo_t e = {
                             // uid события
                             E_CHANGE_MASS,
-                            // второй участник события - почему бы и нет
-                            piB,
-                            // # Необходимо соблюдать порядок передачи
-                            //   параметров для одинаковых событий.
-                            { deltaMassBySecond, deltaMassByTimestep }
-                        };
-                        element->emitterEvent.content[ w ] = e;
-                        ++w;
-                    }
-
-                    if (w < EMITTER_EVENT_COUNT) {
-                        const eventTwo_t e = {
-                            // uid события
-                            E_INCREASE_MASS,
                             // второй участник события - почему бы и нет
                             piB,
                             // # Необходимо соблюдать порядок передачи

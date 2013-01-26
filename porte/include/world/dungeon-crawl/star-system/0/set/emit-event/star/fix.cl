@@ -28,7 +28,7 @@ __kernel void fix(
     const uint i = get_global_id( 0 );
 
     if (i >= STAR_COUNT) {
-        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
         return;
     }
 
@@ -41,8 +41,8 @@ __kernel void fix(
     const __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 #endif
 
@@ -59,7 +59,7 @@ __kernel void fix(
                 // пустая ячейка, пустое событие
                 // # В идеале не должно встречаться.
 #ifdef __DEBUG
-                printf( "(?) fix() Empty event for asteroid %d. Decrease perfomance.\n", element->uid );
+                //printf( "(?) fix() Empty event for asteroid %d. Decrease perfomance.\n", element->uid );
 #endif
                 break;
 
@@ -69,13 +69,13 @@ __kernel void fix(
                 break;
 
             case E_CHANGE_COORD :
-                element->today.coord.x += convertToBigValue( e->fReal[ 0 ] );
-                element->today.coord.y += convertToBigValue( e->fReal[ 1 ] );
-                element->today.coord.z += convertToBigValue( e->fReal[ 2 ] );
+                element->today.coord.x += e->fReal[ 0 ];
+                element->today.coord.y += e->fReal[ 1 ];
+                element->today.coord.z += e->fReal[ 2 ];
 #ifdef __DEBUG
-                assertReal4( element->today.coord.x, "(!) Overfill coord X for star.\n" );
-                assertReal4( element->today.coord.y, "(!) Overfill coord Y for star.\n" );
-                assertReal4( element->today.coord.z, "(!) Overfill coord Z for star.\n" );
+                assertReal( element->today.coord.x, "(!) Overfill coord X for star.\n" );
+                assertReal( element->today.coord.y, "(!) Overfill coord Y for star.\n" );
+                assertReal( element->today.coord.z, "(!) Overfill coord Z for star.\n" );
 #endif
                 break;
 
@@ -84,6 +84,10 @@ __kernel void fix(
 #ifdef __DEBUG
                 assertReal( element->today.mass, "(!) Overfill mass for star.\n" );
 #endif
+                break;
+
+            case E_CHANGE_SIZE :
+                // @todo ...
                 break;
 
             case E_CHANGE_TEMPERATURE :
@@ -101,41 +105,13 @@ __kernel void fix(
 #endif
                 break;
 
-            case E_DECREASE_MASS :
-                // # Отрабатывается в E_CHANGE_MASS.
-                break;
-
-            case E_DECREASE_TEMPERATURE :
-                // # Отрабатывается в E_CHANGE_TEMPERATURE.
-                break;
-
-            case E_DECREASE_VELOCITY :
-                // # Отрабатывается в E_CHANGE_VELOCITY.
-                break;
-
-            case E_INCREASE_MASS :
-                // # Отрабатывается в E_CHANGE_MASS.
-#ifdef __DEBUG
-                printf( "fix() Increase mass star %d on %e kg.", element->uid, e->fReal[ 1 ] );
-                printf( " Mass star is ~ %e kg.\n", element->today.mass );
-#endif
-                break;
-
-            case E_INCREASE_TEMPERATURE :
-                // # Отрабатывается в E_CHANGE_TEMPERATURE.
-                break;
-
-            case E_INCREASE_VELOCITY :
-                // # Отрабатывается в E_CHANGE_VELOCITY.
-                break;
-
             case E_CRUSH_N :
                 // @todo ...
                 break;
 
             case E_DESTROY :
 #ifdef __DEBUG
-                printf( "fix() Destroy star %d.\n", element->uid );
+                //printf( "fix() Destroy star %d.\n", element->uid );
 #endif
                 element->today.live = false;
                 break;
@@ -166,10 +142,10 @@ __kernel void fix(
                 // # Не должно встречаться.
                 break;
 
-            default :
+            //default :
                 // # Сюда попадать не должны.
 #ifdef __DEBUG
-                printf( "(!) fix() Undefined event for star %d.\n", element->uid );
+                //printf( "(!) fix() Undefined event for star %d.\n", element->uid );
 #endif
         } // switch
 

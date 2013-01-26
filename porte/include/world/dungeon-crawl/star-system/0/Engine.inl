@@ -23,12 +23,10 @@ inline Engine::real_t Engine::extent() {
     std::vector< real_t >  distance;
 
     const auto pushDistance = [ &distance ] (
-        const pns::big3d_t& coord
+        const pns::real3_t& coord
     ) {
         const auto c = typelib::CoordT< real_t >(
-            pns::convertFromBigValue< pns::real_t >( coord.x ),
-            pns::convertFromBigValue< pns::real_t >( coord.y ),
-            pns::convertFromBigValue< pns::real_t >( coord.z )
+            coord.s[ 0 ],  coord.s[ 1 ],  coord.s[ 2 ]
         );
         distance.push_back( c.distance() );
     };

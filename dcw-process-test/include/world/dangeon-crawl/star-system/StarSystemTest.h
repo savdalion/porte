@@ -433,11 +433,11 @@ inline void StarSystemTest::testAsteroid( bool onlyLive ) const {
 
         // общие характеристики
 
-        EXPECT_TRUE( testReal4( element.today.coord.x ) ) <<
+        EXPECT_TRUE( testReal( element.today.coord.s[ 0 ] ) ) <<
             "Координата X не корректна";
-        EXPECT_TRUE( testReal4( element.today.coord.y ) ) <<
+        EXPECT_TRUE( testReal( element.today.coord.s[ 1 ] ) ) <<
             "Координата Y не корректна";
-        EXPECT_TRUE( testReal4( element.today.coord.z ) ) <<
+        EXPECT_TRUE( testReal( element.today.coord.s[ 2 ] ) ) <<
             "Координата Z не корректна";
 
         EXPECT_TRUE( testReal( element.today.mass ) ) <<

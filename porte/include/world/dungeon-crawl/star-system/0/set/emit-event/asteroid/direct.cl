@@ -36,7 +36,7 @@ __kernel void direct(
 
 
     if (i >= ASTEROID_COUNT) {
-        printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;
     }
 
@@ -49,8 +49,8 @@ __kernel void direct(
     __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 #endif
 
@@ -64,8 +64,7 @@ __kernel void direct(
     // Проверка на столкновения
     // # Проверяем все идущие ниже по алфавиту элементы.
     //   См. соглашение в теле EngineHybrid::pulse().
-    real3_t coordA;
-    convertFromBig3DValue( &coordA, element->today.coord );
+    const real3_t coordA = element->today.coord;
 
     const real_t massA = element->today.mass;
     const real_t absVelocityABefore = length( element->today.velocity );
@@ -90,8 +89,7 @@ __kernel void direct(
         ) {
             __global const aboutStar_t* ask = &as[ k ];
 
-            real3_t coordB;
-            convertFromBig3DValue( &coordB, ask->today.coord );
+            const real3_t coordB = ask->today.coord;
             // # Звезда всегда больше астероида.
             const real_t collisionDistance = ask->today.radius;
             const bool hasCollision =

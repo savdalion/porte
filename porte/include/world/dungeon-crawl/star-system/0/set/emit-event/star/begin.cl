@@ -21,12 +21,14 @@ __kernel void begin(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # —юда получаем готовый индекс. ”читываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
     if (i >= STAR_COUNT) {
-        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
         return;
     }
 
@@ -43,8 +45,8 @@ __kernel void begin(
     printf( "aboutStar_t %i\n", sizeof( aboutStar_t ) );
     printf( "characteristicAsteroid_t %i\n", sizeof( characteristicAsteroid_t ) );
     printf( "small3d_t %i\n", sizeof( small3d_t ) );
-    printf( "big3d_t %i\n", sizeof( big3d_t ) );
     printf( "real_t %i\n", sizeof( real_t ) );
+    printf( "real3_t %i\n", sizeof( real3_t ) );
     printf( "real2_t %i\n", sizeof( real2_t ) );
     printf( "real4_t %i\n", sizeof( real4_t ) );
     printf( "bool %i\n", sizeof( bool ) );
@@ -64,8 +66,8 @@ __kernel void begin(
     __global emitterEvent_t* ee = &element->emitterEvent;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 #endif
 

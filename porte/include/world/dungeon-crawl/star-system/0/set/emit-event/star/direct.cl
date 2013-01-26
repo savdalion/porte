@@ -19,14 +19,18 @@ __kernel void direct(
     __global aboutAsteroid_t*          aa,       // 1
     __global aboutPlanet_t*            ap,       // 2
     __global aboutStar_t*              as,       // 3
+    // @todo __global real4_t                   di
     const real_t                       timestep  // 4
 ) {
+    return;
+
     // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
     if (i >= STAR_COUNT) {
-        printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        //printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
+        // @todo di.s0 = CLP_INDEX_OUT_OF_RANGE;
         return;
     }
 
@@ -37,10 +41,11 @@ __kernel void direct(
 
     __global aboutStar_t* element = &as[ i ];
     __global emitterEvent_t* ee = &element->emitterEvent;
+    __global eventTwo_t* eec = element->emitterEvent.content;
 #ifdef __DEBUG
     if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-            element->uid, ee->waldo );
+        //printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
+        //    element->uid, ee->waldo );
     }
 #endif
 
@@ -54,7 +59,6 @@ __kernel void direct(
         // вычислим часть формулы для расчёта силы притяжения: это значение
         // смогут использовать элементы, которые притягивает звезда
         const real_t fgm = G * element->today.mass;
-        /*
         const eventTwo_t e = {
             // uid события
             E_GRAVITY,
@@ -62,15 +66,13 @@ __kernel void direct(
             {},
             { fgm }
         };
-        element->emitterEvent.content[ w ] = e;
-        */
-        element->emitterEvent.content[ w ].uid = E_GRAVITY;
-        element->emitterEvent.content[ w ].fReal[ 1 ] = fgm;
+        //eec[ w ] = e;
+        eec[ w ].uid = E_GRAVITY;
+        eec[ w ].fReal[ 0 ] = fgm;
         ++w;
     }
 
 
-#if 0
     // Излучение энергии (ядерная реакция)
     // # Каждую секунду звезда излучает энергию.
     // @todo optimize Запоминать вычисленные значения.
@@ -86,7 +88,10 @@ __kernel void direct(
             {},
             { luminosityABySecond, luminosityABySecond * timestep }
         };
-        element->emitterEvent.content[ w ] = e;
+        eec[ w ] = e;
+        //eec[ w ].uid = E_RADIATION;
+        //eec[ w ].fReal[ 0 ] = luminosityABySecond;
+        //eec[ w ].fReal[ 1 ] = luminosityABySecond * timestep;
         ++w;
     }
 
@@ -104,21 +109,9 @@ __kernel void direct(
             {},
             { deltaMassABySecond, deltaMassABySecond * timestep }
         };
-        element->emitterEvent.content[ w ] = e;
+        eec[ w ] = e;
         ++w;
     }
-    if (w < EMITTER_EVENT_COUNT) {
-        const eventTwo_t e = {
-            // uid события
-            E_DECREASE_MASS,
-            // второй участник события - здесь не важен
-            {},
-            { deltaMassABySecond, deltaMassABySecond * timestep }
-        };
-        element->emitterEvent.content[ w ] = e;
-        ++w;
-    }
-#endif
 
 
     // Проверка на столкновения

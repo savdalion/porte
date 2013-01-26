@@ -8,21 +8,9 @@
 *   # Структуры C++ в portulan построены так, чтобы не дублировать код.
 */
 
-#define PORTULAN_AS_OPEN_CL_STRUCT
-
-// Декларируем типы OpenCL чтобы подключаемые структуры на C++
+// Декларируем типы OpenCL, чтобы подключаемые структуры на C++
 // не уродовать if-def'ами.
 
-/* - @see pragma.hcl
-// Увы, не все видеокарты поддерживают 'double' для OpenCL.
-// #! Типы данных должны быть согласованы с OpenCL HOST.
-// # double4 поддерживается не всеми устройствами OpenCL. Не используем.
-#ifdef PERMIT_DOUBLE_ENGINE_PORTE
-typedef double  real_t;
-#else
-typedef float   real_t;
-#endif
-*/
 typedef float   real_t;
 typedef float2  real2_t;
 typedef float3  real3_t;

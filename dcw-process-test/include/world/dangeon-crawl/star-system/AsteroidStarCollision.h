@@ -164,11 +164,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
                 luminosityStar(), d, albedo
             );
 
-        const pns::big3d_t coord = {
-            pns::convertToBigValue( d ),
-            pns::convertToBigValue( 0 ),
-            pns::convertToBigValue( 0 )
-        };
+        const pns::real3_t coord = { d, 0, 0 };
 
         pns::real3_t rotation = {};
 
@@ -311,16 +307,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
         //std::cout << *l << std::endl;
         EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION ) ) << *l;
         EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID ) ) << *l;
-        // масса звезды увеличивается из-за падения астероида
-        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_INCREASE_MASS ) ) << *l;
+        // масса звезды уменьшается каждый пульс из-за излучения
+        // и увеличивается 1 раз из-за падения астероида
+        EXPECT_EQ( PL + 1,  l->countByUIDEvent( pns::E_CHANGE_MASS ) ) << *l;
         // звезда притягивает тела гравитацией
         EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_GRAVITY ) ) << *l;
         // звезда каждый пульс излучает энергию
         EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_RADIATION ) ) << *l;
-        // масса звезды уменьшается каждый пульс из-за излучения
-        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_DECREASE_MASS ) ) << *l;
-        // изменение массы включает в себя её увеличение и уменьшения
-        EXPECT_EQ( 1 + PL,  l->countByUIDEvent( pns::E_CHANGE_MASS ) ) << *l;
     }
 
 #endif
@@ -369,7 +362,7 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
             typelib::compute::geometry::ellipsoid::volume( rx, ry, rz ) *
             density;
         massAsteroid[ i ] = mass;
-        allMassAsteroid += pns::convertFromBigValue< double >( mass );
+        allMassAsteroid += mass;
 
         const pns::real_t albedo = 0.6;
 
@@ -513,20 +506,13 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid2Star1 ) {
         EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID ) ) << *l;
         EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID, 1 ) ) << *l;
         EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_COLLISION, pns::GE_ASTEROID, 2 ) ) << *l;
-        // масса звезды увеличивается из-за падения астероидов
-        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_INCREASE_MASS ) ) << *l;
-        // движок в некоторых случаях передаёт причины увеличения массы
-        EXPECT_EQ( 2u,  l->countByUIDEvent( pns::E_INCREASE_MASS, pns::GE_ASTEROID ) ) << *l;
-        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_INCREASE_MASS, pns::GE_ASTEROID, 1 ) ) << *l;
-        EXPECT_EQ( 1u,  l->countByUIDEvent( pns::E_INCREASE_MASS, pns::GE_ASTEROID, 2 ) ) << *l;
+        // масса звезды уменьшается каждый пульс из-за излучения
+        // и 2 раз увеличивается из-за падения астероидов
+        EXPECT_EQ( PL + 2,  l->countByUIDEvent( pns::E_CHANGE_MASS ) ) << *l;
         // звезда притягивает тела гравитацией
         EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_GRAVITY ) ) << *l;
         // звезда каждый пульс излучает энергию
         EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_RADIATION ) ) << *l;
-        // масса звезды уменьшается каждый пульс из-за излучения
-        EXPECT_EQ( PL,  l->countByUIDEvent( pns::E_DECREASE_MASS ) ) << *l;
-        // изменение массы включает в себя её увеличения и уменьшения
-        EXPECT_EQ( 2 + PL,  l->countByUIDEvent( pns::E_CHANGE_MASS ) ) << *l;
     }
 
 #endif
