@@ -21,8 +21,6 @@ __kernel void fix(
     __global aboutStar_t*              as,       // 3
     const real_t                       timestep  // 4
 ) {
-    return;
-
     // # —юда получаем готовый индекс. ”читываем, что кол-во элементов
     //   в группах - разное.
     const uint i = get_global_id( 0 );
@@ -72,18 +70,10 @@ __kernel void fix(
                 element->today.coord.x += e->fReal[ 0 ];
                 element->today.coord.y += e->fReal[ 1 ];
                 element->today.coord.z += e->fReal[ 2 ];
-#ifdef __DEBUG
-                assertReal( element->today.coord.x, "(!) Overfill coord X for star.\n" );
-                assertReal( element->today.coord.y, "(!) Overfill coord Y for star.\n" );
-                assertReal( element->today.coord.z, "(!) Overfill coord Z for star.\n" );
-#endif
                 break;
 
             case E_CHANGE_MASS :
                 element->today.mass += e->fReal[ 1 ];
-#ifdef __DEBUG
-                assertReal( element->today.mass, "(!) Overfill mass for star.\n" );
-#endif
                 break;
 
             case E_CHANGE_SIZE :
@@ -98,11 +88,6 @@ __kernel void fix(
                 element->today.velocity.x += e->fReal[ 0 ];
                 element->today.velocity.y += e->fReal[ 1 ];
                 element->today.velocity.z += e->fReal[ 2 ];
-#ifdef __DEBUG
-                assertReal( element->today.velocity.x, "(!) Overfill velocity X for star.\n" );
-                assertReal( element->today.velocity.y, "(!) Overfill velocity Y for star.\n" );
-                assertReal( element->today.velocity.z, "(!) Overfill velocity Z for star.\n" );
-#endif
                 break;
 
             case E_CRUSH_N :

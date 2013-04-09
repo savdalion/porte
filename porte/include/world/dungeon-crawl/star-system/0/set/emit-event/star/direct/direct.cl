@@ -1,4 +1,6 @@
-// @require Библиотеки из "include".
+#include "pragma.hcl"
+#include "restruct.hcl"
+#include "helper.hcl"
 
 
 /**
@@ -15,28 +17,35 @@
 
 // @see world/dungeon-crawl/star-system/0/set/structure.h
 __kernel void direct(
-    __global const aboutStarSystem_t*  ass,      // 0
-    __global aboutAsteroid_t*          aa,       // 1
-    __global aboutPlanet_t*            ap,       // 2
-    __global aboutStar_t*              as,       // 3
-    // @todo __global real4_t                   di
-    const real_t                       timestep  // 4
+    __global const todayStar_t*   ts,       // 0
+    __global emitterEventStar_t*  ees,      // 1
+    const real_t                  timestep  // 4
 ) {
-    return;
-
-    // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
-    //   в группах - разное.
+    //  индекс элемента
     const uint i = get_global_id( 0 );
-
+    // @todo optimize Можно не проверять.
     if (i >= STAR_COUNT) {
-        //printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
-        // @todo di.s0 = CLP_INDEX_OUT_OF_RANGE;
         return;
     }
 
-    if ( absentStar( &as[ i ] ) ) {
+    __global characteristicStar_t* element = &ts[ i ];
+    if ( absentStar( element ) ) {
         return;
     }
+
+    Индекс излучаемого сейчас события?
+    Или каждое событие будет знать, в какую ячейку памяти сохраниться?
+    
+    //  индекс содержимого памяти событий элемента
+    const uint im = get_global_id( 1 );
+    // @todo optimize Можно не проверять.
+    if (im >= EMIT_EVENT_STAR_COUNT) {
+        return;
+    }
+
+
+    __global eventTwo_t* e = &ee[ i ][ im ];
+
 
 
     __global aboutStar_t* element = &as[ i ];
@@ -78,8 +87,8 @@ __kernel void direct(
     // @todo optimize Запоминать вычисленные значения.
     const real_t radiusA = element->today.radius;
     const real_t surfaceTemperatureA = element->today.surfaceTemperature;
-    const real_t luminosityABySecond = 0;
-        //luminosity( radiusA, surfaceTemperatureA );
+    const real_t luminosityABySecond =
+        luminosity( radiusA, surfaceTemperatureA );
     if (w < EMITTER_EVENT_COUNT) {
         const eventTwo_t e = {
             // uid события

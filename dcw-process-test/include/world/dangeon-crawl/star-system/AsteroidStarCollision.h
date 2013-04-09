@@ -48,7 +48,7 @@ protected:
             static const pns::uid_t uid = 1;
             const pns::real_t mass = 1.9891e30;
 
-            const pns::big3d_t coord = {};
+            const pns::real3_t coord = {};
             pns::real3_t rotation = {};
 
             const auto orbitalSpeed = typelib::VectorT< pns::real_t >::ZERO();
@@ -263,10 +263,10 @@ TEST_F( AsteroidStarCollisionSST,  Asteroid1Star1 ) {
 
     // запускаем мир
     // задаём такое кол-во шагов, чтобы астероид успел упасть на звезду
-    static const int needStep = 10;
+    static const int needStep = 10000;
     static const bool closeWindow = true;
     static const bool showPulse = true;
-    visual.wait< 1, PULSE, needStep, closeWindow, showPulse >( engine().get() );
+    visual.wait< 100, PULSE, needStep, closeWindow, showPulse >( engine().get() );
 
     // сколько пульсов отработал движок
     const auto PL = engine()->live().pulselive();

@@ -25,27 +25,6 @@ __kernel void begin(
     //   в группах - разное.
     const uint i = get_global_id( 0 );
 
-    /* @test
-    if (i == 0) {
-        printf( "aboutStarSystem_t %i\n", sizeof( aboutStarSystem_t ) );
-        printf( "aboutAsteroid_t %i\n", sizeof( aboutAsteroid_t ) );
-        printf( "aboutPlanet_t %i\n", sizeof( aboutPlanet_t ) );
-        printf( "aboutStar_t %i\n", sizeof( aboutStar_t ) );
-        printf( "real_t %i\n", sizeof( real_t ) );
-        printf( "real2_t %i\n", sizeof( real2_t ) );
-        printf( "real3_t %i\n", sizeof( real3_t ) );
-        printf( "real4_t %i\n", sizeof( real4_t ) );
-        printf( "characteristicAsteroid_t %i\n", sizeof( characteristicAsteroid_t ) );
-        printf( "bool %i\n", sizeof( bool ) );
-        printf( "eventTwo_t %i\n", sizeof( eventTwo_t ) );
-        printf( "pointerElement_t %i\n", sizeof( pointerElement_t ) );
-        printf( "enum EVENT %i\n", sizeof( enum EVENT ) );
-    }
-    return;
-    */
-
-
-
     if (i >= ASTEROID_COUNT) {
         //printf( "(!) Index %d / %d out of range for asteroid.\n",  i,  ASTEROID_COUNT - 1 );
         return;

@@ -156,17 +156,17 @@ inline void printCLInfo( cl_platform_id platform ) {
         clGetDeviceInfo(devices[i],CL_DEVICE_SINGLE_FP_CONFIG,sizeof(fp_conf),&fp_conf,&ret_size);
         printf("\tFloat Functionality:\t");
         if(fp_conf & CL_FP_DENORM)
-        printf("DENORM support ");
+        printf("\'DENORM support\' ");
         if(fp_conf & CL_FP_ROUND_TO_NEAREST)
-        printf("Round to nearest support ");
+        printf("\'Round to nearest support\' ");
         if(fp_conf & CL_FP_ROUND_TO_ZERO)
-        printf("Round to zero support ");
+        printf("\'Round to zero support\' ");
         if(fp_conf & CL_FP_ROUND_TO_INF)
-        printf("Round to +ve/-ve infinity support ");
+        printf("\'Round to +ve/-ve infinity support\' ");
         if(fp_conf & CL_FP_FMA)
-        printf("IEEE754 fused-multiply-add support ");
+        printf("\'IEEE754 fused-multiply-add support\' ");
         if(fp_conf & CL_FP_INF_NAN)
-        printf("INF and NaN support ");
+        printf("\'INF and NaN support\' ");
         printf("\n");
 
 

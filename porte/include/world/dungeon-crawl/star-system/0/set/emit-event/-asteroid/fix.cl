@@ -46,6 +46,8 @@ __kernel void fix(
 
     int w = ee->waldo;
 
+    @todo #! ѕередавать индекс в пам€ти элемента как второе измерение.
+    » / или UID событи€ как третье.
 
     // мен€ем характеристики э. в зависимости от событий
     // # Ќе игнорируем ни единого событи€: ведь они почему-то
@@ -72,18 +74,10 @@ __kernel void fix(
                 element->today.coord.x += e->fReal[ 0 ];
                 element->today.coord.y += e->fReal[ 1 ];
                 element->today.coord.z += e->fReal[ 2 ];
-#ifdef __DEBUG
-                assertReal( element->today.coord.x, "(!) Overfill coord X for asteroid.\n" );
-                assertReal( element->today.coord.y, "(!) Overfill coord Y for asteroid.\n" );
-                assertReal( element->today.coord.z, "(!) Overfill coord Z for asteroid.\n" );
-#endif
                 break;
 
             case E_CHANGE_MASS :
                 element->today.mass += e->fReal[ 1 ];
-#ifdef __DEBUG
-                assertReal( element->today.mass, "(!) Overfill mass for asteroid.\n" );
-#endif
                 break;
 
             case E_CHANGE_SIZE :
@@ -115,13 +109,6 @@ __kernel void fix(
                 element->today.size.x += e->fReal[ 3 ];
                 element->today.size.y += e->fReal[ 4 ];
                 element->today.size.z += e->fReal[ 5 ];
-#ifdef __DEBUG
-                assertReal( element->today.size.x, "(!) Overfill size X for asteroid.\n" );
-                assertReal( element->today.size.y, "(!) Overfill size Y for asteroid.\n" );
-                assertReal( element->today.size.z, "(!) Overfill size Z for asteroid.\n" );
-                //printf( "fix() Change size asteroid %d.  %e x %e x %e\n",
-                //    element->uid,  e->fReal[ 3 ],  e->fReal[ 4 ],  e->fReal[ 5 ] );
-#endif
                 break;
 
             case E_CHANGE_TEMPERATURE :
@@ -132,11 +119,6 @@ __kernel void fix(
                 element->today.velocity.x += e->fReal[ 0 ];
                 element->today.velocity.y += e->fReal[ 1 ];
                 element->today.velocity.z += e->fReal[ 2 ];
-#ifdef __DEBUG
-                assertReal( element->today.velocity.x, "(!) Overfill velocity X for asteroid.\n" );
-                assertReal( element->today.velocity.y, "(!) Overfill velocity Y for asteroid.\n" );
-                assertReal( element->today.velocity.z, "(!) Overfill velocity Z for asteroid.\n" );
-#endif
                 break;
 
             case E_CRUSH_N :

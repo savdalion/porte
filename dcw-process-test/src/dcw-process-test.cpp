@@ -3,8 +3,9 @@
 
 //#include "../include/world/dangeon-crawl/star-system/AsteroidAsteroidCollision.h"
 //#include "../include/world/dangeon-crawl/star-system/AsteroidStarCollision.h"
-#include "../include/world/dangeon-crawl/star-system/AsteroidUniqueBehaviour.h"
+//#include "../include/world/dangeon-crawl/star-system/AsteroidUniqueBehaviour.h"
 //#include "../include/world/dangeon-crawl/star-system/PlanetStarCollision.h"
+#include "../include/world/dangeon-crawl/star-system/Star.h"
 
 
 // Включается в "porte" для интерпретации структур C++ как OpenCL.

@@ -98,9 +98,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\configure.h" />
-    <ClInclude Include="include\world\dangeon-crawl\star-system\AsteroidUniqueBehaviour.h" />
+    <ClInclude Include="include\world\dangeon-crawl\star-system\Star.h" />
     <ClInclude Include="include\world\dangeon-crawl\star-system\StarSystemTest.h" />
-    <ClInclude Include="include\world\dangeon-crawl\star-system\AsteroidStarCollision.h" />
     <ClInclude Include="include\stdafx.h" />
   </ItemGroup>
   <ItemGroup>

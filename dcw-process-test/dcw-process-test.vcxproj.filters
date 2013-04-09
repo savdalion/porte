@@ -21,13 +21,10 @@
     <ClInclude Include="include\stdafx.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\world\dangeon-crawl\star-system\AsteroidStarCollision.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="include\world\dangeon-crawl\star-system\StarSystemTest.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\world\dangeon-crawl\star-system\AsteroidUniqueBehaviour.h">
+    <ClInclude Include="include\world\dangeon-crawl\star-system\Star.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

@@ -137,35 +137,6 @@ inline void EngineHybrid::pulse( int n ) {
     }
 
 
-    // @test
-#if 1
-{
-    const auto tss = sizeof( pns::aboutStarSystem_t );
-    const auto ta = sizeof( pns::aboutAsteroid_t );
-    const auto tp = sizeof( pns::aboutPlanet_t );
-    const auto ts = sizeof( pns::aboutStar_t );
-
-    const auto tca = sizeof( pns::characteristicAsteroid_t );
-    const auto tr1 = sizeof( pns::real_t );
-    const auto tr2 = sizeof( pns::real2_t );
-    const auto ts3 = sizeof( pns::real3_t );
-    const auto tr4 = sizeof( pns::real4_t );
-    const auto tb = sizeof( bool );
-
-    const auto te2 = sizeof( pns::eventTwo_t );
-    const auto tpe = sizeof( pns::pointerElement_t );
-    const auto te = sizeof( enum pns::EVENT );
-
-    const auto tmm = sizeof( pns::memoryModel_t );
-    const auto tm = sizeof( pns::model_t );
-    const auto tfmm = sizeof( pns::frequencyMemoryModel_t );
-    const auto tfm = sizeof( pns::frequencyModel_t );
-
-    const bool test = true;
-}
-#endif
-
-
     // собираем статистику для элементов портулана
     statistics();
 }
@@ -243,20 +214,49 @@ inline void EngineHybrid::emitEvent( int n ) {
 
 #if 1
         enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/begin" );
-        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/begin" );
+        enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/begin" );
         mQueueCL.finish();
 
         enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/direct" );
-        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/direct" );
+        enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/direct" );
         mQueueCL.finish();
 
         enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/relative" );
-        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/relative" );
+        enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/relative" );
         mQueueCL.finish();
 
-        //enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
-        //enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/fix" );
-        mQueueCL.finish();
+        enqueueEventKernelCL< pns::ASTEROID_COUNT >( "set/emit-event/asteroid/fix" );
+        enqueueEventKernelCL< pns::STAR_COUNT >( "set/emit-event/star/fix" );
+        //mQueueCL.finish();
+#endif
+
+
+    // @test
+#if 1
+{
+    const auto tss = sizeof( pns::aboutStarSystem_t );
+    const auto ta = sizeof( pns::aboutAsteroid_t );
+    const auto tp = sizeof( pns::aboutPlanet_t );
+    const auto ts = sizeof( pns::aboutStar_t );
+
+    const auto tca = sizeof( pns::characteristicAsteroid_t );
+    const auto tr1 = sizeof( pns::real_t );
+    const auto tr2 = sizeof( pns::real2_t );
+    const auto ts3 = sizeof( pns::real3_t );
+    const auto tr4 = sizeof( pns::real4_t );
+    const auto tb = sizeof( bool );
+
+    const auto te2 = sizeof( pns::eventTwo_t );
+    const auto tpe = sizeof( pns::pointerElement_t );
+    const auto te = sizeof( enum pns::EVENT );
+
+    const auto tmm = sizeof( pns::memoryModel_t );
+    const auto tm = sizeof( pns::model_t );
+    const auto tfmm = sizeof( pns::frequencyMemoryModel_t );
+    const auto tfm = sizeof( pns::frequencyModel_t );
+
+    const bool test = true;
+}
 #endif
 
 
@@ -847,7 +847,7 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
 
     std::ostringstream options;
     options
-        // лечим точность для float
+        // лечим точность
         << std::fixed
 
         // структуры и методы портулана на С++ станут годным для OpenCL.
@@ -869,17 +869,17 @@ inline std::string EngineHybrid::commonConstantCLKernel() {
         //    вещественные значения как float. Иначе на драйвере OpenCL 1.2
         //    от Intel - ошибка компиляции.
         << std::scientific
-        << " -D REAL_MAX=" << pns::REAL_MAX << "f"
+        << " -D REAL_MAX=" << pns::REAL_MAX << pns::NS
 
         // точность сравнения значений с плав. точкой
-        << " -D PRECISION=" << typelib::PRECISION << "f"
+        << " -D PRECISION=" << typelib::PRECISION << pns::NS
 
         // физические и геометрические константы
-        << " -D PI=" << typelib::constant::pi << "f"
-        << " -D SPEED_LIGHT=" << typelib::constant::physics::c << "f"
-        << " -D CK_TEMPERATURE=" << typelib::constant::physics::CK << "f"
-        << " -D G=" << typelib::constant::physics::G << "f"
-        << " -D STEFAN_BOLTZMANN=" << typelib::constant::physics::stefanBoltzmann << "f"
+        << " -D PI=" << typelib::constant::pi << pns::NS
+        << " -D SPEED_LIGHT=" << typelib::constant::physics::c << pns::NS
+        << " -D CK_TEMPERATURE=" << typelib::constant::physics::CK << pns::NS
+        << " -D G=" << typelib::constant::physics::G << pns::NS
+        << " -D STEFAN_BOLTZMANN=" << typelib::constant::physics::stefanBoltzmann << pns::NS
 
         << "";
 

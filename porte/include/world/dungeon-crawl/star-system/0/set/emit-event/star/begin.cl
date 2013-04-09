@@ -1,4 +1,5 @@
-// @require Библиотеки из "include".
+#include "pragma.hcl"
+#include "restruct.hcl"
 
 
 /**
@@ -15,26 +16,27 @@
 
 // @see world/dungeon-crawl/star-system/0/set/structure.h
 __kernel void begin(
-    __global const aboutStarSystem_t*  ass,      // 0
-    __global aboutAsteroid_t*          aa,       // 1
-    __global aboutPlanet_t*            ap,       // 2
-    __global aboutStar_t*              as,       // 3
-    const real_t                       timestep  // 4
+    __global emitterEventStar_t*  ee  // 0
 ) {
-    return;
-
-    // # Сюда получаем готовый индекс. Учитываем, что кол-во элементов
-    //   в группах - разное.
+    //  индекс элемента
     const uint i = get_global_id( 0 );
-
+    // @todo optimize Можно не проверять.
     if (i >= STAR_COUNT) {
-        //printf( "(!) Index %d / %d out of range for star.\n",  i,  STAR_COUNT - 1 );
         return;
     }
 
-    if ( absentStar( &as[ i ] ) ) {
+    //  индекс содержимого памяти событий элемента
+    const uint im = get_global_id( 1 );
+    // @todo optimize Можно не проверять.
+    if (im >= EMIT_EVENT_STAR_COUNT) {
         return;
     }
+
+
+    __global eventTwo_t* e = &ee[ i ][ im ];
+
+
+
 
 
     // @test
@@ -44,10 +46,9 @@ __kernel void begin(
     printf( "aboutPlanet_t %i\n", sizeof( aboutPlanet_t ) );
     printf( "aboutStar_t %i\n", sizeof( aboutStar_t ) );
     printf( "characteristicAsteroid_t %i\n", sizeof( characteristicAsteroid_t ) );
-    printf( "small3d_t %i\n", sizeof( small3d_t ) );
     printf( "real_t %i\n", sizeof( real_t ) );
-    printf( "real3_t %i\n", sizeof( real3_t ) );
     printf( "real2_t %i\n", sizeof( real2_t ) );
+    printf( "real3_t %i\n", sizeof( real3_t ) );
     printf( "real4_t %i\n", sizeof( real4_t ) );
     printf( "bool %i\n", sizeof( bool ) );
     printf( "eventTwo_t %i\n", sizeof( eventTwo_t ) );
@@ -62,24 +63,9 @@ __kernel void begin(
 #endif
 
 
-    __global aboutStar_t* element = &as[ i ];
-    __global emitterEvent_t* ee = &element->emitterEvent;
-#ifdef __DEBUG
-    if ( !betweenInteger( ee->waldo, 0, EMITTER_EVENT_COUNT - 1 ) ) {
-        //printf( "(?) Star %d is not initialized or it memory is overfilled. Waldo = %i.\n",
-        //    element->uid, ee->waldo );
-    }
-#endif
-
-
-    // обнуляем события
-    /* - @todo optimize Достаточно обнулить вальдо.
-    for (int w = ee->waldo; w > 0; --w) {
-        ee->content[ w ].uid = E_NONE;
-    }
-    */
-
-    // обнуляем вальдо
-    ee->waldo = 0;
+    // обнуляем ячейку события
+    // @todo optimize Можно сбрасывать только UID события.
+    const eventTwo_t EMPTY = {};
+    *e = EMPTY;
 
 }

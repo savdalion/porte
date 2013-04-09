@@ -42,25 +42,6 @@ __kernel void relative(
         //printf( "(?) Asteroid %d is not initialized or it memory is overfilled. Waldo = %i.\n",
         //    element->uid, ee->waldo );
     }
-
-    /* @test
-    printf( "Asteroid %d.\n"
-        "Coord %e %e %e\n"
-        "Velocity %e %e %e\n"
-        "Size %e %e %e\n"
-        "",
-        element->uid,
-        element->today.coord.x,
-        element->today.coord.y,
-        element->today.coord.z,
-        element->today.velocity[ 0 ],
-        element->today.velocity[ 1 ],
-        element->today.velocity[ 2 ],
-        element->today.size[ 0 ],
-        element->today.size[ 1 ],
-        element->today.size[ 2 ]
-    );
-    */
 #endif
 
     int w = ee->waldo;
@@ -81,6 +62,7 @@ __kernel void relative(
     // # Отсутствующий элемент - сигнал конца списка.
     // # Прекращаем запоминать события, если память переполнена.
 
+    @todo #! Передавать звёзды как второе измерение.
     // Гравитация от звёзд
     {
         for (uint k = 0;
@@ -101,11 +83,6 @@ __kernel void relative(
                     const real3_t dc = coordB - coordA;
                     const real3_t squareDC = dc * dc;
                     const real_t absDC = length( dc );
-#ifdef __DEBUG
-                    /* - Увидим ошибку при проверке силы, ниже.
-                    assertReal( absDC, "(!) Overfill distance between asteroid and star.\n" );
-                    */
-#endif
                     const bool correctAbsDC = testReal( absDC );
                     if ( correctAbsDC && (absDC > PRECISION) ) {
                         const real3_t normalDC = dc / absDC;
@@ -156,7 +133,6 @@ __kernel void relative(
         );
         */
     }
-    assertReal( absForceA, "(!) Overfill length E_IMPACT_FORCE for asteroid.\n" );
 #endif
     if ( correctAbsForce && (w < EMITTER_EVENT_COUNT) ) {
         const eventTwo_t e = {
